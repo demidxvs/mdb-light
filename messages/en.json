@@ -1,0 +1,92 @@
+{
+  "navigation": {
+    "catalog": "Catalog",
+    "about": "About",
+    "partners": "Partners",
+    "projects": "Projects",
+    "support": "Support",
+    "security": "Security"
+  },
+  "accountControls": {
+    "cart": "Cart",
+    "account": "Account",
+    "signedIn": "Signed in",
+    "signOut": "Sign out",
+    "loading": "Loading"
+  },
+  "home": {
+    "top": "Multilingual LED marketplace",
+    "support": "Contact",
+    "badge1": "New collections",
+    "badge2": "Indoor · Outdoor",
+    "heroEyebrow": "LED lighting marketplace",
+    "heroLead": "Lighting that shapes",
+    "heroAccent": "everyday spaces",
+    "heroTail": "with clarity.",
+    "heroText": "Discover decorative, technical, and outdoor fixtures for homes, retail, hospitality, and modern commercial interiors.",
+    "cta1": "Shop catalog",
+    "cta2": "Explore ideas",
+    "categories": "Categories",
+    "categoriesTitle": "Quick access to the main product directions",
+    "inspiration": "Inspiration",
+    "inspirationTitle": "Typical lighting scenarios for different spaces",
+    "about": "About the platform",
+    "aboutTitle": "MDB Light is a commercial lighting platform, not just a static showcase.",
+    "aboutText": "MDB Light brings together clean navigation, multilingual browsing, curated product lines, and a storefront built around real lighting scenarios.",
+    "admin": "Admin flow",
+    "adminTitle": "Products, carts, orders, and translations in one protected space.",
+    "footer": "LED lighting marketplace with multilingual browsing, curated product collections, and a clean shopping experience.",
+    "metrics": {
+      "languages": "Languages",
+      "support": "Customer support",
+      "collections": "Curated collections"
+    },
+    "audience": {
+      "designers": {
+        "title": "Designers & architects",
+        "description": "Project materials and clear lighting scenes."
+      },
+      "partners": {
+        "title": "Trade partners",
+        "description": "Scalable catalog access and pricing logic."
+      },
+      "installers": {
+        "title": "Installers & developers",
+        "description": "Technical clarity and order visibility."
+      }
+    },
+    "catalogCards": {
+      "track": {
+        "title": "Track systems",
+        "description": "Flexible rail solutions."
+      },
+      "linear": {
+        "title": "Linear fixtures",
+        "description": "Continuous clean LED lines."
+      },
+      "decorative": {
+        "title": "Decorative lighting",
+        "description": "Atmosphere and character."
+      },
+      "strips": {
+        "title": "LED strips",
+        "description": "Accent and architectural light."
+      }
+    },
+    "projects": {
+      "homes": "Apartments & homes",
+      "retail": "Retail & showrooms",
+      "restaurants": "Restaurants & cafes"
+    },
+    "adminItems": {
+      "products": "Create and edit product cards",
+      "translations": "Store descriptions in 4 languages",
+      "orders": "Track active carts and orders",
+      "statuses": "Update customer order progress"
+    },
+    "authNotice": {
+      "title": "Signed in",
+      "text": "Welcome back"
+    }
+  }
+}

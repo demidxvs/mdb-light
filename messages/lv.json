@@ -1,0 +1,92 @@
+{
+  "navigation": {
+    "catalog": "Katalogs",
+    "about": "Par mums",
+    "partners": "Partneriem",
+    "projects": "Projekti",
+    "support": "Atbalsts",
+    "security": "Drošība"
+  },
+  "accountControls": {
+    "cart": "Grozs",
+    "account": "Konts",
+    "signedIn": "Esat pieslēdzies",
+    "signOut": "Izrakstīties",
+    "loading": "Ielāde"
+  },
+  "home": {
+    "top": "Daudzvalodu LED apgaismojuma marketplace",
+    "support": "Kontakti",
+    "badge1": "Jaunas kolekcijas",
+    "badge2": "Interjers · ārtelpa",
+    "heroEyebrow": "LED apgaismojuma marketplace",
+    "heroLead": "Gaisma, kas veido",
+    "heroAccent": "ikdienas telpas",
+    "heroTail": "ar raksturu.",
+    "heroText": "Atklāj dekoratīvu, tehnisku un āra apgaismojumu mājokļiem, retail, horeca un mūsdienīgām komerctelpām.",
+    "cta1": "Uz katalogu",
+    "cta2": "Apgaismojuma idejas",
+    "categories": "Kategorijas",
+    "categoriesTitle": "Ātra piekļuve galvenajiem produktu virzieniem",
+    "inspiration": "Iedvesma",
+    "inspirationTitle": "Tipiski apgaismojuma scenāriji dažādām telpām",
+    "about": "Par platformu",
+    "aboutTitle": "MDB Light ir komerciāla apgaismojuma platforma, nevis tikai statisks showcase.",
+    "aboutText": "MDB Light apvieno skaidru navigāciju, daudzvalodu vidi, atlasītas produktu līnijas un ērtu apgaismojuma izvēli reālām telpām.",
+    "admin": "Admin plūsma",
+    "adminTitle": "Produkti, grozi, pasūtījumi un tulkojumi vienā aizsargātā vidē.",
+    "footer": "LED apgaismojuma marketplace ar daudzvalodu vidi, atlasītām kolekcijām un tīru iepirkšanās pieredzi.",
+    "metrics": {
+      "languages": "Valodas",
+      "support": "Atbalsts",
+      "collections": "Kolekcijas"
+    },
+    "audience": {
+      "designers": {
+        "title": "Dizaineri un arhitekti",
+        "description": "Projektu materiāli un tīras gaismas ainas."
+      },
+      "partners": {
+        "title": "Tirdzniecības partneri",
+        "description": "Mērogojams katalogs un cenu loģika."
+      },
+      "installers": {
+        "title": "Montieri un developeri",
+        "description": "Tehniskā skaidrība un pasūtījumu redzamība."
+      }
+    },
+    "catalogCards": {
+      "track": {
+        "title": "Sliežu sistēmas",
+        "description": "Elastīgi sliežu risinājumi."
+      },
+      "linear": {
+        "title": "Lineārie gaismekļi",
+        "description": "Tīras nepārtrauktas LED līnijas."
+      },
+      "decorative": {
+        "title": "Dekoratīvais apgaismojums",
+        "description": "Atmosfēra un raksturs."
+      },
+      "strips": {
+        "title": "LED lentes",
+        "description": "Akcenta un arhitektūras gaisma."
+      }
+    },
+    "projects": {
+      "homes": "Dzīvokļi un mājas",
+      "retail": "Retail un showroomi",
+      "restaurants": "Restorāni un kafejnīcas"
+    },
+    "adminItems": {
+      "products": "Produktu karšu izveide un rediģēšana",
+      "translations": "Aprakstu glabāšana 4 valodās",
+      "orders": "Aktīvo grozu un pasūtījumu pārskats",
+      "statuses": "Pasūtījumu statusu atjaunošana"
+    },
+    "authNotice": {
+      "title": "Ienākšana veiksmīga",
+      "text": "Prieks redzēt atkal"
+    }
+  }
+}

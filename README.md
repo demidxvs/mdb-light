@@ -345,4 +345,127 @@ These points are not fully fixed yet and can be refined in future tasks:
 
 When future tasks are implemented, this README should be updated if the business logic or architecture changes.
 #   m d b - l i g h t  
- 
+ ## Admin UX Direction
+
+The admin area should evolve into a visual site-builder style workspace instead of a plain database dashboard.
+
+### Desired Admin Experience
+
+Admin should see the site in a storefront-like presentation and switch into a management mode where interface controls appear directly on the same page.
+
+Examples:
+
+- on the catalog page admin sees `Add product`, `Edit`, `Delete`
+- on product cards admin sees quick actions without leaving the visual layout
+- on banners and homepage sections admin can edit content in context
+- management controls should appear only for admin users
+- regular users should never see these controls
+
+This means the long-term admin concept is:
+
+- public site and admin editing experience live in the same Next.js app
+- admin can browse the real pages as they look to customers
+- when admin mode is active, inline action buttons appear
+- complex management screens still exist as separate admin pages when needed
+
+### Admin Structure
+
+The admin system should be split into two layers:
+
+1. Visual admin mode on normal pages
+
+Used for:
+
+- add product from catalog view
+- edit product from product card or product page
+- hide / unhide products
+- change homepage sections
+- reorder visual blocks later
+
+2. Dedicated admin pages
+
+Used for:
+
+- product creation forms
+- bulk product editing
+- order management
+- cart monitoring
+- user management
+- category management
+- image management
+
+### Current Hidden Admin Route
+
+Current hidden route:
+
+`/panel-x9k2m4q7r2a`
+
+This route is the first protected admin area and should stay hidden from public navigation.
+
+### Admin Pages Planned
+
+The admin panel should eventually contain:
+
+- dashboard overview
+- products
+- product create/edit page
+- categories
+- orders
+- carts
+- users
+- settings
+
+### Users Section
+
+A separate admin page for users is required.
+
+Admin should be able to see:
+
+- full name
+- email
+- preferred language
+- account status
+- registration date
+- order count later
+- cart state later
+
+Possible future admin actions for users:
+
+- deactivate account
+- promote to admin
+- review orders
+- review cart
+- inspect profile details
+
+### Product Management Requirements
+
+Product management should support both quick inline actions and full form editing.
+
+Inline actions:
+
+- add product
+- edit product
+- delete product
+- feature / unfeature product
+- activate / deactivate product
+
+Full edit form:
+
+- sku
+- slug
+- brand
+- category
+- price
+- compare price
+- stock
+- image
+- active status
+- featured status
+- translations for `en`, `ru`, `el`, `lv`
+
+### Working Rule For Future Tasks
+
+When admin functionality is expanded, future work should follow this rule:
+
+- if an action is simple and visual, prefer inline admin controls on the real page
+- if an action is operational or data-heavy, use a dedicated admin page

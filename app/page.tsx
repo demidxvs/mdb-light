@@ -8,18 +8,17 @@ import {
   BadgeCheck,
   ChevronRight,
   Handshake,
-  Headset,
-  LampCeiling,
-  Lightbulb,
-  Search,
-  ShoppingBag,
-  Sparkles,
+  Headset,  Lightbulb,
+  Search,  Sparkles,
   Wrench,
 } from "lucide-react";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
 import { useLocale } from "@/components/ui/locale-provider";
 import { SiteNavigation } from "@/components/ui/site-navigation";
 import { AccountControls } from "@/components/ui/account-controls";
+
+import { HomeFeaturedCatalog } from "@/components/ui/home-featured-catalog";
+import { HomeCategories } from "@/components/ui/home-categories";
 import { useEffect, useState } from "react";
 
 export default function Home() {
@@ -81,22 +80,18 @@ export default function Home() {
     {
       title: t("catalogCards.track.title"),
       description: t("catalogCards.track.description"),
-      icon: LampCeiling,
     },
     {
       title: t("catalogCards.linear.title"),
       description: t("catalogCards.linear.description"),
-      icon: Lightbulb,
     },
     {
       title: t("catalogCards.decorative.title"),
       description: t("catalogCards.decorative.description"),
-      icon: Sparkles,
     },
     {
       title: t("catalogCards.strips.title"),
       description: t("catalogCards.strips.description"),
-      icon: ShoppingBag,
     },
   ];
 
@@ -256,30 +251,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="catalog" className="mx-auto max-w-7xl px-6 py-2 sm:px-10 lg:px-12">
-        <div className="rounded-[2rem] border border-[#e5e8ee] bg-white p-6 sm:p-8">
-          <p className="text-sm font-medium uppercase tracking-[0.2em] text-[color:var(--accent)]">{t("categories")}</p>
-          <h2 className="font-display mt-3 text-3xl font-semibold tracking-[-0.05em] text-[color:var(--headline)] sm:text-4xl">
-            {t("categoriesTitle")}
-          </h2>
-          <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            {catalogCards.map(({ title, description, icon: Icon }, index) => (
-              <article key={title} className="h-[220px] rounded-[1.5rem] border border-[#e9e0d3] bg-[#fffaf4] p-5">
-                <div className="flex items-start justify-between">
-                  <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--accent)]/70">
-                    {String(index + 1).padStart(2, "0")}
-                  </p>
-                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[color:var(--accent-soft)] text-[color:var(--accent)]">
-                    <Icon className="h-4.5 w-4.5" />
-                  </div>
-                </div>
-                <h3 className="font-display mt-8 text-xl font-semibold text-[color:var(--headline)]">{title}</h3>
-                <p className="mt-3 line-clamp-3 text-sm leading-7 text-[color:var(--muted)]">{description}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
+      <HomeCategories eyebrow={t("categories")} title={t("categoriesTitle")} fallbackCards={catalogCards} limit={32} />`r`n`r`n      <HomeFeaturedCatalog />
 
       <section id="projects" className="mx-auto max-w-7xl px-6 py-8 sm:px-10 lg:px-12">
         <div className="rounded-[2rem] border border-[#e5e8ee] bg-white p-6 sm:p-8">
@@ -362,6 +334,15 @@ export default function Home() {
     </main>
   );
 }
+
+
+
+
+
+
+
+
+
 
 
 

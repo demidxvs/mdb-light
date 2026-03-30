@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowRight,
+  FolderTree,
   Layers3,
   LoaderCircle,
   ShieldAlert,
@@ -25,11 +26,15 @@ const copy = {
     support: "Contact",
     title: "Admin dashboard",
     description:
-      "Use separate sections for products, users, and future orders or carts. This is the entry point, not the product form itself.",
+      "Use separate sections for categories, products, users, and later orders or carts.",
     loading: "Checking admin access...",
     denied: "Admin access required",
     signIn: "Sign in first to open the admin panel.",
     noAccess: "You do not have access to this page.",
+    categoriesEyebrow: "Categories",
+    categoriesTitle: "Manage catalog directions",
+    categoriesText: "Create categories, edit names and descriptions in 4 languages, delete them, and control the order shown on the storefront.",
+    categoriesCta: "Open categories",
     productsEyebrow: "Products",
     productsTitle: "Manage catalog items",
     productsText:
@@ -46,11 +51,15 @@ const copy = {
     support: "Контакты",
     title: "Панель администратора",
     description:
-      "Используйте отдельные разделы для товаров, пользователей и будущих заказов или корзин. Это точка входа, а не сама форма создания товара.",
+      "Используйте отдельные разделы для категорий, товаров, пользователей и будущих заказов или корзин.",
     loading: "Проверяю права администратора...",
     denied: "Требуется доступ администратора",
     signIn: "Сначала войдите, чтобы открыть админку.",
     noAccess: "У вас нет доступа к этой странице.",
+    categoriesEyebrow: "Категории",
+    categoriesTitle: "Управление направлениями каталога",
+    categoriesText: "Создавайте категории, редактируйте названия и описания на 4 языках, удаляйте их и управляйте порядком показа на витрине.",
+    categoriesCta: "Открыть категории",
     productsEyebrow: "Товары",
     productsTitle: "Управление каталогом",
     productsText:
@@ -67,11 +76,15 @@ const copy = {
     support: "Επικοινωνία",
     title: "Πίνακας διαχείρισης",
     description:
-      "Χρησιμοποιήστε ξεχωριστές ενότητες για προϊόντα, χρήστες και μελλοντικές παραγγελίες ή καλάθια. Αυτή είναι η αρχική σελίδα και όχι η φόρμα δημιουργίας προϊόντος.",
+      "Χρησιμοποιήστε ξεχωριστές ενότητες για κατηγορίες, προϊόντα, χρήστες και μελλοντικές παραγγελίες ή καλάθια.",
     loading: "Έλεγχος δικαιωμάτων διαχειριστή...",
     denied: "Απαιτείται πρόσβαση διαχειριστή",
     signIn: "Συνδεθείτε πρώτα για να ανοίξετε το admin panel.",
     noAccess: "Δεν έχετε πρόσβαση σε αυτή τη σελίδα.",
+    categoriesEyebrow: "Κατηγορίες",
+    categoriesTitle: "Διαχείριση κατευθύνσεων καταλόγου",
+    categoriesText: "Δημιουργήστε κατηγορίες, επεξεργαστείτε ονόματα και περιγραφές σε 4 γλώσσες, διαγράψτε τες και αλλάξτε τη σειρά εμφάνισης στη βιτρίνα.",
+    categoriesCta: "Άνοιγμα κατηγοριών",
     productsEyebrow: "Προϊόντα",
     productsTitle: "Διαχείριση καταλόγου",
     productsText:
@@ -88,11 +101,15 @@ const copy = {
     support: "Kontakti",
     title: "Administrācijas panelis",
     description:
-      "Izmantojiet atsevišķas sadaļas produktiem, lietotājiem un nākotnē pasūtījumiem vai groziem. Šī ir sākuma lapa, nevis produkta izveides forma.",
+      "Izmantojiet atsevišķas sadaļas kategorijām, produktiem, lietotājiem un nākotnē pasūtījumiem vai groziem.",
     loading: "Tiek pārbaudītas administratora tiesības...",
     denied: "Nepieciešama administratora piekļuve",
     signIn: "Lai atvērtu admin paneli, vispirms pieslēdzieties.",
     noAccess: "Jums nav piekļuves šai lapai.",
+    categoriesEyebrow: "Kategorijas",
+    categoriesTitle: "Kataloga virzienu pārvaldība",
+    categoriesText: "Veidojiet kategorijas, rediģējiet nosaukumus un aprakstus 4 valodās, dzēsiet tās un mainiet parādīšanas secību vitrīnā.",
+    categoriesCta: "Atvērt kategorijas",
     productsEyebrow: "Produkti",
     productsTitle: "Kataloga pārvaldība",
     productsText:
@@ -189,7 +206,24 @@ export default function AdminDashboardPage() {
           </div>
         </div>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-6 lg:grid-cols-3">
+          <Link href="/panel-x9k2m4q7r2a/categories" className="group rounded-[1.75rem] border border-[#ece3d9] bg-white p-6 shadow-[0_16px_40px_rgba(27,42,74,0.05)] transition hover:-translate-y-1 hover:border-[color:var(--accent)]/35">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[color:var(--accent)]">{t.categoriesEyebrow}</p>
+                <h2 className="mt-3 font-display text-2xl font-semibold tracking-[-0.04em] text-[color:var(--headline)]">{t.categoriesTitle}</h2>
+                <p className="mt-2 text-sm leading-6 text-[color:var(--muted)]">{t.categoriesText}</p>
+              </div>
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[color:var(--accent)]/15 text-[color:var(--headline)]">
+                <FolderTree className="h-6 w-6" />
+              </div>
+            </div>
+            <div className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-[color:var(--headline)]">
+              {t.categoriesCta}
+              <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
+            </div>
+          </Link>
+
           <Link href="/panel-x9k2m4q7r2a/products" className="group rounded-[1.75rem] border border-[#ece3d9] bg-white p-6 shadow-[0_16px_40px_rgba(27,42,74,0.05)] transition hover:-translate-y-1 hover:border-[color:var(--accent)]/35">
             <div className="flex items-start justify-between gap-4">
               <div>

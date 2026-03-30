@@ -1,4 +1,4 @@
-create extension if not exists pgcrypto;
+﻿create extension if not exists pgcrypto;
 create extension if not exists citext;
 
 create or replace function public.set_updated_at()
@@ -33,8 +33,7 @@ create table if not exists public.categories (
   id uuid primary key default gen_random_uuid(),
   parent_id uuid references public.categories(id) on delete set null,
   slug text not null unique,
-  sort_order integer not null default 0,
-  is_active boolean not null default true,
+  sort_order integer not null default 0,`r`n  is_active boolean not null default true,`r`n  cover_image_url text,
   created_at timestamptz not null default timezone('utc', now()),
   updated_at timestamptz not null default timezone('utc', now())
 );
@@ -485,3 +484,4 @@ create policy "order_items_admin_delete"
   on public.order_items
   for delete
   using (public.is_admin());
+

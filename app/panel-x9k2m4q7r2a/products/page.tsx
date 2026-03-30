@@ -7,6 +7,7 @@ import {
   ArrowLeft,
   Plus,
   LoaderCircle,
+  PencilLine,
   ShieldAlert,
 } from "lucide-react";
 import { AdminShell } from "@/components/ui/admin-shell";
@@ -35,7 +36,7 @@ const copy = {
     support: "Contact",
     title: "Products",
     description:
-      "This section shows your catalog items. Use the button below to open a separate product creation page.",
+      "This section shows your catalog items. Open a separate product page to add or edit listings stored in the database.",
     loading: "Loading products...",
     denied: "Admin access required",
     signIn: "Sign in first to open the admin panel.",
@@ -48,6 +49,8 @@ const copy = {
     stock: "Stock",
     status: "Status",
     created: "Created",
+    actions: "Actions",
+    edit: "Edit",
     empty: "No products yet. Use Add product to create the first item.",
     active: "Active",
     draft: "Draft",
@@ -57,7 +60,7 @@ const copy = {
     support: "Контакты",
     title: "Товары",
     description:
-      "Здесь отображаются позиции каталога. Используйте кнопку ниже, чтобы открыть отдельную страницу создания товара.",
+      "Здесь отображаются позиции каталога. Откройте отдельную страницу товара, чтобы добавить или отредактировать объявление из базы данных.",
     loading: "Загружаю товары...",
     denied: "Требуется доступ администратора",
     signIn: "Сначала войдите, чтобы открыть админку.",
@@ -70,6 +73,8 @@ const copy = {
     stock: "Остаток",
     status: "Статус",
     created: "Создан",
+    actions: "Действия",
+    edit: "Редактировать",
     empty: "Товаров пока нет. Используйте кнопку добавления, чтобы создать первую позицию.",
     active: "Активен",
     draft: "Черновик",
@@ -79,7 +84,7 @@ const copy = {
     support: "Επικοινωνία",
     title: "Προϊόντα",
     description:
-      "Αυτή η ενότητα εμφανίζει τα προϊόντα του καταλόγου. Χρησιμοποιήστε το κουμπί παρακάτω για να ανοίξετε ξεχωριστή σελίδα δημιουργίας προϊόντος.",
+      "Αυτή η ενότητα εμφανίζει τα προϊόντα του καταλόγου. Ανοίξτε ξεχωριστή σελίδα προϊόντος για να προσθέσετε ή να επεξεργαστείτε καταχωρήσεις από τη βάση δεδομένων.",
     loading: "Φόρτωση προϊόντων...",
     denied: "Απαιτείται πρόσβαση διαχειριστή",
     signIn: "Συνδεθείτε πρώτα για να ανοίξετε το admin panel.",
@@ -92,6 +97,8 @@ const copy = {
     stock: "Απόθεμα",
     status: "Κατάσταση",
     created: "Δημιουργήθηκε",
+    actions: "Ενέργειες",
+    edit: "Επεξεργασία",
     empty: "Δεν υπάρχουν ακόμη προϊόντα. Χρησιμοποιήστε το κουμπί προσθήκης για να δημιουργήσετε το πρώτο.",
     active: "Ενεργό",
     draft: "Πρόχειρο",
@@ -101,7 +108,7 @@ const copy = {
     support: "Kontakti",
     title: "Produkti",
     description:
-      "Šajā sadaļā redzami kataloga produkti. Izmantojiet zemāk esošo pogu, lai atvērtu atsevišķu produkta izveides lapu.",
+      "Šajā sadaļā redzami kataloga produkti. Atveriet atsevišķu produkta lapu, lai pievienotu vai rediģētu sludinājumus, kas glabājas datubāzē.",
     loading: "Ielādē produktus...",
     denied: "Nepieciešama administratora piekļuve",
     signIn: "Lai atvērtu admin paneli, vispirms pieslēdzieties.",
@@ -114,6 +121,8 @@ const copy = {
     stock: "Atlikums",
     status: "Statuss",
     created: "Izveidots",
+    actions: "Darbības",
+    edit: "Rediģēt",
     empty: "Produktu vēl nav. Izmantojiet pievienošanas pogu, lai izveidotu pirmo ierakstu.",
     active: "Aktīvs",
     draft: "Melnraksts",
@@ -258,12 +267,13 @@ export default function AdminProductsPage() {
                     <th className="px-4 py-3 font-medium">{t.stock}</th>
                     <th className="px-4 py-3 font-medium">{t.status}</th>
                     <th className="px-4 py-3 font-medium">{t.created}</th>
+                    <th className="px-4 py-3 font-medium">{t.actions}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#f4ece3] bg-white text-[color:var(--headline)]">
                   {products.length === 0 ? (
                     <tr>
-                      <td className="px-4 py-5 text-[color:var(--muted)]" colSpan={6}>
+                      <td className="px-4 py-5 text-[color:var(--muted)]" colSpan={7}>
                         {t.empty}
                       </td>
                     </tr>
@@ -301,6 +311,15 @@ export default function AdminProductsPage() {
                           <td className="px-4 py-4 text-[color:var(--muted)]">
                             {formatDate(product.created_at)}
                           </td>
+                          <td className="px-4 py-4">
+                            <Link
+                              href={`/panel-x9k2m4q7r2a/products/${product.id}`}
+                              className="inline-flex h-9 items-center gap-2 rounded-xl border border-[#ece3d9] bg-[#fffcf7] px-3 text-sm font-medium text-[color:var(--headline)] transition hover:border-[color:var(--accent)]/25"
+                            >
+                              <PencilLine className="h-4 w-4" />
+                              {t.edit}
+                            </Link>
+                          </td>
                         </tr>
                       );
                     })
@@ -314,9 +333,3 @@ export default function AdminProductsPage() {
     </AdminShell>
   );
 }
-
-
-
-
-
-

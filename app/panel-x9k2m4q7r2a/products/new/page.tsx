@@ -15,6 +15,7 @@ import {
   createSupabaseBrowserClient,
   isSupabaseConfigured,
 } from "@/lib/supabase-client";
+import { uploadAdminImage } from "@/lib/storage";
 
 type LocaleKey = "en" | "ru" | "el" | "lv";
 type TranslationFields = {
@@ -97,7 +98,9 @@ const copy = {
     price: "Price",
     compareAtPrice: "Compare at price",
     stock: "Stock quantity",
-    image: "Primary image URL",
+    image: "Product image",
+    uploadImage: "Upload image",
+    uploading: "Uploading image...",
     trackInventory: "Track inventory",
     visible: "Visible in storefront",
     featured: "Featured on homepage",
@@ -151,7 +154,9 @@ const copy = {
     price: "Цена",
     compareAtPrice: "Старая цена",
     stock: "Количество на складе",
-    image: "URL главного изображения",
+    image: "Изображение товара",
+    uploadImage: "Загрузить изображение",
+    uploading: "Загружаю изображение...",
     trackInventory: "Отслеживать остатки",
     visible: "Показывать на витрине",
     featured: "Показывать на главной",
@@ -205,7 +210,9 @@ const copy = {
     price: "Τιμή",
     compareAtPrice: "Αρχική τιμή",
     stock: "Ποσότητα αποθέματος",
-    image: "URL κύριας εικόνας",
+    image: "Εικόνα προϊόντος",
+    uploadImage: "Μεταφόρτωση εικόνας",
+    uploading: "Μεταφόρτωση εικόνας...",
     trackInventory: "Παρακολούθηση αποθέματος",
     visible: "Ορατό στη βιτρίνα",
     featured: "Εμφάνιση στην αρχική",
@@ -259,7 +266,9 @@ const copy = {
     price: "Cena",
     compareAtPrice: "Salīdzinājuma cena",
     stock: "Atlikuma daudzums",
-    image: "Galvenā attēla URL",
+    image: "Produkta attēls",
+    uploadImage: "Augšupielādēt attēlu",
+    uploading: "Augšupielādē attēlu...",
     trackInventory: "Sekot atlikumam",
     visible: "Rādīt vitrīnā",
     featured: "Rādīt sākumlapā",
@@ -344,6 +353,7 @@ export default function AdminProductNewPage() {
   const [categories, setCategories] = useState<CategoryRow[]>([]);
   const [products, setProducts] = useState<ProductRow[]>([]);
   const [form, setForm] = useState<FormState>(createInitialForm());
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const loadDashboard = async (nextUserId?: string) => {
     const supabase = createSupabaseBrowserClient();
@@ -457,6 +467,26 @@ export default function AdminProductNewPage() {
     });
   };
 
+
+  const handleProductImageChange = async (file: File | null) => {
+    if (!file) return;
+    setError("");
+    setSuccess("");
+    setUploadingImage(true);
+
+    try {
+      const upload = await uploadAdminImage({
+        file,
+        folder: "products",
+        slug: form.slug || form.translations.en.name || form.sku || "product",
+      });
+      setForm((current) => ({ ...current, primaryImageUrl: upload.publicUrl }));
+    } catch (uploadError) {
+      setError(uploadError instanceof Error ? uploadError.message : t.genericError);
+    } finally {
+      setUploadingImage(false);
+    }
+  };
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
@@ -681,10 +711,18 @@ export default function AdminProductNewPage() {
                   <span>{t.stock}</span>
                   <input type="number" min="0" step="1" value={form.stockQuantity} onChange={(event) => handleFieldChange("stockQuantity", event.target.value)} className="h-11 w-full rounded-xl border border-[#ece3d9] bg-[#fffcf7] px-4 outline-none transition focus:border-[color:var(--accent)]" />
                 </label>
-                <label className="space-y-2 text-sm font-medium text-[color:var(--headline)] md:col-span-2 xl:col-span-2">
+                <div className="space-y-2 text-sm font-medium text-[color:var(--headline)] md:col-span-2 xl:col-span-2">
                   <span>{t.image}</span>
-                  <input value={form.primaryImageUrl} onChange={(event) => handleFieldChange("primaryImageUrl", event.target.value)} className="h-11 w-full rounded-xl border border-[#ece3d9] bg-[#fffcf7] px-4 outline-none transition focus:border-[color:var(--accent)]" />
-                </label>
+                  <div className="rounded-2xl border border-[#ece3d9] bg-[#fffcf7] p-4">
+                    <input type="file" accept="image/*" onChange={(event) => void handleProductImageChange(event.target.files?.[0] ?? null)} className="block w-full text-sm text-[color:var(--muted)] file:mr-4 file:rounded-xl file:border-0 file:bg-[color:var(--accent)] file:px-4 file:py-2 file:font-medium file:text-[#203153]" />
+                    {uploadingImage ? <p className="mt-3 text-sm text-[color:var(--muted)]">{t.uploading}</p> : null}
+                    {form.primaryImageUrl ? (
+                      <div className="mt-4 overflow-hidden rounded-2xl border border-[#ece3d9] bg-white">
+                        <img src={form.primaryImageUrl} alt="Product preview" className="h-48 w-full object-cover" />
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
               </div>
               <div className="grid gap-3 md:grid-cols-3">
                 <label className="flex items-center gap-3 rounded-2xl border border-[#ece3d9] bg-[#fffcf7] px-4 py-3 text-sm font-medium text-[color:var(--headline)]">
@@ -782,6 +820,8 @@ export default function AdminProductNewPage() {
     </AdminShell>
   );
 }
+
+
 
 
 

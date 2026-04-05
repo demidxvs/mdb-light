@@ -8,13 +8,12 @@ import {
   ShieldAlert,
   Users,
   ArrowLeft,
+  Search,
 } from "lucide-react";
 import { AdminShell } from "@/components/ui/admin-shell";
 import { useLocale } from "@/components/ui/locale-provider";
-import {
-  createSupabaseBrowserClient,
-  isSupabaseConfigured,
-} from "@/lib/supabase-client";
+import { isAdminSupabaseConfigured } from "@/lib/admin-supabase-client";
+import { localizePathname } from "@/i18n/config";
 
 type ProfileRow = {
   id: string;
@@ -49,6 +48,8 @@ const copy = {
     unnamed: "Unnamed user",
     active: "Active",
     disabled: "Disabled",
+    search: "Search users",
+    empty: "No users found.",
   },
   ru: {
     top: "Защищенная зона управления пользователями",
@@ -71,6 +72,8 @@ const copy = {
     unnamed: "Без имени",
     active: "Активен",
     disabled: "Отключен",
+    search: "Поиск пользователей",
+    empty: "Пользователи не найдены.",
   },
   el: {
     top: "Προστατευμένη διαχείριση χρηστών",
@@ -93,6 +96,8 @@ const copy = {
     unnamed: "Χρήστης χωρίς όνομα",
     active: "Ενεργός",
     disabled: "Ανενεργός",
+    search: "Search users",
+    empty: "No users found.",
   },
   lv: {
     top: "Aizsargāta lietotāju pārvaldība",
@@ -115,6 +120,8 @@ const copy = {
     unnamed: "Lietotājs bez vārda",
     active: "Aktīvs",
     disabled: "Atspējots",
+    search: "Meklēt lietotājus",
+    empty: "Lietotāji nav atrasti.",
   },
 } as const;
 
@@ -130,60 +137,44 @@ export default function AdminUsersPage() {
   const router = useRouter();
   const { locale } = useLocale();
   const t = copy[locale];
-  const supabaseReady = useMemo(() => isSupabaseConfigured(), []);
+  const supabaseReady = useMemo(() => isAdminSupabaseConfigured(), []);
   const [loading, setLoading] = useState(supabaseReady);
   const [isAdmin, setIsAdmin] = useState(false);
   const [error, setError] = useState(
     supabaseReady ? "" : "Supabase is not configured.",
   );
   const [profiles, setProfiles] = useState<ProfileRow[]>([]);
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
     if (!supabaseReady) return;
-    const supabase = createSupabaseBrowserClient();
     let mounted = true;
 
     const hydrate = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+      const response = await fetch("/api/admin/users", {
+        credentials: "include",
+      });
+      const payload = (await response.json().catch(() => ({}))) as {
+        error?: string;
+        profiles?: ProfileRow[];
+      };
+
       if (!mounted) return;
-      const user = session?.user;
-      if (!user) {
+      if (response.status === 401) {
         setError(t.signIn);
         setLoading(false);
-        router.replace("/login");
+        router.replace(localizePathname("/panel-x9k2m4q7r2a/login", locale));
         return;
       }
 
-      const { data: adminRow } = await supabase
-        .from("admins")
-        .select("user_id")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      if (!mounted) return;
-      if (!adminRow) {
-        setError(t.noAccess);
-        setLoading(false);
-        return;
-      }
-
-      const { data: profileRows, error: profileError } = await supabase
-        .from("profiles")
-        .select(
-          "id, email, first_name, last_name, full_name, preferred_locale, created_at, is_active",
-        )
-        .order("created_at", { ascending: false });
-
-      if (!mounted) return;
-      if (profileError) {
-        setError(profileError.message);
+      if (!response.ok) {
+        setError(payload.error || t.noAccess);
         setLoading(false);
         return;
       }
 
       setIsAdmin(true);
-      setProfiles((profileRows as ProfileRow[] | null) ?? []);
+      setProfiles(payload.profiles ?? []);
       setLoading(false);
     };
 
@@ -191,12 +182,33 @@ export default function AdminUsersPage() {
     return () => {
       mounted = false;
     };
-  }, [router, supabaseReady, t.noAccess, t.signIn]);
+  }, [locale, router, supabaseReady, t.noAccess, t.signIn]);
+
+  const filteredProfiles = useMemo(() => {
+    const normalized = query.trim().toLowerCase();
+    if (!normalized) return profiles;
+
+    return profiles.filter((profile) => {
+      const name =
+        profile.full_name ||
+        [profile.first_name, profile.last_name].filter(Boolean).join(" ") ||
+        "";
+
+      return [
+        name,
+        profile.email || "",
+        profile.preferred_locale || "",
+        profile.id,
+      ]
+        .join(" ")
+        .toLowerCase()
+        .includes(normalized);
+    });
+  }, [profiles, query]);
 
   return (
     <AdminShell
       topLabel={t.top}
-      supportLabel={t.support}
       title={t.title}
       description={t.description}
     >
@@ -227,7 +239,7 @@ export default function AdminUsersPage() {
         <div className="space-y-6">
           <div className="flex flex-wrap gap-3">
             <Link
-              href="/panel-x9k2m4q7r2a"
+              href={localizePathname("/panel-x9k2m4q7r2a", locale)}
               className="inline-flex h-11 items-center gap-2 rounded-xl border border-[#ece3d9] bg-white px-5 text-sm font-medium text-[color:var(--headline)] transition hover:border-[color:var(--accent)]/25"
             >
               <ArrowLeft className="h-4 w-4" />
@@ -250,6 +262,16 @@ export default function AdminUsersPage() {
               </div>
             </div>
 
+            <div className="mb-5 flex items-center gap-3 rounded-2xl border border-[#ece3d9] bg-[#fffcf7] px-4 py-3">
+              <Search className="h-4 w-4 text-[color:var(--muted)]" />
+              <input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder={t.search}
+                className="w-full bg-transparent text-sm outline-none placeholder:text-[color:var(--muted)]"
+              />
+            </div>
+
             <div className="overflow-hidden rounded-2xl border border-[#ece3d9]">
               <table className="min-w-full divide-y divide-[#efe6dd] text-sm">
                 <thead className="bg-[#fffcf7] text-left text-[color:var(--muted)]">
@@ -262,7 +284,13 @@ export default function AdminUsersPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#f4ece3] bg-white text-[color:var(--headline)]">
-                  {profiles.map((profile) => {
+                  {filteredProfiles.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="px-4 py-8 text-center text-sm text-[color:var(--muted)]">
+                        {t.empty}
+                      </td>
+                    </tr>
+                  ) : filteredProfiles.map((profile) => {
                     const name =
                       profile.full_name ||
                       [profile.first_name, profile.last_name]
@@ -301,7 +329,4 @@ export default function AdminUsersPage() {
     </AdminShell>
   );
 }
-
-
-
 

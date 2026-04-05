@@ -45,6 +45,7 @@ type PasswordInputProps = {
   id?: string;
   value?: string;
   onChange?: (value: string) => void;
+  autoComplete?: string;
   error?: string;
   label?: string;
   placeholder?: string;
@@ -59,6 +60,7 @@ const PasswordInput = ({
   id = "password",
   value,
   onChange,
+  autoComplete,
   error,
   label = "Password",
   placeholder = "Password",
@@ -95,8 +97,8 @@ const PasswordInput = ({
 
   return (
     <div className="w-full">
-      <form className="space-y-2">
-        <label htmlFor="password" className="block text-sm font-medium text-[color:var(--headline)]">
+      <div className="space-y-2">
+        <label htmlFor={id} className="block text-sm font-medium text-[color:var(--headline)]">
           {label}
         </label>
         <div className="relative">
@@ -105,6 +107,7 @@ const PasswordInput = ({
             type={isVisible ? 'text' : 'password'}
             value={password}
             onChange={(e) => handleChange(e.target.value)}
+            autoComplete={autoComplete}
             placeholder={placeholder}
             aria-invalid={calculateStrength.score < 4}
             aria-describedby="password-strength"
@@ -121,7 +124,7 @@ const PasswordInput = ({
             {isVisible ? <EyeOff size={16} /> : <Eye size={16} />}
           </button>
         </div>
-      </form>
+      </div>
 
       {error ? <p className="mt-2 text-xs text-red-500">{error}</p> : null}
 

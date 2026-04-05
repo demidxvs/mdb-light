@@ -8,10 +8,12 @@ type CatalogProductCardProps = {
   href?: string;
   name: string;
   teaser: string;
-  sku: string;
+  sku?: string;
   price: string;
-  category: string;
+  category?: string;
   imageUrl?: string | null;
+  imageLoading?: "eager" | "lazy";
+  imageFetchPriority?: "high" | "low" | "auto";
 };
 
 export function CatalogProductCard({
@@ -22,6 +24,8 @@ export function CatalogProductCard({
   price,
   category,
   imageUrl,
+  imageLoading = "lazy",
+  imageFetchPriority,
 }: CatalogProductCardProps) {
   const { locale } = useLocale();
   const placeholder =
@@ -42,6 +46,9 @@ export function CatalogProductCard({
             <img
               src={imageUrl}
               alt={name}
+              loading={imageLoading}
+              fetchPriority={imageFetchPriority}
+              decoding="async"
               className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
             />
           ) : (
@@ -61,11 +68,11 @@ export function CatalogProductCard({
 
         <div className="space-y-3 bg-[#fffdfa] px-5 py-5">
           <div className="flex items-center justify-between gap-3">
-            <p className="text-[10px] uppercase tracking-[0.24em] text-[#aa9466]">{category}</p>
+            <p className="text-[10px] uppercase tracking-[0.24em] text-[#aa9466]">{category || "\u00a0"}</p>
             <ArrowUpRight className="h-4 w-4 text-[#9babc7] transition duration-300 group-hover:text-[#1f3255]" />
           </div>
           <div>
-            <p className="text-xs font-medium uppercase tracking-[0.16em] text-[#8c9bb6]">{sku}</p>
+            {sku ? <p className="text-xs font-medium uppercase tracking-[0.16em] text-[#8c9bb6]">{sku}</p> : null}
             <h3 className="mt-2 font-display text-[1.15rem] font-semibold leading-6 text-[color:var(--headline)]">
               {name}
             </h3>

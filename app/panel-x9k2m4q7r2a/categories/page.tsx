@@ -1,5 +1,6 @@
 ﻿"use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -16,11 +17,9 @@ import {
 } from "lucide-react";
 import { AdminShell } from "@/components/ui/admin-shell";
 import { useLocale } from "@/components/ui/locale-provider";
-import {
-  createSupabaseBrowserClient,
-  isSupabaseConfigured,
-} from "@/lib/supabase-client";
+import { isAdminSupabaseConfigured } from "@/lib/admin-supabase-client";
 import { uploadAdminImage } from "@/lib/storage";
+import { localizePathname } from "@/i18n/config";
 
 type LocaleKey = "en" | "ru" | "el" | "lv";
 type TranslationFields = {
@@ -258,11 +257,11 @@ export default function AdminCategoriesPage() {
   const router = useRouter();
   const { locale } = useLocale();
   const t = copy[locale];
-  const supabaseReady = useMemo(() => isSupabaseConfigured(), []);
+  const supabaseReady = useMemo(() => isAdminSupabaseConfigured(), []);
   const [loading, setLoading] = useState(supabaseReady);
   const [submitting, setSubmitting] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [error, setError] = useState(supabaseReady ? "" : "Supabase is not configured.");
+  const [error, setError] = useState(supabaseReady ? "" : "Admin Supabase is not configured.");
   const [success, setSuccess] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [categories, setCategories] = useState<CategoryRow[]>([]);
@@ -270,50 +269,60 @@ export default function AdminCategoriesPage() {
   const [uploadingImage, setUploadingImage] = useState(false);
 
   const loadCategories = async () => {
-    const supabase = createSupabaseBrowserClient();
-    const { data, error: categoryError } = await supabase
-      .from("categories")
-      .select("id, slug, sort_order, cover_image_url, is_active, category_translations(locale, name, description)")
-      .order("sort_order", { ascending: true });
+    const response = await fetch("/api/admin/categories", {
+      credentials: "include",
+    });
 
-    if (categoryError) {
-      setError(categoryError.message);
+    if (response.status === 401) {
+      setError(t.signIn);
+      setIsAdmin(false);
+      router.replace(localizePathname("/panel-x9k2m4q7r2a/login", locale));
       return;
     }
-    setCategories((data as CategoryRow[] | null) ?? []);
+
+    const payload = (await response.json()) as {
+      categories?: CategoryRow[];
+      error?: string;
+    };
+
+    if (!response.ok) {
+      setError(payload.error || t.genericError);
+      return;
+    }
+
+    setCategories(payload.categories ?? []);
   };
 
   useEffect(() => {
     if (!supabaseReady) return;
-    const supabase = createSupabaseBrowserClient();
     let mounted = true;
 
     const hydrate = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+      const response = await fetch("/api/admin/categories", {
+        credentials: "include",
+      });
       if (!mounted) return;
-      const user = session?.user;
-      if (!user) {
+
+      if (response.status === 401) {
         setError(t.signIn);
         setLoading(false);
-        router.replace("/login");
+        router.replace(localizePathname("/panel-x9k2m4q7r2a/login", locale));
         return;
       }
-      const { data: adminRow } = await supabase
-        .from("admins")
-        .select("user_id")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      if (!mounted) return;
-      if (!adminRow) {
-        setError(t.noAccess);
+
+      const payload = (await response.json()) as {
+        categories?: CategoryRow[];
+        error?: string;
+      };
+
+      if (!response.ok) {
+        setError(payload.error || t.noAccess);
         setLoading(false);
         return;
       }
+
       setIsAdmin(true);
-      await loadCategories();
-      if (!mounted) return;
+      setCategories(payload.categories ?? []);
       setLoading(false);
     };
 
@@ -321,7 +330,7 @@ export default function AdminCategoriesPage() {
     return () => {
       mounted = false;
     };
-  }, [router, supabaseReady, t.noAccess, t.signIn]);
+  }, [locale, router, supabaseReady, t.noAccess, t.signIn]);
 
   const resetForm = () => {
     setEditingId(null);
@@ -390,59 +399,30 @@ export default function AdminCategoriesPage() {
     setSubmitting(true);
 
     try {
-      const supabase = createSupabaseBrowserClient();
-      let categoryId = editingId;
-
-      if (editingId) {
-        const { error: updateError } = await supabase
-          .from("categories")
-          .update({
-            slug: finalSlug,
-            sort_order: Number.parseInt(form.sortOrder || "0", 10) || 0,
-            cover_image_url: form.coverImageUrl.trim() || null,
-            is_active: form.isActive,
-          })
-          .eq("id", editingId);
-
-        if (updateError) {
-          setError(updateError.message || t.genericError);
-          setSubmitting(false);
-          return;
-        }
-      } else {
-        const { data: inserted, error: insertError } = await supabase
-          .from("categories")
-          .insert({
-            slug: finalSlug,
-            sort_order: Number.parseInt(form.sortOrder || "0", 10) || 0,
-            cover_image_url: form.coverImageUrl.trim() || null,
-            is_active: form.isActive,
-          })
-          .select("id")
-          .single();
-
-        if (insertError || !inserted) {
-          setError(insertError?.message || t.genericError);
-          setSubmitting(false);
-          return;
-        }
-        categoryId = inserted.id;
-      }
-
-      const { error: translationError } = await supabase
-        .from("category_translations")
-        .upsert(
-          locales.map((localeKey) => ({
-            category_id: categoryId,
+      const response = await fetch("/api/admin/categories", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: editingId,
+          slug: finalSlug,
+          sortOrder: Number.parseInt(form.sortOrder || "0", 10) || 0,
+          coverImageUrl: form.coverImageUrl.trim() || null,
+          isActive: form.isActive,
+          translations: locales.map((localeKey) => ({
             locale: localeKey,
             name: form.translations[localeKey].name.trim(),
             description: form.translations[localeKey].description.trim() || null,
           })),
-          { onConflict: "category_id,locale" },
-        );
+        }),
+      });
 
-      if (translationError) {
-        setError(translationError.message || t.genericError);
+      const payload = (await response.json()) as { error?: string };
+
+      if (!response.ok) {
+        setError(payload.error || t.genericError);
         setSubmitting(false);
         return;
       }
@@ -482,10 +462,19 @@ export default function AdminCategoriesPage() {
     setError("");
     setSuccess("");
     try {
-      const supabase = createSupabaseBrowserClient();
-      const { error: deleteError } = await supabase.from("categories").delete().eq("id", id);
-      if (deleteError) {
-        setError(deleteError.message || t.deleteError);
+      const response = await fetch("/api/admin/categories", {
+        method: "DELETE",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id }),
+      });
+
+      const payload = (await response.json()) as { error?: string };
+
+      if (!response.ok) {
+        setError(payload.error || t.deleteError);
         return;
       }
       if (editingId === id) resetForm();
@@ -501,23 +490,30 @@ export default function AdminCategoriesPage() {
     if (targetIndex < 0 || targetIndex >= categories.length) return;
     const current = categories[index];
     const target = categories[targetIndex];
-    const supabase = createSupabaseBrowserClient();
+    const response = await fetch("/api/admin/categories", {
+      method: "PATCH",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        firstId: current.id,
+        firstSortOrder: target.sort_order,
+        secondId: target.id,
+        secondSortOrder: current.sort_order,
+      }),
+    });
 
-    const updates = [
-      supabase.from("categories").update({ sort_order: target.sort_order }).eq("id", current.id),
-      supabase.from("categories").update({ sort_order: current.sort_order }).eq("id", target.id),
-    ];
-
-    const [a, b] = await Promise.all(updates);
-    if (a.error || b.error) {
-      setError(a.error?.message || b.error?.message || t.genericError);
+    const payload = (await response.json()) as { error?: string };
+    if (!response.ok) {
+      setError(payload.error || t.genericError);
       return;
     }
     await loadCategories();
   };
 
   return (
-    <AdminShell topLabel={t.top} supportLabel={t.support} title={t.title} description={t.description}>
+    <AdminShell topLabel={t.top} title={t.title} description={t.description}>
       {loading ? (
         <div className="flex min-h-[420px] items-center justify-center rounded-[1.75rem] border border-[#ece3d9] bg-white shadow-[0_16px_40px_rgba(27,42,74,0.05)]">
           <div className="flex items-center gap-3 text-sm font-medium text-[color:var(--muted)]">
@@ -571,7 +567,13 @@ export default function AdminCategoriesPage() {
                 {uploadingImage ? <p className="mt-3 text-sm text-[color:var(--muted)]">{t.uploading}</p> : null}
                 {form.coverImageUrl ? (
                   <div className="mt-4 overflow-hidden rounded-2xl border border-[#ece3d9] bg-white">
-                    <img src={form.coverImageUrl} alt="Category preview" className="h-40 w-full object-cover" />
+                    <Image
+                      src={form.coverImageUrl}
+                      alt="Category preview"
+                      width={1200}
+                      height={640}
+                      className="h-40 w-full object-cover"
+                    />
                   </div>
                 ) : null}
               </div>
@@ -663,5 +665,3 @@ export default function AdminCategoriesPage() {
     </AdminShell>
   );
 }
-
-

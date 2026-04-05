@@ -17,42 +17,84 @@
   "home": {
     "top": "Daudzvalodu LED apgaismojuma marketplace",
     "support": "Kontakti",
-    "badge1": "Jaunas kolekcijas",
-    "badge2": "Interjers · ārtelpa",
+    "badge1": "Plašs sortiments",
+    "badge2": "Profesionāla uzstādīšana",
     "heroEyebrow": "LED apgaismojuma marketplace",
-    "heroLead": "Gaisma, kas veido",
-    "heroAccent": "ikdienas telpas",
-    "heroTail": "ar raksturu.",
-    "heroText": "Atklāj dekoratīvu, tehnisku un āra apgaismojumu mājokļiem, retail, horeca un mūsdienīgām komerctelpām.",
+    "heroLead": "Apgaismojuma risinājumi, kas pārvērš",
+    "heroAccent": "telpas pieredzēs",
+    "heroTail": "",
+    "heroText": "Iegādājieties modernus apgaismojuma risinājumus un saņemiet profesionālu uzstādīšanu — viss vienuviet.",
     "cta1": "Uz katalogu",
     "cta2": "Apgaismojuma idejas",
     "categories": "Kategorijas",
     "categoriesTitle": "Ātra piekļuve galvenajiem produktu virzieniem",
-    "inspiration": "Iedvesma",
-    "inspirationTitle": "Tipiski apgaismojuma scenāriji dažādām telpām",
-    "about": "Par platformu",
-    "aboutTitle": "MDB Light ir komerciāla apgaismojuma platforma, nevis tikai statisks showcase.",
-    "aboutText": "MDB Light apvieno skaidru navigāciju, daudzvalodu vidi, atlasītas produktu līnijas un ērtu apgaismojuma izvēli reālām telpām.",
-    "admin": "Admin plūsma",
-    "adminTitle": "Produkti, grozi, pasūtījumi un tulkojumi vienā aizsargātā vidē.",
+    "projectShowcase": {
+      "eyebrow": "MŪSU PROJEKTI",
+      "title": "Mūsu darbu piemēri",
+      "description": "Atlasīti realizēti apgaismojuma uzstādīšanas risinājumi mājām, biznesam un komerctelpām.",
+      "cta": "Skatīt visus projektus",
+      "tag": "Apgaismojuma projekts",
+      "backHome": "Atpakaļ uz sākumu"
+    },
     "footer": "LED apgaismojuma marketplace ar daudzvalodu vidi, atlasītām kolekcijām un tīru iepirkšanās pieredzi.",
-    "metrics": {
-      "languages": "Valodas",
-      "support": "Atbalsts",
-      "collections": "Kolekcijas"
+    "contact": {
+      "leftLabel": "KONTAKTI",
+      "leftTitle": "Nepieciešama palīdzība ar apgaismojuma izvēli vai uzstādīšanu?",
+      "leftDescription": "Sazinieties ar mums — palīdzēsim izvēlēties piemērotākos risinājumus, konsultēsim par produktiem un ieteiksim montāžas risinājumus.",
+      "items": {
+        "phone": {
+          "label": "Tālrunis",
+          "value": "+371 24443333"
+        },
+        "email": {
+          "label": "E-mail",
+          "value": "info@mdbgroup.lv"
+        },
+        "address": {
+          "label": "Adrese",
+          "value": "Riga, Latvia"
+        }
+      }
+    },
+    "contactForm": {
+      "label": "SAZIŅA",
+      "title": "Sazinieties ar mums",
+      "description": "Atstājiet ziņu, un mēs ar jums sazināsimies par apgaismojuma izvēli, pasūtījumu un uzstādīšanu.",
+      "fields": {
+        "email": "Email",
+        "phone": "Tālrunis",
+        "subject": "Temats",
+        "message": "Ziņa"
+      },
+      "placeholders": {
+        "email": "you@example.com",
+        "phone": "+371 2XXXXXXX",
+        "subject": "Īsi aprakstiet savu pieprasījumu",
+        "message": "Uzrakstiet savu ziņu"
+      },
+      "submit": "Nosūtīt",
+      "sending": "Sūta",
+      "success": "Paldies! Jūsu ziņa ir nosūtīta.",
+      "error": "Ziņu neizdevās nosūtīt. Lūdzu, mēģiniet vēlāk.",
+      "errors": {
+        "emailRequired": "Ievadiet email.",
+        "emailInvalid": "Ievadiet derīgu email adresi.",
+        "subjectRequired": "Ievadiet tematu.",
+        "messageRequired": "Ievadiet ziņu."
+      }
     },
     "audience": {
-      "designers": {
-        "title": "Dizaineri un arhitekti",
-        "description": "Projektu materiāli un tīras gaismas ainas."
+      "delivery": {
+        "title": "Ātra un uzticama piegāde",
+        "description": "Ievērojam termiņus un garantējam kvalitāti."
       },
-      "partners": {
-        "title": "Tirdzniecības partneri",
-        "description": "Mērogojams katalogs un cenu loģika."
+      "installation": {
+        "title": "Ekspertu montāža",
+        "description": "Profesionāla uzstādīšana atbilstoši jūsu projekta vajadzībām."
       },
-      "installers": {
-        "title": "Montieri un developeri",
-        "description": "Tehniskā skaidrība un pasūtījumu redzamība."
+      "wholesale": {
+        "title": "Elastīgas vairumtirdzniecības cenas",
+        "description": "Individuāli nosacījumi partneriem un biznesam."
       }
     },
     "catalogCards": {
@@ -72,17 +114,6 @@
         "title": "LED lentes",
         "description": "Akcenta un arhitektūras gaisma."
       }
-    },
-    "projects": {
-      "homes": "Dzīvokļi un mājas",
-      "retail": "Retail un showroomi",
-      "restaurants": "Restorāni un kafejnīcas"
-    },
-    "adminItems": {
-      "products": "Produktu karšu izveide un rediģēšana",
-      "translations": "Aprakstu glabāšana 4 valodās",
-      "orders": "Aktīvo grozu un pasūtījumu pārskats",
-      "statuses": "Pasūtījumu statusu atjaunošana"
     },
     "authNotice": {
       "title": "Ienākšana veiksmīga",

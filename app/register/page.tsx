@@ -7,6 +7,7 @@ import { AuthShell } from "@/components/ui/auth-shell";
 import { useLocale } from "@/components/ui/locale-provider";
 import PasswordInput from "@/components/ui/password-input-1";
 import { registerCopy } from "@/lib/auth-copy";
+import { localizePathname } from "@/i18n/config";
 import {
   createSupabaseBrowserClient,
   isSupabaseConfigured,
@@ -19,6 +20,7 @@ export default function RegisterPage() {
   const t = registerCopy[locale];
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -30,6 +32,7 @@ export default function RegisterPage() {
   const [errors, setErrors] = useState<{
     firstName?: string;
     lastName?: string;
+    phone?: string;
     email?: string;
     password?: string;
     confirmPassword?: string;
@@ -64,6 +67,7 @@ export default function RegisterPage() {
 
     if (!firstName.trim()) nextErrors.firstName = t.errors.firstNameRequired;
     if (!lastName.trim()) nextErrors.lastName = t.errors.lastNameRequired;
+    if (!phone.trim()) nextErrors.phone = t.errors.phoneRequired;
 
     if (!email.trim()) {
       nextErrors.email = t.errors.emailRequired;
@@ -104,7 +108,9 @@ export default function RegisterPage() {
     try {
       const supabase = createSupabaseBrowserClient();
       const redirectTo =
-        typeof window !== "undefined" ? `${window.location.origin}/login` : undefined;
+        typeof window !== "undefined"
+          ? `${window.location.origin}${localizePathname("/login", locale)}`
+          : undefined;
 
       const { error } = await supabase.auth.signUp({
         email: email.trim(),
@@ -115,6 +121,8 @@ export default function RegisterPage() {
             first_name: firstName.trim(),
             last_name: lastName.trim(),
             full_name: `${firstName.trim()} ${lastName.trim()}`.trim(),
+            phone: phone.trim(),
+            locale,
           },
         },
       });
@@ -137,7 +145,6 @@ export default function RegisterPage() {
   return (
     <AuthShell
       topLabel={t.top}
-      supportLabel={t.support}
       backLabel={t.back}
       title={t.title}
       description={t.description}
@@ -184,6 +191,12 @@ export default function RegisterPage() {
             <label htmlFor="email" className="block text-sm font-medium text-[color:var(--headline)]">{t.email}</label>
             <input id="email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder={t.emailPlaceholder} className={`h-11 w-full rounded-xl border bg-[#fffcf7] px-4 outline-none transition focus:border-[color:var(--accent)] ${errors.email ? "border-red-300" : "border-[#ece3d9]"}`} />
             {errors.email ? <p className="text-xs text-red-500">{errors.email}</p> : null}
+          </div>
+
+          <div className="space-y-2">
+            <label htmlFor="phone" className="block text-sm font-medium text-[color:var(--headline)]">{t.phone}</label>
+            <input id="phone" type="tel" value={phone} onChange={(event) => setPhone(event.target.value)} placeholder={t.phonePlaceholder} className={`h-11 w-full rounded-xl border bg-[#fffcf7] px-4 outline-none transition focus:border-[color:var(--accent)] ${errors.phone ? "border-red-300" : "border-[#ece3d9]"}`} />
+            {errors.phone ? <p className="text-xs text-red-500">{errors.phone}</p> : null}
           </div>
 
           <PasswordInput id="register-password" value={password} onChange={setPassword} error={errors.password} label={t.password} placeholder={t.passwordPlaceholder} mustContainLabel={t.mustContain} strengthTexts={{ 0: t.strengths[0], 1: t.strengths[1], 2: t.strengths[2], 3: t.strengths[3], 4: t.strengths[4] }} requirementTexts={t.requirements} compact />

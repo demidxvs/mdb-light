@@ -1,74 +1,41 @@
-﻿"use client";
+"use client";
 
-import * as React from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import {
-  FolderOpen,
-  Handshake,
-  HelpCircle,
-  Lightbulb,
-  Search,
-  Shield,
-} from "lucide-react";
-import { ExpandableTabs } from "@/components/ui/expandable-tabs";
+import { useLocale } from "@/components/ui/locale-provider";
+import { localizePathname, stripLocalePrefix } from "@/i18n/config";
 
-const sectionIds = ["catalog", "about", "partners", "projects"];
-const routePaths = ["/contacts", "/security"];
-
-type SiteNavigationProps = {
-  basePath?: string;
-};
-
-export function SiteNavigation({ basePath }: SiteNavigationProps) {
-  const router = useRouter();
+export function SiteNavigation({ basePath }: { basePath?: string } = {}) {
+  const pathname = usePathname();
   const t = useTranslations("navigation");
-  const tabs = React.useMemo(
-    () => [
-      { title: t("catalog"), icon: Search },
-      { title: t("about"), icon: Lightbulb },
-      { title: t("partners"), icon: Handshake },
-      { title: t("projects"), icon: FolderOpen },
-      { type: "separator" as const },
-      { title: t("support"), icon: HelpCircle },
-      { title: t("security"), icon: Shield },
-    ],
-    [t],
-  );
+  const { locale } = useLocale();
+  void basePath;
 
-  const handleChange = React.useCallback(
-    (index: number | null) => {
-      if (index === null) {
-        return;
-      }
-
-      if (tabs[index]?.type === "separator") {
-        return;
-      }
-
-      if (index >= 5) {
-        router.push(routePaths[index - 5]);
-        return;
-      }
-
-      const sectionId = sectionIds[index];
-      if (basePath) {
-        router.push(`${basePath}#${sectionId}`);
-        return;
-      }
-
-      const element = document.getElementById(sectionId);
-      element?.scrollIntoView({ behavior: "smooth", block: "start" });
-    },
-    [basePath, router, tabs],
-  );
+  const links = [
+    { href: "/catalog", label: t("catalog") },
+    { href: "/projects", label: t("projects") },
+  ];
 
   return (
-    <ExpandableTabs
-      tabs={tabs}
-      onChange={handleChange}
-      activeColor="text-[color:var(--headline)]"
-      className="border-[#ece3d9] bg-white/82 shadow-none"
-    />
+    <nav className="inline-flex items-center rounded-[1.6rem] border border-[#ece3d9] bg-white/82 p-1 shadow-none">
+      {links.map((link) => {
+        const isActive = stripLocalePrefix(pathname || "/") === link.href;
+
+        return (
+          <Link
+            key={link.href}
+            href={localizePathname(link.href, locale)}
+            className={`inline-flex h-9 items-center justify-center rounded-xl px-6 text-sm font-medium transition ${
+              isActive
+                ? "bg-[#7f91b7] text-white shadow-[0_10px_24px_rgba(127,145,183,0.24)]"
+                : "text-[color:var(--muted)] hover:bg-[#fff7ef] hover:text-[color:var(--headline)]"
+            }`}
+          >
+            {link.label}
+          </Link>
+        );
+      })}
+    </nav>
   );
 }

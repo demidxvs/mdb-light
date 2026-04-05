@@ -118,7 +118,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.95),transparent_30%),linear-gradient(180deg,#fffdfa_0%,#f8f3eb_100%)]">
       <div className="border-b border-[color:var(--line)] bg-white/85 backdrop-blur-sm">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-3 text-xs text-[color:var(--muted)] sm:px-10 lg:px-12">
-          <div className="hidden md:block">+370 (000) 000-00-00 · hello@mdblight.com</div>
+          <div className="hidden md:block">+371 24443333 · info@mdbgroup.lv</div>
           <div className="ml-auto">{t.top}</div>
         </div>
       </div>
@@ -131,7 +131,6 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
           <div className="hidden items-center gap-3 lg:flex">
             <LanguageSwitcher />
             <AccountControls />
-            <Link href="/contacts" className="inline-flex items-center gap-2 rounded-xl bg-[color:var(--accent)] px-4 py-2 text-sm font-medium text-[#203153] shadow-[0_12px_28px_rgba(244,198,79,0.28)] hover:bg-[#f1bc36]">{t.support}</Link>
           </div>
         </div>
       </header>
@@ -139,7 +138,13 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
         <div className="overflow-hidden rounded-[2rem] border border-[#e5e8ee] bg-white shadow-[0_20px_60px_rgba(27,42,74,0.06)]">
           <div className="relative min-h-[260px] overflow-hidden">
             {category?.cover_image_url ? (
-              <img src={category.cover_image_url} alt={categoryTranslation?.name || slug} className="absolute inset-0 h-full w-full object-cover" />
+              <Image
+                src={category.cover_image_url}
+                alt={categoryTranslation?.name || slug}
+                fill
+                sizes="100vw"
+                className="absolute inset-0 object-cover"
+              />
             ) : (
               <div className="absolute inset-0 bg-[linear-gradient(135deg,#1f2633,#454f62,#0f1116)]" />
             )}

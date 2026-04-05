@@ -17,42 +17,84 @@
   "home": {
     "top": "Multilingual LED marketplace",
     "support": "Contact",
-    "badge1": "New collections",
-    "badge2": "Indoor · Outdoor",
+    "badge1": "Wide assortment",
+    "badge2": "Professional installation",
     "heroEyebrow": "LED lighting marketplace",
-    "heroLead": "Lighting that shapes",
-    "heroAccent": "everyday spaces",
-    "heroTail": "with clarity.",
-    "heroText": "Discover decorative, technical, and outdoor fixtures for homes, retail, hospitality, and modern commercial interiors.",
+    "heroLead": "Lighting solutions that transform",
+    "heroAccent": "spaces into experiences",
+    "heroTail": "",
+    "heroText": "Shop modern lighting solutions and get professional installation — all in one place.",
     "cta1": "Shop catalog",
     "cta2": "Explore ideas",
     "categories": "Categories",
     "categoriesTitle": "Quick access to the main product directions",
-    "inspiration": "Inspiration",
-    "inspirationTitle": "Typical lighting scenarios for different spaces",
-    "about": "About the platform",
-    "aboutTitle": "MDB Light is a commercial lighting platform, not just a static showcase.",
-    "aboutText": "MDB Light brings together clean navigation, multilingual browsing, curated product lines, and a storefront built around real lighting scenarios.",
-    "admin": "Admin flow",
-    "adminTitle": "Products, carts, orders, and translations in one protected space.",
+    "projectShowcase": {
+      "eyebrow": "OUR PROJECTS",
+      "title": "Examples of our work",
+      "description": "A selection of completed lighting installation solutions for homes, businesses, and commercial spaces.",
+      "cta": "View all projects",
+      "tag": "Lighting project",
+      "backHome": "Back to home"
+    },
     "footer": "LED lighting marketplace with multilingual browsing, curated product collections, and a clean shopping experience.",
-    "metrics": {
-      "languages": "Languages",
-      "support": "Customer support",
-      "collections": "Curated collections"
+    "contact": {
+      "leftLabel": "CONTACTS",
+      "leftTitle": "Need help choosing lighting or arranging installation?",
+      "leftDescription": "Get in touch with us — we will help you choose the right solutions, advise you on products, and guide you on installation.",
+      "items": {
+        "phone": {
+          "label": "Phone",
+          "value": "+371 24443333"
+        },
+        "email": {
+          "label": "E-mail",
+          "value": "info@mdbgroup.lv"
+        },
+        "address": {
+          "label": "Address",
+          "value": "Riga, Latvia"
+        }
+      }
+    },
+    "contactForm": {
+      "label": "GET IN TOUCH",
+      "title": "Contact us",
+      "description": "Leave a message and we will get back to you about lighting selection, orders, and installation.",
+      "fields": {
+        "email": "Email",
+        "phone": "Phone number",
+        "subject": "Subject",
+        "message": "Message"
+      },
+      "placeholders": {
+        "email": "you@example.com",
+        "phone": "+371 2XXXXXXX",
+        "subject": "Briefly describe your request",
+        "message": "Write your message"
+      },
+      "submit": "Send",
+      "sending": "Sending",
+      "success": "Thank you! Your message has been sent.",
+      "error": "We could not send your message. Please try again later.",
+      "errors": {
+        "emailRequired": "Enter your email.",
+        "emailInvalid": "Enter a valid email address.",
+        "subjectRequired": "Enter the subject.",
+        "messageRequired": "Enter your message."
+      }
     },
     "audience": {
-      "designers": {
-        "title": "Designers & architects",
-        "description": "Project materials and clear lighting scenes."
+      "delivery": {
+        "title": "Fast and reliable delivery",
+        "description": "We meet deadlines and guarantee quality."
       },
-      "partners": {
-        "title": "Trade partners",
-        "description": "Scalable catalog access and pricing logic."
+      "installation": {
+        "title": "Expert installation",
+        "description": "Professional setup tailored to your project."
       },
-      "installers": {
-        "title": "Installers & developers",
-        "description": "Technical clarity and order visibility."
+      "wholesale": {
+        "title": "Flexible wholesale pricing",
+        "description": "Custom terms for partners and businesses."
       }
     },
     "catalogCards": {
@@ -72,17 +114,6 @@
         "title": "LED strips",
         "description": "Accent and architectural light."
       }
-    },
-    "projects": {
-      "homes": "Apartments & homes",
-      "retail": "Retail & showrooms",
-      "restaurants": "Restaurants & cafes"
-    },
-    "adminItems": {
-      "products": "Create and edit product cards",
-      "translations": "Store descriptions in 4 languages",
-      "orders": "Track active carts and orders",
-      "statuses": "Update customer order progress"
     },
     "authNotice": {
       "title": "Signed in",

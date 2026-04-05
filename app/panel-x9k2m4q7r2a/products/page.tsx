@@ -8,14 +8,14 @@ import {
   Plus,
   LoaderCircle,
   PencilLine,
+  Search,
   ShieldAlert,
+  Trash2,
 } from "lucide-react";
 import { AdminShell } from "@/components/ui/admin-shell";
 import { useLocale } from "@/components/ui/locale-provider";
-import {
-  createSupabaseBrowserClient,
-  isSupabaseConfigured,
-} from "@/lib/supabase-client";
+import { isAdminSupabaseConfigured } from "@/lib/admin-supabase-client";
+import { localizePathname } from "@/i18n/config";
 
 type LocaleKey = "en" | "ru" | "el" | "lv";
 type ProductRow = {
@@ -51,7 +51,13 @@ const copy = {
     created: "Created",
     actions: "Actions",
     edit: "Edit",
+    delete: "Delete",
+    deleting: "Deleting...",
+    confirmDelete: "Delete this product?",
+    deleteError: "Could not delete the product.",
     empty: "No products yet. Use Add product to create the first item.",
+    search: "Search by product name or SKU",
+    noSearchResults: "No products match your search.",
     active: "Active",
     draft: "Draft",
   },
@@ -75,7 +81,13 @@ const copy = {
     created: "Создан",
     actions: "Действия",
     edit: "Редактировать",
+    delete: "Удалить",
+    deleting: "Удаляю...",
+    confirmDelete: "Удалить этот товар?",
+    deleteError: "Не удалось удалить товар.",
     empty: "Товаров пока нет. Используйте кнопку добавления, чтобы создать первую позицию.",
+    search: "Поиск по названию товара или SKU",
+    noSearchResults: "По вашему запросу товары не найдены.",
     active: "Активен",
     draft: "Черновик",
   },
@@ -99,7 +111,13 @@ const copy = {
     created: "Δημιουργήθηκε",
     actions: "Ενέργειες",
     edit: "Επεξεργασία",
+    delete: "Διαγραφή",
+    deleting: "Διαγραφή...",
+    confirmDelete: "Να διαγραφεί αυτό το προϊόν;",
+    deleteError: "Δεν ήταν δυνατή η διαγραφή του προϊόντος.",
     empty: "Δεν υπάρχουν ακόμη προϊόντα. Χρησιμοποιήστε το κουμπί προσθήκης για να δημιουργήσετε το πρώτο.",
+    search: "Αναζήτηση με όνομα προϊόντος ή SKU",
+    noSearchResults: "Δεν βρέθηκαν προϊόντα για αυτή την αναζήτηση.",
     active: "Ενεργό",
     draft: "Πρόχειρο",
   },
@@ -123,7 +141,13 @@ const copy = {
     created: "Izveidots",
     actions: "Darbības",
     edit: "Rediģēt",
+    delete: "Dzēst",
+    deleting: "Dzēš...",
+    confirmDelete: "Dzēst šo produktu?",
+    deleteError: "Neizdevās dzēst produktu.",
     empty: "Produktu vēl nav. Izmantojiet pievienošanas pogu, lai izveidotu pirmo ierakstu.",
+    search: "Meklēt pēc produkta nosaukuma vai SKU",
+    noSearchResults: "Šim meklējumam produkti netika atrasti.",
     active: "Aktīvs",
     draft: "Melnraksts",
   },
@@ -148,56 +172,47 @@ export default function AdminProductsPage() {
   const router = useRouter();
   const { locale } = useLocale();
   const t = copy[locale];
-  const supabaseReady = useMemo(() => isSupabaseConfigured(), []);
+  const supabaseReady = useMemo(() => isAdminSupabaseConfigured(), []);
   const [loading, setLoading] = useState(supabaseReady);
   const [isAdmin, setIsAdmin] = useState(false);
   const [error, setError] = useState(
     supabaseReady ? "" : "Supabase is not configured.",
   );
   const [products, setProducts] = useState<ProductRow[]>([]);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
     if (!supabaseReady) return;
-    const supabase = createSupabaseBrowserClient();
     let mounted = true;
 
     const hydrate = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+      const response = await fetch("/api/admin/products", {
+        credentials: "include",
+      });
+
       if (!mounted) return;
-      const user = session?.user;
-      if (!user) {
+      if (response.status === 401) {
         setError(t.signIn);
         setLoading(false);
-        router.replace("/login");
+        router.replace(localizePathname("/panel-x9k2m4q7r2a/login", locale));
         return;
       }
-      const { data: adminRow } = await supabase
-        .from("admins")
-        .select("user_id")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      if (!mounted) return;
-      if (!adminRow) {
-        setError(t.noAccess);
+
+      const payload = (await response.json().catch(() => ({}))) as {
+        error?: string;
+        products?: ProductRow[];
+      };
+
+      if (!response.ok) {
+        setError(payload.error || t.noAccess);
         setLoading(false);
         return;
       }
-      const { data: productRows, error: productError } = await supabase
-        .from("products")
-        .select(
-          "id, sku, slug, price_cents, stock_quantity, is_active, is_featured, created_at, product_translations(locale, name)",
-        )
-        .order("created_at", { ascending: false });
+
       if (!mounted) return;
-      if (productError) {
-        setError(productError.message);
-        setLoading(false);
-        return;
-      }
       setIsAdmin(true);
-      setProducts((productRows as ProductRow[] | null) ?? []);
+      setProducts(payload.products ?? []);
       setLoading(false);
     };
 
@@ -205,12 +220,64 @@ export default function AdminProductsPage() {
     return () => {
       mounted = false;
     };
-  }, [router, supabaseReady, t.noAccess, t.signIn]);
+  }, [locale, router, supabaseReady, t.noAccess, t.signIn]);
+
+  const handleDelete = async (productId: string) => {
+    if (!window.confirm(t.confirmDelete)) return;
+
+    setError("");
+    setDeletingId(productId);
+
+    try {
+      const response = await fetch("/api/admin/products", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ id: productId }),
+      });
+      const payload = (await response.json().catch(() => ({}))) as { error?: string };
+
+      if (response.status === 401) {
+        router.replace(localizePathname("/panel-x9k2m4q7r2a/login", locale));
+        return;
+      }
+
+      if (!response.ok) {
+        setError(payload.error || t.deleteError);
+        return;
+      }
+
+      setProducts((current) => current.filter((product) => product.id !== productId));
+    } catch {
+      setError(t.deleteError);
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const filteredProducts = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+    if (!normalizedQuery) return products;
+
+    return products.filter((product) => {
+      const localizedName =
+        product.product_translations?.find((item) => item.locale === locale)?.name ||
+        product.product_translations?.find((item) => item.locale === "en")?.name ||
+        product.product_translations?.[0]?.name ||
+        product.slug;
+
+      return [localizedName, product.sku, product.slug]
+        .join(" ")
+        .toLowerCase()
+        .includes(normalizedQuery);
+    });
+  }, [locale, products, query]);
 
   return (
     <AdminShell
       topLabel={t.top}
-      supportLabel={t.support}
       title={t.title}
       description={t.description}
     >
@@ -241,14 +308,14 @@ export default function AdminProductsPage() {
         <div className="space-y-6">
           <div className="flex flex-wrap gap-3">
             <Link
-              href="/panel-x9k2m4q7r2a"
+              href={localizePathname("/panel-x9k2m4q7r2a", locale)}
               className="inline-flex h-11 items-center gap-2 rounded-xl border border-[#ece3d9] bg-white px-5 text-sm font-medium text-[color:var(--headline)] transition hover:border-[color:var(--accent)]/25"
             >
               <ArrowLeft className="h-4 w-4" />
               {t.back}
             </Link>
             <Link
-              href="/panel-x9k2m4q7r2a/catalog/new"
+              href={localizePathname("/panel-x9k2m4q7r2a/products/new", locale)}
               className="inline-flex h-11 items-center gap-2 rounded-xl bg-[color:var(--accent)] px-5 text-sm font-medium text-[#203153] shadow-[0_12px_28px_rgba(244,198,79,0.28)]"
             >
               <Plus className="h-4 w-4" />
@@ -257,6 +324,15 @@ export default function AdminProductsPage() {
           </div>
 
           <section className="rounded-[1.75rem] border border-[#ece3d9] bg-white p-6 shadow-[0_16px_40px_rgba(27,42,74,0.05)]">
+            <div className="mb-5 flex items-center gap-3 rounded-2xl border border-[#ece3d9] bg-[#fffcf7] px-4 py-3">
+              <Search className="h-4 w-4 text-[color:var(--muted)]" />
+              <input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder={t.search}
+                className="w-full bg-transparent text-sm outline-none placeholder:text-[color:var(--muted)]"
+              />
+            </div>
             <div className="overflow-hidden rounded-2xl border border-[#ece3d9]">
               <table className="min-w-full divide-y divide-[#efe6dd] text-sm">
                 <thead className="bg-[#fffcf7] text-left text-[color:var(--muted)]">
@@ -277,8 +353,14 @@ export default function AdminProductsPage() {
                         {t.empty}
                       </td>
                     </tr>
+                  ) : filteredProducts.length === 0 ? (
+                    <tr>
+                      <td className="px-4 py-5 text-[color:var(--muted)]" colSpan={7}>
+                        {t.noSearchResults}
+                      </td>
+                    </tr>
                   ) : (
-                    products.map((product) => {
+                    filteredProducts.map((product) => {
                       const localizedName =
                         product.product_translations?.find(
                           (item) => item.locale === locale,
@@ -312,13 +394,24 @@ export default function AdminProductsPage() {
                             {formatDate(product.created_at)}
                           </td>
                           <td className="px-4 py-4">
-                            <Link
-                              href={`/panel-x9k2m4q7r2a/products/${product.id}`}
-                              className="inline-flex h-9 items-center gap-2 rounded-xl border border-[#ece3d9] bg-[#fffcf7] px-3 text-sm font-medium text-[color:var(--headline)] transition hover:border-[color:var(--accent)]/25"
-                            >
-                              <PencilLine className="h-4 w-4" />
-                              {t.edit}
-                            </Link>
+                            <div className="flex flex-wrap gap-2">
+                              <Link
+                                href={localizePathname(`/panel-x9k2m4q7r2a/products/${product.id}`, locale)}
+                                className="inline-flex h-9 items-center gap-2 rounded-xl border border-[#ece3d9] bg-[#fffcf7] px-3 text-sm font-medium text-[color:var(--headline)] transition hover:border-[color:var(--accent)]/25"
+                              >
+                                <PencilLine className="h-4 w-4" />
+                                {t.edit}
+                              </Link>
+                              <button
+                                type="button"
+                                onClick={() => void handleDelete(product.id)}
+                                disabled={deletingId === product.id}
+                                className="inline-flex h-9 items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-3 text-sm font-medium text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                {deletingId === product.id ? t.deleting : t.delete}
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       );

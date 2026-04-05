@@ -1,47 +1,19 @@
-﻿
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  ArrowRight,
-  LoaderCircle,
-  PackagePlus,
-  ShieldAlert,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, LoaderCircle, PackagePlus, ShieldAlert } from "lucide-react";
 import { AdminShell } from "@/components/ui/admin-shell";
 import { useLocale } from "@/components/ui/locale-provider";
-import {
-  createSupabaseBrowserClient,
-  isSupabaseConfigured,
-} from "@/lib/supabase-client";
-import { uploadAdminImage } from "@/lib/storage";
+import { isAdminSupabaseConfigured } from "@/lib/admin-supabase-client";
+import { localizePathname } from "@/i18n/config";
+import { generateProductSku, slugify } from "@/lib/product-utils";
 
 type LocaleKey = "en" | "ru" | "el" | "lv";
-type TranslationFields = {
-  name: string;
-  shortDescription: string;
-  description: string;
-};
+type TranslationFields = { name: string };
 type FormState = {
-  sku: string;
-  slug: string;
-  brand: string;
-  categoryId: string;
-  currency: string;
-  price: string;
-  compareAtPrice: string;
-  stockQuantity: string;
-  primaryImageUrl: string;
-  isActive: boolean;
-  isFeatured: boolean;
-  trackInventory: boolean;
   translations: Record<LocaleKey, TranslationFields>;
-};
-type CategoryRow = {
-  id: string;
-  slug: string;
-  category_translations?: Array<{ locale: LocaleKey; name: string }>;
 };
 type ProductRow = {
   id: string;
@@ -66,50 +38,23 @@ const labels = {
 const copy = {
   en: {
     top: "Protected catalog management area",
-    support: "Contact",
     title: "Add product",
-    description:
-      "Create a new catalog item, fill all 4 translations, and publish it to the storefront.",
+    description: "Create a product in one step using only the 4 storefront names. Fill the rest after creation.",
     loading: "Checking admin access...",
     denied: "Admin access required",
     noAccess: "You do not have access to this page.",
     signIn: "Sign in first to open the admin panel.",
-    help: "Add your user id to public.admins in Supabase, then reopen this page.",
-    back: "Back to account",
-    createEyebrow: "Create product",
-    createTitle:
-      "Fill the base product data and all 4 translations before publishing to the catalog.",
-    success: "Product created successfully.",
-    genericError: "Could not create product. Check your fields and try again.",
-    translationError: "Could not create product translations.",
-    skuRequired: "Enter SKU.",
-    slugRequired: "Enter slug or an English product name to generate it.",
-    priceInvalid: "Enter a valid price.",
-    compareInvalid: "Compare at price must be empty or greater than zero.",
-    missingTranslations: "Fill product name for all 4 languages.",
-    baseInfo: "Base product info",
-    sku: "SKU",
-    slug: "Slug",
-    brand: "Brand",
-    category: "Category",
-    noCategory: "No category",
-    commercial: "Commercial settings",
-    currency: "Currency",
-    price: "Price",
-    compareAtPrice: "Compare at price",
-    stock: "Stock quantity",
-    image: "Product image",
-    uploadImage: "Upload image",
-    uploading: "Uploading image...",
-    trackInventory: "Track inventory",
-    visible: "Visible in storefront",
-    featured: "Featured on homepage",
-    translations: "Translations",
+    back: "Back to products",
+    formEyebrow: "Quick create",
+    formTitle: "Create product with 4 names",
+    formText: "SKU, slug, price, media, category, and attributes will be configured on the product page after creation.",
+    translations: "Product names",
     productName: "Product name",
-    shortDescription: "Short description",
-    fullDescription: "Full description",
-    save: "Save product",
-    saving: "Saving product...",
+    missingTranslations: "Fill product name for all 4 languages.",
+    success: "Product created successfully.",
+    genericError: "Could not create product. Check the names and try again.",
+    save: "Create product",
+    saving: "Creating product...",
     latestEyebrow: "Latest products",
     latestTitle: "Recent catalog records created through the admin panel.",
     emptyProducts: "No products yet. The first created item will appear here.",
@@ -122,50 +67,23 @@ const copy = {
   },
   ru: {
     top: "Защищенная зона управления каталогом",
-    support: "Контакты",
     title: "Добавить товар",
-    description:
-      "Создайте новую позицию каталога, заполните все 4 перевода и опубликуйте товар на витрине.",
+    description: "Быстро создайте товар только по 4 названиям. Всё остальное заполните уже в карточке товара.",
     loading: "Проверяю права администратора...",
     denied: "Требуется доступ администратора",
     noAccess: "У вас нет доступа к этой странице.",
     signIn: "Сначала войдите, чтобы открыть админку.",
-    help: "Добавьте свой user id в public.admins в Supabase, затем откройте эту страницу снова.",
-    back: "Назад в аккаунт",
-    createEyebrow: "Создание товара",
-    createTitle:
-      "Заполните базовые данные товара и все 4 перевода перед публикацией в каталоге.",
-    success: "Товар успешно создан.",
-    genericError: "Не удалось создать товар. Проверьте поля и попробуйте снова.",
-    translationError: "Не удалось сохранить переводы товара.",
-    skuRequired: "Введите SKU.",
-    slugRequired: "Введите slug или английское имя товара для автогенерации.",
-    priceInvalid: "Введите корректную цену.",
-    compareInvalid: "Старая цена должна быть пустой или больше нуля.",
-    missingTranslations: "Заполните название товара для всех 4 языков.",
-    baseInfo: "Основная информация",
-    sku: "SKU",
-    slug: "Slug",
-    brand: "Бренд",
-    category: "Категория",
-    noCategory: "Без категории",
-    commercial: "Коммерческие настройки",
-    currency: "Валюта",
-    price: "Цена",
-    compareAtPrice: "Старая цена",
-    stock: "Количество на складе",
-    image: "Изображение товара",
-    uploadImage: "Загрузить изображение",
-    uploading: "Загружаю изображение...",
-    trackInventory: "Отслеживать остатки",
-    visible: "Показывать на витрине",
-    featured: "Показывать на главной",
-    translations: "Переводы",
+    back: "Назад к товарам",
+    formEyebrow: "Быстрое создание",
+    formTitle: "Создание товара по 4 названиям",
+    formText: "SKU, slug, цена, медиа, категория и характеристики будут настраиваться уже после создания на странице товара.",
+    translations: "Названия товара",
     productName: "Название товара",
-    shortDescription: "Короткое описание",
-    fullDescription: "Полное описание",
-    save: "Сохранить товар",
-    saving: "Сохраняю товар...",
+    missingTranslations: "Заполните название товара для всех 4 языков.",
+    success: "Товар успешно создан.",
+    genericError: "Не удалось создать товар. Проверьте названия и попробуйте снова.",
+    save: "Создать товар",
+    saving: "Создаю товар...",
     latestEyebrow: "Последние товары",
     latestTitle: "Последние позиции каталога, созданные через админку.",
     emptyProducts: "Товаров пока нет. Первая созданная позиция появится здесь.",
@@ -178,50 +96,23 @@ const copy = {
   },
   el: {
     top: "Προστατευμένη διαχείριση καταλόγου",
-    support: "Επικοινωνία",
     title: "Προσθήκη προϊόντος",
-    description:
-      "Δημιουργήστε νέο προϊόν καταλόγου, συμπληρώστε και τις 4 μεταφράσεις και δημοσιεύστε το στη βιτρίνα.",
+    description: "Δημιουργήστε γρήγορα προϊόν με μόνο τα 4 ονόματα. Τα υπόλοιπα θα συμπληρωθούν μετά.",
     loading: "Έλεγχος δικαιωμάτων διαχειριστή...",
     denied: "Απαιτείται πρόσβαση διαχειριστή",
     noAccess: "Δεν έχετε πρόσβαση σε αυτή τη σελίδα.",
     signIn: "Συνδεθείτε πρώτα για να ανοίξετε το admin panel.",
-    help: "Προσθέστε το user id σας στο public.admins στο Supabase και ανοίξτε ξανά αυτή τη σελίδα.",
-    back: "Πίσω στον λογαριασμό",
-    createEyebrow: "Δημιουργία προϊόντος",
-    createTitle:
-      "Συμπληρώστε τα βασικά στοιχεία του προϊόντος και τις 4 μεταφράσεις πριν από τη δημοσίευση στον κατάλογο.",
-    success: "Το προϊόν δημιουργήθηκε με επιτυχία.",
-    genericError: "Δεν ήταν δυνατή η δημιουργία του προϊόντος. Ελέγξτε τα πεδία και δοκιμάστε ξανά.",
-    translationError: "Δεν ήταν δυνατή η αποθήκευση των μεταφράσεων του προϊόντος.",
-    skuRequired: "Συμπληρώστε το SKU.",
-    slugRequired: "Συμπληρώστε slug ή αγγλικό όνομα προϊόντος για αυτόματη δημιουργία.",
-    priceInvalid: "Συμπληρώστε έγκυρη τιμή.",
-    compareInvalid: "Η αρχική τιμή πρέπει να είναι κενή ή μεγαλύτερη από το μηδέν.",
-    missingTranslations: "Συμπληρώστε το όνομα προϊόντος και στις 4 γλώσσες.",
-    baseInfo: "Βασικές πληροφορίες",
-    sku: "SKU",
-    slug: "Slug",
-    brand: "Μάρκα",
-    category: "Κατηγορία",
-    noCategory: "Χωρίς κατηγορία",
-    commercial: "Εμπορικές ρυθμίσεις",
-    currency: "Νόμισμα",
-    price: "Τιμή",
-    compareAtPrice: "Αρχική τιμή",
-    stock: "Ποσότητα αποθέματος",
-    image: "Εικόνα προϊόντος",
-    uploadImage: "Μεταφόρτωση εικόνας",
-    uploading: "Μεταφόρτωση εικόνας...",
-    trackInventory: "Παρακολούθηση αποθέματος",
-    visible: "Ορατό στη βιτρίνα",
-    featured: "Εμφάνιση στην αρχική",
-    translations: "Μεταφράσεις",
+    back: "Πίσω στα προϊόντα",
+    formEyebrow: "Γρήγορη δημιουργία",
+    formTitle: "Δημιουργία προϊόντος με 4 ονόματα",
+    formText: "SKU, slug, τιμή, media, κατηγορία και χαρακτηριστικά θα ρυθμιστούν μετά τη δημιουργία στη σελίδα προϊόντος.",
+    translations: "Ονόματα προϊόντος",
     productName: "Όνομα προϊόντος",
-    shortDescription: "Σύντομη περιγραφή",
-    fullDescription: "Πλήρης περιγραφή",
-    save: "Αποθήκευση προϊόντος",
-    saving: "Αποθήκευση προϊόντος...",
+    missingTranslations: "Συμπληρώστε το όνομα προϊόντος και στις 4 γλώσσες.",
+    success: "Το προϊόν δημιουργήθηκε με επιτυχία.",
+    genericError: "Δεν ήταν δυνατή η δημιουργία του προϊόντος. Ελέγξτε τα ονόματα και δοκιμάστε ξανά.",
+    save: "Δημιουργία προϊόντος",
+    saving: "Δημιουργία προϊόντος...",
     latestEyebrow: "Τελευταία προϊόντα",
     latestTitle: "Πρόσφατες καταχωρήσεις καταλόγου που δημιουργήθηκαν από το admin panel.",
     emptyProducts: "Δεν υπάρχουν ακόμη προϊόντα. Το πρώτο που θα δημιουργηθεί θα εμφανιστεί εδώ.",
@@ -234,50 +125,23 @@ const copy = {
   },
   lv: {
     top: "Aizsargāta kataloga pārvaldība",
-    support: "Kontakti",
     title: "Pievienot produktu",
-    description:
-      "Izveidojiet jaunu kataloga ierakstu, aizpildiet visus 4 tulkojumus un publicējiet produktu vitrīnā.",
+    description: "Ātri izveidojiet produktu tikai ar 4 nosaukumiem. Pārējo aizpildīsiet vēlāk produkta kartītē.",
     loading: "Tiek pārbaudītas administratora tiesības...",
     denied: "Nepieciešama administratora piekļuve",
     noAccess: "Jums nav piekļuves šai lapai.",
     signIn: "Lai atvērtu admin paneli, vispirms pieslēdzieties.",
-    help: "Pievienojiet savu user id tabulai public.admins Supabase vidē un atveriet šo lapu vēlreiz.",
-    back: "Atpakaļ uz kontu",
-    createEyebrow: "Produkta izveide",
-    createTitle:
-      "Pirms publicēšanas katalogā aizpildiet produkta pamata datus un visus 4 tulkojumus.",
-    success: "Produkts veiksmīgi izveidots.",
-    genericError: "Neizdevās izveidot produktu. Pārbaudiet laukus un mēģiniet vēlreiz.",
-    translationError: "Neizdevās saglabāt produkta tulkojumus.",
-    skuRequired: "Ievadiet SKU.",
-    slugRequired: "Ievadiet slug vai produkta nosaukumu angļu valodā automātiskai ģenerēšanai.",
-    priceInvalid: "Ievadiet korektu cenu.",
-    compareInvalid: "Salīdzinājuma cenai jābūt tukšai vai lielākai par nulli.",
-    missingTranslations: "Aizpildiet produkta nosaukumu visās 4 valodās.",
-    baseInfo: "Pamata informācija",
-    sku: "SKU",
-    slug: "Slug",
-    brand: "Zīmols",
-    category: "Kategorija",
-    noCategory: "Bez kategorijas",
-    commercial: "Komerciālie iestatījumi",
-    currency: "Valūta",
-    price: "Cena",
-    compareAtPrice: "Salīdzinājuma cena",
-    stock: "Atlikuma daudzums",
-    image: "Produkta attēls",
-    uploadImage: "Augšupielādēt attēlu",
-    uploading: "Augšupielādē attēlu...",
-    trackInventory: "Sekot atlikumam",
-    visible: "Rādīt vitrīnā",
-    featured: "Rādīt sākumlapā",
-    translations: "Tulkojumi",
+    back: "Atpakaļ uz produktiem",
+    formEyebrow: "Ātrā izveide",
+    formTitle: "Produkta izveide ar 4 nosaukumiem",
+    formText: "SKU, slug, cena, mediji, kategorija un raksturlielumi tiks iestatīti vēlāk produkta lapā.",
+    translations: "Produkta nosaukumi",
     productName: "Produkta nosaukums",
-    shortDescription: "Īss apraksts",
-    fullDescription: "Pilns apraksts",
-    save: "Saglabāt produktu",
-    saving: "Saglabā produktu...",
+    missingTranslations: "Aizpildiet produkta nosaukumu visās 4 valodās.",
+    success: "Produkts veiksmīgi izveidots.",
+    genericError: "Neizdevās izveidot produktu. Pārbaudiet nosaukumus un mēģiniet vēlreiz.",
+    save: "Izveidot produktu",
+    saving: "Izveido produktu...",
     latestEyebrow: "Jaunākie produkti",
     latestTitle: "Jaunākie kataloga ieraksti, kas izveidoti caur admin paneli.",
     emptyProducts: "Produktu vēl nav. Pirmais izveidotais ieraksts parādīsies šeit.",
@@ -292,34 +156,13 @@ const copy = {
 
 function createInitialForm(): FormState {
   return {
-    sku: "",
-    slug: "",
-    brand: "",
-    categoryId: "",
-    currency: "EUR",
-    price: "",
-    compareAtPrice: "",
-    stockQuantity: "0",
-    primaryImageUrl: "",
-    isActive: true,
-    isFeatured: false,
-    trackInventory: true,
     translations: {
-      en: { name: "", shortDescription: "", description: "" },
-      ru: { name: "", shortDescription: "", description: "" },
-      el: { name: "", shortDescription: "", description: "" },
-      lv: { name: "", shortDescription: "", description: "" },
+      en: { name: "" },
+      ru: { name: "" },
+      el: { name: "" },
+      lv: { name: "" },
     },
   };
-}
-
-function slugify(value: string) {
-  return value
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 80);
 }
 
 function formatMoney(priceCents: number, currency: string) {
@@ -341,246 +184,139 @@ export default function AdminProductNewPage() {
   const router = useRouter();
   const { locale } = useLocale();
   const t = copy[locale];
-  const supabaseReady = useMemo(() => isSupabaseConfigured(), []);
+  const supabaseReady = useMemo(() => isAdminSupabaseConfigured(), []);
   const [loading, setLoading] = useState(supabaseReady);
   const [submitting, setSubmitting] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [error, setError] = useState(
-    supabaseReady ? "" : "Supabase is not configured.",
-  );
+  const [error, setError] = useState(supabaseReady ? "" : "Supabase is not configured.");
   const [success, setSuccess] = useState("");
-  const [userId, setUserId] = useState("");
-  const [categories, setCategories] = useState<CategoryRow[]>([]);
   const [products, setProducts] = useState<ProductRow[]>([]);
   const [form, setForm] = useState<FormState>(createInitialForm());
-  const [uploadingImage, setUploadingImage] = useState(false);
 
-  const loadDashboard = async (nextUserId?: string) => {
-    const supabase = createSupabaseBrowserClient();
-    const [{ data: categoryData }, { data: productData }] = await Promise.all([
-      supabase
-        .from("categories")
-        .select("id, slug, category_translations(locale, name)")
-        .order("sort_order", { ascending: true }),
-      supabase
-        .from("products")
-        .select(
-          "id, sku, slug, price_cents, stock_quantity, is_active, is_featured, created_at, product_translations(locale, name)",
-        )
-        .order("created_at", { ascending: false })
-        .limit(12),
-    ]);
+  const loadProducts = async () => {
+    const response = await fetch("/api/admin/products", {
+      credentials: "include",
+    });
+    const payload = (await response.json().catch(() => ({}))) as {
+      error?: string;
+      products?: ProductRow[];
+    };
 
-    setCategories((categoryData as CategoryRow[] | null) ?? []);
-    setProducts((productData as ProductRow[] | null) ?? []);
-    if (nextUserId) setUserId(nextUserId);
+    if (response.status === 401) {
+      router.replace(localizePathname("/panel-x9k2m4q7r2a/login", locale));
+      return;
+    }
+
+    if (!response.ok) {
+      setError(payload.error || t.noAccess);
+      return;
+    }
+
+    setProducts((payload.products ?? []).slice(0, 12));
   };
 
   useEffect(() => {
     if (!supabaseReady) return;
-    const supabase = createSupabaseBrowserClient();
     let mounted = true;
 
     const hydrate = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+      const response = await fetch("/api/admin/products", {
+        credentials: "include",
+      });
+      const payload = (await response.json().catch(() => ({}))) as {
+        error?: string;
+        products?: ProductRow[];
+      };
+
       if (!mounted) return;
-      const user = session?.user;
-      if (!user) {
+      if (response.status === 401) {
         setError(t.signIn);
         setLoading(false);
-        router.replace("/login");
+        router.replace(localizePathname("/panel-x9k2m4q7r2a/login", locale));
         return;
       }
-      const { data: adminRow, error: adminError } = await supabase
-        .from("admins")
-        .select("user_id")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      if (!mounted) return;
-      if (adminError) {
-        setError(adminError.message);
+
+      if (!response.ok) {
+        setError(payload.error || t.noAccess);
         setLoading(false);
         return;
       }
-      if (!adminRow) {
-        setError(t.noAccess);
-        setLoading(false);
-        return;
-      }
+
       setIsAdmin(true);
-      setError("");
-      await loadDashboard(user.id);
-      if (!mounted) return;
-      setLoading(false);
+      setProducts((payload.products ?? []).slice(0, 12));
+      if (mounted) {
+        setLoading(false);
+      }
     };
 
     void hydrate();
     return () => {
       mounted = false;
     };
-  }, [router, supabaseReady, t.noAccess, t.signIn]);
+  }, [locale, router, supabaseReady, t.noAccess, t.signIn]);
 
-  const categoryOptions = useMemo(
-    () =>
-      categories.map((category) => ({
-        id: category.id,
-        label:
-          category.category_translations?.find((item) => item.locale === locale)
-            ?.name ||
-          category.category_translations?.find((item) => item.locale === "en")
-            ?.name ||
-          category.category_translations?.[0]?.name ||
-          category.slug,
-      })),
-    [categories, locale],
-  );
-
-  const handleFieldChange = (
-    field: keyof Omit<FormState, "translations">,
-    value: string | boolean,
-  ) => {
-    setForm((current) => ({ ...current, [field]: value }));
+  const handleTranslationChange = (localeKey: LocaleKey, value: string) => {
+    setForm((current) => ({
+      ...current,
+      translations: {
+        ...current.translations,
+        [localeKey]: { name: value },
+      },
+    }));
   };
 
-  const handleTranslationChange = (
-    localeKey: LocaleKey,
-    field: keyof TranslationFields,
-    value: string,
-  ) => {
-    setForm((current) => {
-      const next = {
-        ...current,
-        translations: {
-          ...current.translations,
-          [localeKey]: {
-            ...current.translations[localeKey],
-            [field]: value,
-          },
-        },
-      };
-      if (localeKey === "en" && field === "name" && !current.slug.trim()) {
-        next.slug = slugify(value);
-      }
-      return next;
-    });
-  };
-
-
-  const handleProductImageChange = async (file: File | null) => {
-    if (!file) return;
-    setError("");
-    setSuccess("");
-    setUploadingImage(true);
-
-    try {
-      const upload = await uploadAdminImage({
-        file,
-        folder: "products",
-        slug: form.slug || form.translations.en.name || form.sku || "product",
-      });
-      setForm((current) => ({ ...current, primaryImageUrl: upload.publicUrl }));
-    } catch (uploadError) {
-      setError(uploadError instanceof Error ? uploadError.message : t.genericError);
-    } finally {
-      setUploadingImage(false);
-    }
-  };
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
     setSuccess("");
 
-    if (!form.sku.trim()) {
-      setError(t.skuRequired);
-      return;
-    }
-
-    const finalSlug = form.slug.trim() || slugify(form.translations.en.name || form.sku);
-    if (!finalSlug) {
-      setError(t.slugRequired);
-      return;
-    }
-
-    const price = Number(form.price);
-    if (!Number.isFinite(price) || price < 0) {
-      setError(t.priceInvalid);
-      return;
-    }
-
-    const compareAtPrice = form.compareAtPrice.trim()
-      ? Number(form.compareAtPrice)
-      : null;
-    if (
-      compareAtPrice !== null &&
-      (!Number.isFinite(compareAtPrice) || compareAtPrice <= 0)
-    ) {
-      setError(t.compareInvalid);
-      return;
-    }
-
-    const missingTranslation = locales.some(
-      (localeKey) => !form.translations[localeKey].name.trim(),
-    );
+    const missingTranslation = locales.some((localeKey) => !form.translations[localeKey].name.trim());
     if (missingTranslation) {
       setError(t.missingTranslations);
       return;
     }
 
+    const sku = generateProductSku();
+    const baseSlug = slugify(form.translations.en.name) || slugify(form.translations.ru.name) || sku.toLowerCase();
+    const finalSlug = `${baseSlug}-${Date.now().toString(36)}`;
+
     setSubmitting(true);
 
     try {
-      const supabase = createSupabaseBrowserClient();
-      const { data: product, error: productError } = await supabase
-        .from("products")
-        .insert({
-          category_id: form.categoryId || null,
-          sku: form.sku.trim(),
+      const response = await fetch("/api/admin/products", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          sku,
           slug: finalSlug,
-          brand: form.brand.trim() || null,
-          currency: form.currency.trim().toUpperCase() || "EUR",
-          price_cents: Math.round(price * 100),
-          compare_at_price_cents:
-            compareAtPrice === null ? null : Math.round(compareAtPrice * 100),
-          stock_quantity:
-            Math.max(0, Number.parseInt(form.stockQuantity || "0", 10) || 0),
-          track_inventory: form.trackInventory,
-          is_active: form.isActive,
-          is_featured: form.isFeatured,
-          primary_image_url: form.primaryImageUrl.trim() || null,
-          created_by: userId || null,
-          updated_by: userId || null,
-        })
-        .select("id")
-        .single();
+          translations: locales.map((localeKey) => ({
+            locale: localeKey,
+            name: form.translations[localeKey].name.trim(),
+          })),
+        }),
+      });
+      const payload = (await response.json().catch(() => ({}))) as {
+        error?: string;
+        id?: string;
+      };
 
-      if (productError || !product) {
-        setError(productError?.message || t.genericError);
+      if (response.status === 401) {
+        router.replace(localizePathname("/panel-x9k2m4q7r2a/login", locale));
         return;
       }
 
-      const { error: translationError } = await supabase
-        .from("product_translations")
-        .insert(
-          locales.map((localeKey) => ({
-            product_id: product.id,
-            locale: localeKey,
-            name: form.translations[localeKey].name.trim(),
-            short_description:
-              form.translations[localeKey].shortDescription.trim() || null,
-            description: form.translations[localeKey].description.trim() || null,
-          })),
-        );
-
-      if (translationError) {
-        setError(translationError.message || t.translationError);
+      if (!response.ok || !payload.id) {
+        setError(payload.error || t.genericError);
         return;
       }
 
       setSuccess(t.success);
       setForm(createInitialForm());
-      await loadDashboard();
+      await loadProducts();
+      router.push(localizePathname(`/panel-x9k2m4q7r2a/products/${payload.id}`, locale));
     } catch {
       setError(t.genericError);
     } finally {
@@ -589,12 +325,7 @@ export default function AdminProductNewPage() {
   };
 
   return (
-    <AdminShell
-      topLabel={t.top}
-      supportLabel={t.support}
-      title={t.title}
-      description={t.description}
-    >
+    <AdminShell topLabel={t.top} title={t.title} description={t.description}>
       {loading ? (
         <div className="flex min-h-[420px] items-center justify-center rounded-[1.75rem] border border-[#ece3d9] bg-white shadow-[0_16px_40px_rgba(27,42,74,0.05)]">
           <div className="flex items-center gap-3 text-sm font-medium text-[color:var(--muted)]">
@@ -609,166 +340,54 @@ export default function AdminProductNewPage() {
               <ShieldAlert className="h-6 w-6" />
             </div>
             <div>
-              <h2 className="font-display text-2xl font-semibold tracking-[-0.04em] text-[color:var(--headline)]">
-                {t.denied}
-              </h2>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-[color:var(--muted)]">
-                {error || t.noAccess}
-              </p>
-              <p className="mt-2 text-sm leading-6 text-[color:var(--muted)]">
-                {t.help}
-              </p>
-              <div className="mt-5 flex flex-wrap gap-3">
-                <button
-                  type="button"
-                  onClick={() => router.push("/account")}
-                  className="inline-flex h-11 items-center rounded-xl bg-[color:var(--accent)] px-5 text-sm font-medium text-[#203153]"
-                >
-                  {t.back}
-                </button>
-              </div>
+              <h2 className="font-display text-2xl font-semibold tracking-[-0.04em] text-[color:var(--headline)]">{t.denied}</h2>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-[color:var(--muted)]">{error}</p>
             </div>
           </div>
         </div>
       ) : (
-        <div className="grid gap-6 xl:grid-cols-[1.35fr_0.85fr]">
-          <form
-            onSubmit={handleSubmit}
-            className="space-y-6 rounded-[1.75rem] border border-[#ece3d9] bg-white p-6 shadow-[0_16px_40px_rgba(27,42,74,0.05)]"
-          >
+        <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
+          <form onSubmit={handleSubmit} className="space-y-6 rounded-[1.75rem] border border-[#ece3d9] bg-white p-6 shadow-[0_16px_40px_rgba(27,42,74,0.05)]">
             <div className="flex items-start justify-between gap-4 border-b border-[#efe6dd] pb-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[color:var(--accent)]">
-                  {t.createEyebrow}
-                </p>
-                <h2 className="mt-3 font-display text-2xl font-semibold tracking-[-0.04em] text-[color:var(--headline)]">
-                  {t.createTitle}
-                </h2>
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[color:var(--accent)]">{t.formEyebrow}</p>
+                <h2 className="mt-3 font-display text-2xl font-semibold tracking-[-0.04em] text-[color:var(--headline)]">{t.formTitle}</h2>
+                <p className="mt-2 max-w-xl text-sm leading-6 text-[color:var(--muted)]">{t.formText}</p>
               </div>
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[color:var(--accent)]/15 text-[color:var(--headline)]">
                 <PackagePlus className="h-6 w-6" />
               </div>
             </div>
 
-            {error ? (
-              <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                {error}
-              </div>
-            ) : null}
-            {success ? (
-              <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-                {success}
-              </div>
-            ) : null}
+            {error ? <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div> : null}
+            {success ? <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{success}</div> : null}
 
             <section className="space-y-4">
-              <div className="flex items-center gap-2 text-sm font-semibold text-[color:var(--headline)]">
-                {t.baseInfo}
-              </div>
-              <div className="grid gap-4 md:grid-cols-2">
-                <label className="space-y-2 text-sm font-medium text-[color:var(--headline)]">
-                  <span>{t.sku}</span>
-                  <input value={form.sku} onChange={(event) => handleFieldChange("sku", event.target.value)} className="h-11 w-full rounded-xl border border-[#ece3d9] bg-[#fffcf7] px-4 outline-none transition focus:border-[color:var(--accent)]" />
-                </label>
-                <label className="space-y-2 text-sm font-medium text-[color:var(--headline)]">
-                  <span>{t.slug}</span>
-                  <input value={form.slug} onChange={(event) => handleFieldChange("slug", slugify(event.target.value))} className="h-11 w-full rounded-xl border border-[#ece3d9] bg-[#fffcf7] px-4 outline-none transition focus:border-[color:var(--accent)]" />
-                </label>
-                <label className="space-y-2 text-sm font-medium text-[color:var(--headline)]">
-                  <span>{t.brand}</span>
-                  <input value={form.brand} onChange={(event) => handleFieldChange("brand", event.target.value)} className="h-11 w-full rounded-xl border border-[#ece3d9] bg-[#fffcf7] px-4 outline-none transition focus:border-[color:var(--accent)]" />
-                </label>
-                <label className="space-y-2 text-sm font-medium text-[color:var(--headline)]">
-                  <span>{t.category}</span>
-                  <select value={form.categoryId} onChange={(event) => handleFieldChange("categoryId", event.target.value)} className="h-11 w-full rounded-xl border border-[#ece3d9] bg-[#fffcf7] px-4 outline-none transition focus:border-[color:var(--accent)]">
-                    <option value="">{t.noCategory}</option>
-                    {categoryOptions.map((category) => (
-                      <option key={category.id} value={category.id}>{category.label}</option>
-                    ))}
-                  </select>
-                </label>
-              </div>
-            </section>
-
-            <section className="space-y-4">
-              <div className="flex items-center gap-2 text-sm font-semibold text-[color:var(--headline)]">
-                {t.commercial}
-              </div>
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                <label className="space-y-2 text-sm font-medium text-[color:var(--headline)]">
-                  <span>{t.currency}</span>
-                  <input value={form.currency} maxLength={3} onChange={(event) => handleFieldChange("currency", event.target.value.toUpperCase())} className="h-11 w-full rounded-xl border border-[#ece3d9] bg-[#fffcf7] px-4 outline-none transition focus:border-[color:var(--accent)]" />
-                </label>
-                <label className="space-y-2 text-sm font-medium text-[color:var(--headline)]">
-                  <span>{t.price}</span>
-                  <input type="number" min="0" step="0.01" value={form.price} onChange={(event) => handleFieldChange("price", event.target.value)} className="h-11 w-full rounded-xl border border-[#ece3d9] bg-[#fffcf7] px-4 outline-none transition focus:border-[color:var(--accent)]" />
-                </label>
-                <label className="space-y-2 text-sm font-medium text-[color:var(--headline)]">
-                  <span>{t.compareAtPrice}</span>
-                  <input type="number" min="0" step="0.01" value={form.compareAtPrice} onChange={(event) => handleFieldChange("compareAtPrice", event.target.value)} className="h-11 w-full rounded-xl border border-[#ece3d9] bg-[#fffcf7] px-4 outline-none transition focus:border-[color:var(--accent)]" />
-                </label>
-                <label className="space-y-2 text-sm font-medium text-[color:var(--headline)]">
-                  <span>{t.stock}</span>
-                  <input type="number" min="0" step="1" value={form.stockQuantity} onChange={(event) => handleFieldChange("stockQuantity", event.target.value)} className="h-11 w-full rounded-xl border border-[#ece3d9] bg-[#fffcf7] px-4 outline-none transition focus:border-[color:var(--accent)]" />
-                </label>
-                <div className="space-y-2 text-sm font-medium text-[color:var(--headline)] md:col-span-2 xl:col-span-2">
-                  <span>{t.image}</span>
-                  <div className="rounded-2xl border border-[#ece3d9] bg-[#fffcf7] p-4">
-                    <input type="file" accept="image/*" onChange={(event) => void handleProductImageChange(event.target.files?.[0] ?? null)} className="block w-full text-sm text-[color:var(--muted)] file:mr-4 file:rounded-xl file:border-0 file:bg-[color:var(--accent)] file:px-4 file:py-2 file:font-medium file:text-[#203153]" />
-                    {uploadingImage ? <p className="mt-3 text-sm text-[color:var(--muted)]">{t.uploading}</p> : null}
-                    {form.primaryImageUrl ? (
-                      <div className="mt-4 overflow-hidden rounded-2xl border border-[#ece3d9] bg-white">
-                        <img src={form.primaryImageUrl} alt="Product preview" className="h-48 w-full object-cover" />
-                      </div>
-                    ) : null}
-                  </div>
-                </div>
-              </div>
-              <div className="grid gap-3 md:grid-cols-3">
-                <label className="flex items-center gap-3 rounded-2xl border border-[#ece3d9] bg-[#fffcf7] px-4 py-3 text-sm font-medium text-[color:var(--headline)]">
-                  <input type="checkbox" checked={form.trackInventory} onChange={(event) => handleFieldChange("trackInventory", event.target.checked)} className="accent-[color:var(--accent)]" />
-                  <span>{t.trackInventory}</span>
-                </label>
-                <label className="flex items-center gap-3 rounded-2xl border border-[#ece3d9] bg-[#fffcf7] px-4 py-3 text-sm font-medium text-[color:var(--headline)]">
-                  <input type="checkbox" checked={form.isActive} onChange={(event) => handleFieldChange("isActive", event.target.checked)} className="accent-[color:var(--accent)]" />
-                  <span>{t.visible}</span>
-                </label>
-                <label className="flex items-center gap-3 rounded-2xl border border-[#ece3d9] bg-[#fffcf7] px-4 py-3 text-sm font-medium text-[color:var(--headline)]">
-                  <input type="checkbox" checked={form.isFeatured} onChange={(event) => handleFieldChange("isFeatured", event.target.checked)} className="accent-[color:var(--accent)]" />
-                  <span>{t.featured}</span>
-                </label>
-              </div>
-            </section>
-
-            <section className="space-y-4">
-              <div className="flex items-center gap-2 text-sm font-semibold text-[color:var(--headline)]">
-                {t.translations}
-              </div>
-              <div className="grid gap-4 xl:grid-cols-2">
+              <div className="text-sm font-semibold text-[color:var(--headline)]">{t.translations}</div>
+              <div className="grid gap-4">
                 {locales.map((localeKey) => (
-                  <div key={localeKey} className="space-y-3 rounded-[1.4rem] border border-[#ece3d9] bg-[#fffcf7] p-4">
-                    <p className="text-sm font-semibold text-[color:var(--headline)]">{labels[localeKey]}</p>
-                    <label className="space-y-2 text-sm font-medium text-[color:var(--headline)]">
-                      <span>{t.productName}</span>
-                      <input value={form.translations[localeKey].name} onChange={(event) => handleTranslationChange(localeKey, "name", event.target.value)} className="h-11 w-full rounded-xl border border-[#ece3d9] bg-white px-4 outline-none transition focus:border-[color:var(--accent)]" />
-                    </label>
-                    <label className="space-y-2 text-sm font-medium text-[color:var(--headline)]">
-                      <span>{t.shortDescription}</span>
-                      <input value={form.translations[localeKey].shortDescription} onChange={(event) => handleTranslationChange(localeKey, "shortDescription", event.target.value)} className="h-11 w-full rounded-xl border border-[#ece3d9] bg-white px-4 outline-none transition focus:border-[color:var(--accent)]" />
-                    </label>
-                    <label className="space-y-2 text-sm font-medium text-[color:var(--headline)]">
-                      <span>{t.fullDescription}</span>
-                      <textarea value={form.translations[localeKey].description} onChange={(event) => handleTranslationChange(localeKey, "description", event.target.value)} rows={5} className="w-full rounded-xl border border-[#ece3d9] bg-white px-4 py-3 outline-none transition focus:border-[color:var(--accent)]" />
-                    </label>
-                  </div>
+                  <label key={localeKey} className="space-y-2 text-sm font-medium text-[color:var(--headline)]">
+                    <span>{labels[localeKey]}</span>
+                    <input
+                      value={form.translations[localeKey].name}
+                      onChange={(event) => handleTranslationChange(localeKey, event.target.value)}
+                      className="h-11 w-full rounded-xl border border-[#ece3d9] bg-[#fffcf7] px-4 outline-none transition focus:border-[color:var(--accent)]"
+                    />
+                  </label>
                 ))}
               </div>
             </section>
 
-            <button type="submit" disabled={submitting} className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[color:var(--accent)] px-6 text-sm font-medium text-[#203153] shadow-[0_14px_30px_rgba(244,198,79,0.28)] transition hover:bg-[#efbf3e] disabled:cursor-not-allowed disabled:opacity-70">
-              {submitting ? t.saving : t.save}
-              <ArrowRight className="h-4 w-4" />
-            </button>
+            <div className="flex flex-wrap gap-3">
+              <button type="submit" disabled={submitting} className="inline-flex h-12 items-center gap-2 rounded-xl bg-[color:var(--accent)] px-6 text-sm font-medium text-[#203153] shadow-[0_14px_30px_rgba(244,198,79,0.28)] transition hover:bg-[#efbf3e] disabled:cursor-not-allowed disabled:opacity-70">
+                {submitting ? t.saving : t.save}
+                <ArrowRight className="h-4 w-4" />
+              </button>
+              <Link href={localizePathname("/panel-x9k2m4q7r2a/products", locale)} className="inline-flex h-12 items-center gap-2 rounded-xl border border-[#ece3d9] bg-white px-6 text-sm font-medium text-[color:var(--headline)]">
+                <ArrowLeft className="h-4 w-4" />
+                {t.back}
+              </Link>
+            </div>
           </form>
 
           <aside className="space-y-6 rounded-[1.75rem] border border-[#ece3d9] bg-white p-6 shadow-[0_16px_40px_rgba(27,42,74,0.05)]">
@@ -782,7 +401,11 @@ export default function AdminProductNewPage() {
                 <div className="rounded-2xl border border-dashed border-[#e8dccf] bg-[#fffcf7] px-4 py-5 text-sm text-[color:var(--muted)]">{t.emptyProducts}</div>
               ) : (
                 products.map((product) => {
-                  const localizedName = product.product_translations?.find((item) => item.locale === locale)?.name || product.product_translations?.find((item) => item.locale === "en")?.name || product.product_translations?.[0]?.name || product.slug;
+                  const localizedName =
+                    product.product_translations?.find((item) => item.locale === locale)?.name ||
+                    product.product_translations?.find((item) => item.locale === "en")?.name ||
+                    product.product_translations?.[0]?.name ||
+                    product.slug;
                   return (
                     <div key={product.id} className="rounded-[1.35rem] border border-[#ece3d9] bg-[#fffcf7] p-4">
                       <div className="flex items-start justify-between gap-3">
@@ -820,9 +443,3 @@ export default function AdminProductNewPage() {
     </AdminShell>
   );
 }
-
-
-
-
-
-

@@ -2,24 +2,34 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
 import {
   ArrowRight,
   BadgeCheck,
   ChevronRight,
-  Handshake,
-  Headset,  Lightbulb,
-  Search,  Sparkles,
+  Layers3,
+  Mail,
+  MapPin,
+  Percent,
+  Phone,
+  Truck,
   Wrench,
 } from "lucide-react";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
 import { useLocale } from "@/components/ui/locale-provider";
 import { SiteNavigation } from "@/components/ui/site-navigation";
 import { AccountControls } from "@/components/ui/account-controls";
-
 import { HomeFeaturedCatalog } from "@/components/ui/home-featured-catalog";
 import { HomeCategories } from "@/components/ui/home-categories";
+import { ProjectShowcaseSection } from "@/components/ui/project-showcase-section";
+import { localizePathname } from "@/i18n/config";
 import { useEffect, useState } from "react";
+
+const ContactFormCard = dynamic(
+  () => import("@/components/ui/contact-form-card").then((mod) => mod.ContactFormCard),
+  { ssr: false },
+);
 
 export default function Home() {
   const { locale } = useLocale();
@@ -60,19 +70,19 @@ export default function Home() {
 
   const audience = [
     {
-      title: t("audience.designers.title"),
-      description: t("audience.designers.description"),
-      icon: Sparkles,
+      title: t("audience.delivery.title"),
+      description: t("audience.delivery.description"),
+      icon: Truck,
     },
     {
-      title: t("audience.partners.title"),
-      description: t("audience.partners.description"),
-      icon: Handshake,
-    },
-    {
-      title: t("audience.installers.title"),
-      description: t("audience.installers.description"),
+      title: t("audience.installation.title"),
+      description: t("audience.installation.description"),
       icon: Wrench,
+    },
+    {
+      title: t("audience.wholesale.title"),
+      description: t("audience.wholesale.description"),
+      icon: Percent,
     },
   ];
 
@@ -95,26 +105,35 @@ export default function Home() {
     },
   ];
 
-  const projects = [t("projects.homes"), t("projects.retail"), t("projects.restaurants")];
-  const adminItems = [
-    t("adminItems.products"),
-    t("adminItems.translations"),
-    t("adminItems.orders"),
-    t("adminItems.statuses"),
+  const contactItems = [
+    {
+      title: t("contact.items.phone.label"),
+      value: t("contact.items.phone.value"),
+      icon: Phone,
+    },
+    {
+      title: t("contact.items.email.label"),
+      value: t("contact.items.email.value"),
+      icon: Mail,
+    },
+    {
+      title: t("contact.items.address.label"),
+      value: t("contact.items.address.value"),
+      icon: MapPin,
+    },
   ];
-
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.95),transparent_30%),linear-gradient(180deg,#fffdfa_0%,#f8f3eb_100%)]">
       <div className="border-b border-[color:var(--line)] bg-white/85 backdrop-blur-sm">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-3 text-xs text-[color:var(--muted)] sm:px-10 lg:px-12">
-          <div className="hidden md:block">+370 (000) 000-00-00 · hello@mdblight.com</div>
+          <div className="hidden md:block">+371 24443333 · info@mdbgroup.lv</div>
           <div className="ml-auto">{t("top")}</div>
         </div>
       </div>
 
       <header className="sticky top-0 z-50 border-b border-[color:var(--line)] bg-white/92 backdrop-blur-xl">
-        <div className="flex w-full items-center gap-4 py-1 pl-1 pr-6 sm:pl-2 sm:pr-10 lg:pl-2 lg:pr-12">
-          <a href="#" className="flex min-w-0 items-center overflow-visible xl:ml-[360px] 2xl:ml-[380px]">
+        <div className="mx-auto flex max-w-7xl items-center gap-4 px-6 py-1 sm:px-10 lg:px-12">
+          <a href="#" className="flex min-w-0 items-center overflow-visible">
             <Image
               src="/logo/mdb-light-logo.svg"
               alt="MDB Light logo"
@@ -129,21 +148,7 @@ export default function Home() {
           </div>
           <div className="hidden items-center gap-3 lg:flex">
             <LanguageSwitcher />
-            <button
-              type="button"
-              className="flex h-9 w-9 items-center justify-center rounded-xl border border-[color:var(--line)] bg-white/72 text-[color:var(--muted)] hover:border-[color:var(--accent)]/30 hover:text-[color:var(--headline)]"
-              aria-label="Search"
-            >
-              <Search className="h-4.5 w-4.5" />
-            </button>
             <AccountControls />
-            <Link
-              href="/contacts"
-              className="inline-flex items-center gap-2 rounded-xl bg-[color:var(--accent)] px-4 py-2 text-sm font-medium text-[#203153] shadow-[0_12px_28px_rgba(244,198,79,0.28)] hover:bg-[#f1bc36]"
-            >
-              <Headset className="h-4 w-4" />
-              {t("support")}
-            </Link>
           </div>
         </div>
       </header>
@@ -182,17 +187,17 @@ export default function Home() {
             <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(15,25,45,0.9)_0%,rgba(20,31,54,0.84)_34%,rgba(24,36,60,0.56)_52%,rgba(24,36,60,0.18)_72%,rgba(24,36,60,0.04)_100%)]" />
             <div className="absolute inset-y-0 left-0 w-[62%] bg-[radial-gradient(circle_at_15%_25%,rgba(255,255,255,0.08),transparent_36%)]" />
 
-            <div className="relative grid h-[500px] items-center lg:grid-cols-[minmax(0,640px)_1fr]">
-              <div className="flex h-[410px] max-w-[640px] flex-col pr-0 lg:pr-10">
+            <div className="relative grid min-h-[540px] items-center lg:grid-cols-[minmax(0,640px)_1fr]">
+              <div className="flex min-h-[450px] max-w-[640px] flex-col pr-0 lg:pr-10">
                 <div className="flex flex-wrap items-center gap-3">
-                  <Link href="/collections" className={heroChipClass}>
-                    <BadgeCheck className="h-4 w-4 text-[#f4c64f]" />
+                  <div aria-hidden="true" className={heroChipClass}>
+                    <Layers3 className="h-4 w-4 text-[#f4c64f]" />
                     {t("badge1")}
-                  </Link>
-                  <Link href="/lighting" className={heroChipClass}>
-                    <Lightbulb className="h-4 w-4 text-[#f4c64f]" />
+                  </div>
+                  <div aria-hidden="true" className={heroChipClass}>
+                    <Wrench className="h-4 w-4 text-[#f4c64f]" />
                     {t("badge2")}
-                  </Link>
+                  </div>
                 </div>
                 <p className="mt-8 text-[11px] font-medium uppercase tracking-[0.18em] text-[#f4c64f]">
                   {t("heroEyebrow")}
@@ -217,11 +222,11 @@ export default function Home() {
                   {t("heroText")}
                 </p>
                 <div className="mt-auto flex flex-wrap items-center gap-3 pt-6">
-                  <Link href="/catalog" className={heroPrimaryButtonClass}>
+                  <Link href={localizePathname("/catalog", locale)} className={heroPrimaryButtonClass}>
                     {t("cta1")}
                     <ArrowRight className="h-4 w-4" />
                   </Link>
-                  <Link href="/projects" className={heroSecondaryButtonClass}>
+                  <Link href={localizePathname("/projects", locale)} className={heroSecondaryButtonClass}>
                     {t("cta2")}
                     <ArrowRight className="h-4 w-4" />
                   </Link>
@@ -251,77 +256,49 @@ export default function Home() {
         </div>
       </section>
 
-      <HomeCategories eyebrow={t("categories")} title={t("categoriesTitle")} fallbackCards={catalogCards} limit={32} />`r`n`r`n      <HomeFeaturedCatalog />
-
-      <section id="projects" className="mx-auto max-w-7xl px-6 py-8 sm:px-10 lg:px-12">
-        <div className="rounded-[2rem] border border-[#e5e8ee] bg-white p-6 sm:p-8">
-          <p className="text-sm font-medium uppercase tracking-[0.2em] text-[color:var(--accent)]">{t("inspiration")}</p>
-          <h2 className="font-display mt-3 text-3xl font-semibold tracking-[-0.05em] text-[color:var(--headline)] sm:text-4xl">
-            {t("inspirationTitle")}
-          </h2>
-          <div className="mt-8 grid gap-4 lg:grid-cols-3">
-            {projects.map((item, index) => (
-              <article key={item} className="overflow-hidden rounded-[1.6rem] border border-[#e9e0d3] bg-[#fffaf4]">
-                <div
-                  className={`h-52 ${
-                    index === 0
-                      ? "bg-[linear-gradient(135deg,#fff0d2,#d6a54f,#24365d)]"
-                      : index === 1
-                        ? "bg-[linear-gradient(135deg,#eef4ff,#8fa1c7,#223250)]"
-                        : "bg-[linear-gradient(135deg,#fff1da,#f0bf65,#1f2f4d)]"
-                  }`}
-                />
-                <div className="p-5">
-                  <h3 className="font-display text-xl font-semibold text-[color:var(--headline)]">{item}</h3>
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
+      <HomeCategories eyebrow={t("categories")} title={t("categoriesTitle")} fallbackCards={catalogCards} limit={32} />
+      <HomeFeaturedCatalog />
+      <ProjectShowcaseSection
+        sectionId="projects"
+        eyebrow={t("projectShowcase.eyebrow")}
+        title={t("projectShowcase.title")}
+        description={t("projectShowcase.description")}
+        ctaLabel={t("projectShowcase.cta")}
+        ctaHref={localizePathname("/projects", locale)}
+        limit={4}
+        homeOnly
+      />
 
       <section id="about" className="mx-auto max-w-7xl px-6 py-2 pb-16 sm:px-10 lg:px-12">
         <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="rounded-[2rem] border border-[#e5e8ee] bg-white p-6 sm:p-8">
-            <p className="text-sm font-medium uppercase tracking-[0.2em] text-[color:var(--accent)]">{t("about")}</p>
+            <p className="text-sm font-medium uppercase tracking-[0.2em] text-[color:var(--accent)]">
+              {t("contact.leftLabel")}
+            </p>
             <h2 className="font-display mt-3 max-w-2xl text-3xl font-semibold tracking-[-0.05em] text-[color:var(--headline)] sm:text-4xl">
-              {t("aboutTitle")}
+              {t("contact.leftTitle")}
             </h2>
-            <p className="mt-4 max-w-2xl text-sm leading-8 text-[color:var(--muted)] sm:text-base">{t("aboutText")}</p>
-            <div className="mt-8 grid gap-4 sm:grid-cols-3">
-              <article className="h-[124px] rounded-[1.5rem] border border-[#e9e0d3] bg-[#fffaf4] p-5">
-                <p className="font-display text-2xl font-semibold text-[color:var(--headline)]">4</p>
-                <p className="mt-2 text-sm text-[color:var(--muted)]">{t("metrics.languages")}</p>
-              </article>
-              <article className="h-[124px] rounded-[1.5rem] border border-[#e9e0d3] bg-[#fffaf4] p-5">
-                <p className="font-display text-2xl font-semibold text-[color:var(--headline)]">24/7</p>
-                <p className="mt-2 text-sm text-[color:var(--muted)]">{t("metrics.support")}</p>
-              </article>
-              <article className="h-[124px] rounded-[1.5rem] border border-[#e9e0d3] bg-[#fffaf4] p-5">
-                <p className="font-display text-2xl font-semibold text-[color:var(--headline)]">LED</p>
-                <p className="mt-2 text-sm text-[color:var(--muted)]">{t("metrics.collections")}</p>
-              </article>
-            </div>
-          </div>
-          <div id="support" className="rounded-[2rem] border border-[#e5e8ee] bg-white p-6 sm:p-8 lg:min-h-[520px]">
-            <p className="text-sm font-medium uppercase tracking-[0.2em] text-[color:var(--accent)]">{t("admin")}</p>
-            <h2 className="font-display mt-3 max-w-[24rem] text-3xl font-semibold tracking-[-0.05em] text-[color:var(--headline)] sm:text-4xl">
-              {t("adminTitle")}
-            </h2>
-            <div className="mt-8 space-y-3">
-              {adminItems.map((item) => (
-                <div
-                  key={item}
-                  className="flex min-h-[72px] items-center gap-3 rounded-[1.25rem] border border-[#e9e0d3] bg-[#fffaf4] px-4 py-4"
+            <p className="mt-4 max-w-2xl text-sm leading-8 text-[color:var(--muted)] sm:text-base">
+              {t("contact.leftDescription")}
+            </p>
+            <div className="mt-8 grid gap-4">
+              {contactItems.map(({ title, value, icon: Icon }) => (
+                <article
+                  key={title}
+                  className="flex min-h-[96px] items-center gap-4 rounded-[1.5rem] border border-[#e9e0d3] bg-[#fffaf4] px-5 py-4"
                 >
-                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[color:var(--accent-soft)] text-[color:var(--accent)]">
-                    <BadgeCheck className="h-4 w-4" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[color:var(--accent)]/18 bg-[color:var(--accent-soft)] text-[color:var(--accent)]">
+                    <Icon className="h-5 w-5" />
                   </div>
-                  <p className="text-sm font-medium leading-6 text-[color:var(--headline)]">{item}</p>
-                </div>
+                  <div>
+                    <p className="text-xs font-medium uppercase tracking-[0.16em] text-[color:var(--muted)]">{title}</p>
+                    <p className="mt-2 text-base font-semibold text-[color:var(--headline)] sm:text-lg">{value}</p>
+                  </div>
+                </article>
               ))}
             </div>
           </div>
+          <ContactFormCard />
         </div>
       </section>
 
@@ -334,22 +311,3 @@ export default function Home() {
     </main>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

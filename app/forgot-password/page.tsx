@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { AuthShell } from "@/components/ui/auth-shell";
 import { useLocale } from "@/components/ui/locale-provider";
+import { localizePathname } from "@/i18n/config";
 import { loginCopy } from "@/lib/auth-copy";
 import {
   createSupabaseBrowserClient,
@@ -99,7 +100,9 @@ export default function ForgotPasswordPage() {
     try {
       const supabase = createSupabaseBrowserClient();
       const redirectTo =
-        typeof window !== "undefined" ? `${window.location.origin}/login` : undefined;
+        typeof window !== "undefined"
+          ? `${window.location.origin}${localizePathname("/login", locale)}`
+          : undefined;
 
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
         redirectTo,
@@ -121,7 +124,6 @@ export default function ForgotPasswordPage() {
   return (
     <AuthShell
       topLabel={shared.top}
-      supportLabel={shared.support}
       backLabel={shared.back}
       title={t.title}
       description={t.description}

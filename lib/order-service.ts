@@ -1,0 +1,431 @@
+import type Stripe from "stripe";
+import type { Locale } from "@/i18n/config";
+import { sendOrderCreatedEmails, sendOrderPaidEmails } from "@/lib/order-mail";
+import {
+  createOrderInvoice,
+  deleteOrderInvoice,
+  getOrderInvoiceAttachment,
+  markOrderInvoicePaid,
+} from "@/lib/order-invoice";
+import {
+  buildOrderCode,
+  type OrderPaymentMethod,
+} from "@/lib/order-utils";
+import { createStorefrontServiceClient } from "@/lib/storefront-admin-server";
+
+type CartRow = {
+  id: string;
+  currency: string;
+  discount_cents: number | null;
+};
+
+type ProfileRow = {
+  email: string | null;
+  full_name: string | null;
+  phone: string | null;
+};
+
+type CartItemRow = {
+  id: string;
+  product_id: string;
+  quantity: number;
+  unit_price_cents: number;
+  currency: string;
+  selected_color: string | null;
+  selected_length: string | null;
+  selected_material: string | null;
+  selected_options: Record<string, string> | null;
+  product_snapshot: {
+    name?: string;
+    sku?: string;
+    selected_color?: string | null;
+    selected_length?: string | null;
+    selected_material?: string | null;
+    selected_options?: Record<string, string> | null;
+  } | null;
+};
+
+type OrderItemEmailPayload = {
+  name: string;
+  quantity: number;
+  totalCents: number;
+  currency: string;
+  variantLines: string[];
+};
+
+export type OrderSummary = {
+  id: string;
+  cartId: string;
+  orderNumber: number;
+  orderCode: string;
+  createdAt: string;
+  currency: string;
+  totalCents: number;
+  subtotalCents: number;
+  discountCents: number;
+  customerEmail: string | null;
+  customerName: string | null;
+  customerPhone: string | null;
+  paymentMethod: OrderPaymentMethod;
+  items: OrderItemEmailPayload[];
+};
+
+function getVariantLines(item: CartItemRow) {
+  const lines: string[] = [];
+
+  if (item.selected_color || item.product_snapshot?.selected_color) {
+    lines.push(`Color: ${item.selected_color || item.product_snapshot?.selected_color}`);
+  }
+
+  if (item.selected_length || item.product_snapshot?.selected_length) {
+    lines.push(`Length: ${item.selected_length || item.product_snapshot?.selected_length}`);
+  }
+
+  if (item.selected_material || item.product_snapshot?.selected_material) {
+    lines.push(`Material: ${item.selected_material || item.product_snapshot?.selected_material}`);
+  }
+
+  for (const [key, value] of Object.entries(
+    item.product_snapshot?.selected_options || item.selected_options || {},
+  )) {
+    if (value) {
+      lines.push(`${key}: ${value}`);
+    }
+  }
+
+  return lines;
+}
+
+async function loadCheckoutContext(userId: string) {
+  const storefront = createStorefrontServiceClient();
+  const [{ data: cart, error: cartError }, { data: profile, error: profileError }] =
+    await Promise.all([
+      storefront
+        .from("carts")
+        .select("id, currency, discount_cents")
+        .eq("user_id", userId)
+        .eq("status", "active")
+        .maybeSingle(),
+      storefront
+        .from("profiles")
+        .select("email, full_name, phone")
+        .eq("id", userId)
+        .maybeSingle(),
+    ]);
+
+  if (cartError || !cart) {
+    throw new Error(cartError?.message || "Active cart not found.");
+  }
+
+  if (profileError) {
+    throw new Error(profileError.message);
+  }
+
+  const { data: cartItems, error: itemsError } = await storefront
+    .from("cart_items")
+    .select(
+      "id, product_id, quantity, unit_price_cents, currency, selected_color, selected_length, selected_material, selected_options, product_snapshot",
+    )
+    .eq("cart_id", cart.id)
+    .order("created_at", { ascending: true });
+
+  if (itemsError) {
+    throw new Error(itemsError.message);
+  }
+
+  const items = ((cartItems as CartItemRow[] | null) ?? []).filter(
+    (item) => item.quantity > 0 && item.unit_price_cents >= 0,
+  );
+
+  if (items.length === 0) {
+    throw new Error("Cart is empty.");
+  }
+
+  return {
+    storefront,
+    cart: cart as CartRow,
+    profile: (profile as ProfileRow | null) ?? null,
+    items,
+  };
+}
+
+export async function createOrderFromActiveCart(input: {
+  userId: string;
+  locale: Locale;
+  paymentMethod: OrderPaymentMethod;
+}) {
+  const { storefront, cart, profile, items } = await loadCheckoutContext(input.userId);
+
+  const subtotalCents = items.reduce(
+    (sum, item) => sum + item.unit_price_cents * item.quantity,
+    0,
+  );
+  const discountCents = Math.min(cart.discount_cents ?? 0, subtotalCents);
+  const totalCents = Math.max(subtotalCents - discountCents, 0);
+
+  const { data: insertedOrder, error: orderError } = await storefront
+    .from("orders")
+    .insert({
+      user_id: input.userId,
+      cart_id: cart.id,
+      payment_method: input.paymentMethod,
+      status: "pending",
+      payment_status: "unpaid",
+      fulfillment_status: "unfulfilled",
+      currency: cart.currency || items[0]?.currency || "EUR",
+      subtotal_cents: subtotalCents,
+      discount_cents: discountCents,
+      shipping_cents: 0,
+      tax_cents: 0,
+      total_cents: totalCents,
+      customer_email: profile?.email ?? null,
+      customer_name: profile?.full_name ?? null,
+      customer_phone: profile?.phone ?? null,
+      shipping_address: {},
+      billing_address: {},
+      placed_at: new Date().toISOString(),
+    })
+    .select("id, order_number, created_at, currency, total_cents, subtotal_cents, discount_cents, customer_email, customer_name, customer_phone")
+    .single();
+
+  if (orderError || !insertedOrder) {
+    throw new Error(orderError?.message || "Failed to create order.");
+  }
+
+  const orderCode = buildOrderCode(insertedOrder.order_number);
+  const { error: codeError } = await storefront
+    .from("orders")
+    .update({ order_code: orderCode })
+    .eq("id", insertedOrder.id);
+
+  if (codeError) {
+    throw new Error(codeError.message);
+  }
+
+  const { error: orderItemsError } = await storefront
+    .from("order_items")
+    .insert(
+      items.map((item) => ({
+        order_id: insertedOrder.id,
+        product_id: item.product_id,
+        selected_color: item.selected_color,
+        selected_length: item.selected_length,
+        selected_material: item.selected_material,
+        selected_options: item.selected_options ?? {},
+        product_name:
+          item.product_snapshot?.name ||
+          item.product_snapshot?.sku ||
+          item.product_id,
+        product_sku: item.product_snapshot?.sku || null,
+        quantity: item.quantity,
+        unit_price_cents: item.unit_price_cents,
+        total_price_cents: item.unit_price_cents * item.quantity,
+        product_snapshot: item.product_snapshot ?? {},
+      })),
+    );
+
+  if (orderItemsError) {
+    throw new Error(orderItemsError.message);
+  }
+
+  const { error: cartUpdateError } = await storefront
+    .from("carts")
+    .update({ status: "converted" })
+    .eq("id", cart.id);
+
+  if (cartUpdateError) {
+    throw new Error(cartUpdateError.message);
+  }
+
+  const summary: OrderSummary = {
+    id: insertedOrder.id,
+    cartId: cart.id,
+    orderNumber: insertedOrder.order_number,
+    orderCode,
+    createdAt: insertedOrder.created_at,
+    currency: insertedOrder.currency,
+    totalCents: insertedOrder.total_cents,
+    subtotalCents: insertedOrder.subtotal_cents,
+    discountCents: insertedOrder.discount_cents,
+    customerEmail: insertedOrder.customer_email,
+    customerName: insertedOrder.customer_name,
+    customerPhone: insertedOrder.customer_phone,
+    paymentMethod: input.paymentMethod,
+    items: items.map((item) => ({
+      name:
+        item.product_snapshot?.name ||
+        item.product_snapshot?.sku ||
+        item.product_id,
+      quantity: item.quantity,
+      totalCents: item.unit_price_cents * item.quantity,
+      currency: item.currency,
+      variantLines: getVariantLines(item),
+    })),
+  };
+
+  const invoice = await createOrderInvoice({
+    orderId: summary.id,
+    orderCode: summary.orderCode,
+    createdAt: summary.createdAt,
+    customerName: summary.customerName,
+    customerEmail: summary.customerEmail,
+    customerPhone: summary.customerPhone,
+    subtotalCents: summary.subtotalCents,
+    totalCents: summary.totalCents,
+    items: items.map((item) => ({
+      productId: item.product_id,
+      name:
+        item.product_snapshot?.name ||
+        item.product_snapshot?.sku ||
+        item.product_id,
+      sku: item.product_snapshot?.sku || null,
+      quantity: item.quantity,
+      unitPriceCents: item.unit_price_cents,
+      totalPriceCents: item.unit_price_cents * item.quantity,
+      note: getVariantLines(item).join(" • "),
+    })),
+  });
+
+  try {
+    await sendOrderCreatedEmails({
+      locale: input.locale,
+      orderCode,
+      customerEmail: summary.customerEmail,
+      customerName: summary.customerName,
+      customerPhone: summary.customerPhone,
+      totalCents,
+      currency: summary.currency,
+      paymentMethod: input.paymentMethod,
+      items: summary.items,
+      invoiceAttachment: invoice.attachment,
+    });
+  } catch (emailError) {
+    console.error("Order creation email send failed", emailError);
+  }
+
+  return summary;
+}
+
+export async function getOrderByCodeForUser(orderCode: string, userId: string) {
+  const storefront = createStorefrontServiceClient();
+  const { data: order, error } = await storefront
+    .from("orders")
+    .select("id, order_number, order_code, payment_method, status, payment_status, fulfillment_status, currency, total_cents, subtotal_cents, discount_cents, customer_email, customer_name, customer_phone, created_at, paid_at")
+    .eq("order_code", orderCode)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (error || !order) {
+    throw new Error(error?.message || "Order not found.");
+  }
+
+  return order;
+}
+
+export async function attachStripeSessionToOrder(orderId: string, session: Stripe.Checkout.Session) {
+  const storefront = createStorefrontServiceClient();
+  const { error } = await storefront
+    .from("orders")
+    .update({ stripe_checkout_session_id: session.id })
+    .eq("id", orderId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+export async function markOrderPaid(input: {
+  orderId: string;
+  locale: Locale;
+  paymentId: string | null;
+}) {
+  const storefront = createStorefrontServiceClient();
+  const { data: order, error: orderError } = await storefront
+    .from("orders")
+    .select("id, order_number, order_code, payment_method, payment_status, currency, total_cents, customer_email, customer_name, customer_phone")
+    .eq("id", input.orderId)
+    .maybeSingle();
+
+  if (orderError || !order) {
+    throw new Error(orderError?.message || "Order not found.");
+  }
+
+  if (order.payment_status === "paid") {
+    return order;
+  }
+
+  const paidAt = new Date().toISOString();
+  const { error: updateError } = await storefront
+    .from("orders")
+    .update({
+      status: "paid",
+      payment_status: "paid",
+      fulfillment_status: "processing",
+      paid_at: paidAt,
+      payment_id: input.paymentId,
+      stripe_payment_intent_id: input.paymentId,
+    })
+    .eq("id", input.orderId);
+
+  if (updateError) {
+    throw new Error(updateError.message);
+  }
+
+  const { data: itemRows, error: itemError } = await storefront
+    .from("order_items")
+    .select("product_name, quantity, total_price_cents, selected_color, selected_length, selected_material, selected_options")
+    .eq("order_id", input.orderId)
+    .order("created_at", { ascending: true });
+
+  if (itemError) {
+    throw new Error(itemError.message);
+  }
+
+  try {
+    await markOrderInvoicePaid(input.orderId);
+  } catch (invoiceError) {
+    console.error("Order invoice status update failed", invoiceError);
+  }
+
+  const invoice = await getOrderInvoiceAttachment(input.orderId);
+
+  try {
+    await sendOrderPaidEmails({
+      locale: input.locale,
+      orderCode: order.order_code || buildOrderCode(order.order_number),
+      customerEmail: order.customer_email,
+      customerName: order.customer_name,
+      customerPhone: order.customer_phone,
+      totalCents: order.total_cents,
+      currency: order.currency,
+      paymentMethod: order.payment_method as OrderPaymentMethod,
+      items: ((itemRows as Array<Record<string, unknown>> | null) ?? []).map((item) => ({
+        name: String(item.product_name || "MDB Light product"),
+        quantity: Number(item.quantity || 0),
+        totalCents: Number(item.total_price_cents || 0),
+        currency: order.currency,
+        variantLines: [
+          item.selected_color ? `Color: ${item.selected_color}` : "",
+          item.selected_length ? `Length: ${item.selected_length}` : "",
+          item.selected_material ? `Material: ${item.selected_material}` : "",
+          ...Object.entries((item.selected_options as Record<string, string> | null) ?? {}).map(
+            ([key, value]) => `${key}: ${value}`,
+          ),
+        ].filter(Boolean),
+      })),
+      invoiceAttachment: invoice?.attachment ?? null,
+    });
+  } catch (emailError) {
+    console.error("Order paid email send failed", emailError);
+  }
+
+  return order;
+}
+
+export async function rollbackOrderCreation(orderId: string, cartId: string) {
+  const storefront = createStorefrontServiceClient();
+  await deleteOrderInvoice(orderId);
+  await storefront.from("order_items").delete().eq("order_id", orderId);
+  await storefront.from("orders").delete().eq("id", orderId);
+  await storefront.from("carts").update({ status: "active" }).eq("id", cartId);
+}

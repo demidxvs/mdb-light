@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, Headset, Search } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
 import { SiteNavigation } from "@/components/ui/site-navigation";
@@ -14,7 +14,6 @@ import {
 
 type AuthShellProps = {
   topLabel: string;
-  supportLabel: string;
   backLabel: string;
   title: string;
   description: string;
@@ -26,7 +25,6 @@ type AuthShellProps = {
 
 export function AuthShell({
   topLabel,
-  supportLabel,
   backLabel,
   title,
   description,
@@ -70,7 +68,7 @@ export function AuthShell({
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.95),transparent_30%),linear-gradient(180deg,#fffdfa_0%,#f8f3eb_100%)]">
       <div className="border-b border-[color:var(--line)] bg-white/85 backdrop-blur-sm">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-3 text-xs text-[color:var(--muted)] sm:px-10 lg:px-12">
-          <div className="hidden md:block">+370 (000) 000-00-00 · hello@mdblight.com</div>
+          <div className="hidden md:block">+371 24443333 · info@mdbgroup.lv</div>
           <div className="ml-auto">{topLabel}</div>
         </div>
       </div>
@@ -92,21 +90,7 @@ export function AuthShell({
           </div>
           <div className="hidden items-center gap-3 lg:flex">
             <LanguageSwitcher />
-            <button
-              type="button"
-              className="flex h-9 w-9 items-center justify-center rounded-xl border border-[color:var(--line)] bg-white/72 text-[color:var(--muted)] hover:border-[color:var(--accent)]/30 hover:text-[color:var(--headline)]"
-              aria-label="Search"
-            >
-              <Search className="h-4.5 w-4.5" />
-            </button>
             <AccountControls />
-            <Link
-              href="/contacts"
-              className="inline-flex items-center gap-2 rounded-xl bg-[color:var(--accent)] px-4 py-2 text-sm font-medium text-[#203153] shadow-[0_12px_28px_rgba(244,198,79,0.28)] hover:bg-[#f1bc36]"
-            >
-              <Headset className="h-4 w-4" />
-              {supportLabel}
-            </Link>
           </div>
         </div>
       </header>
@@ -166,9 +150,6 @@ export function AuthShell({
     </main>
   );
 }
-
-
-
 
 
 

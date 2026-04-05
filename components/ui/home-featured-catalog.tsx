@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { useLocale } from "@/components/ui/locale-provider";
 import { CatalogProductCard } from "@/components/ui/catalog-product-card";
+import { localizePathname } from "@/i18n/config";
 import { featuredTrackProducts } from "@/lib/mock-track-products";
 import {
   createSupabaseBrowserClient,
@@ -14,8 +15,8 @@ import {
 type LocaleKey = "en" | "ru" | "el" | "lv";
 type ProductListRow = {
   id: string;
-  sku: string;
   slug: string;
+  category_id: string | null;
   price_cents: number;
   currency: string;
   primary_image_url: string | null;
@@ -24,40 +25,64 @@ type ProductListRow = {
     name: string | null;
     short_description: string | null;
   }>;
+  categories?: {
+    slug: string;
+    category_translations?: Array<{
+      locale: LocaleKey;
+      name: string | null;
+    }>;
+  } | null;
 };
 
 const copy = {
   en: {
-    eyebrow: "Featured catalog",
-    title: "Start with 4 bestseller track lights that instantly sell the mood of the project.",
-    text: "This opening set is built for modern apartments, boutique retail, compact hospitality spaces, and premium accent scenarios where the first visual impression matters.",
+    eyebrow: "Recommended products",
+    title: "A selection of products from our team",
+    text: "These items were selected by the seller as the best solutions for modern interiors.",
     more: "Open full catalog",
   },
   ru: {
-    eyebrow: "Избранный каталог",
-    title: "Начни с 4 сильных трековых моделей, которые сразу продают атмосферу пространства.",
-    text: "Этот стартовый набор собран для современных квартир, boutique retail, камерных HoReCa-сцен и интерьерных акцентов, где важна первая визуальная эмоция.",
+    eyebrow: "Рекомендованные товары",
+    title: "Подборка товаров от нашей команды",
+    text: "Эти позиции выбраны продавцом как лучшие решения для современных интерьеров.",
     more: "Открыть полный каталог",
   },
   el: {
-    eyebrow: "Προτεινόμενος κατάλογος",
-    title: "Ξεκινήστε με 4 βασικά track μοντέλα που πουλάνε αμέσως τη διάθεση του έργου.",
-    text: "Αυτή η αρχική επιλογή ταιριάζει σε σύγχρονα διαμερίσματα, boutique retail, compact hospitality χώρους και premium accent σενάρια όπου η πρώτη εντύπωση μετράει.",
+    eyebrow: "Προτεινόμενα προϊόντα",
+    title: "Επιλογή προϊόντων από την ομάδα μας",
+    text: "Αυτά τα προϊόντα επιλέχθηκαν από τον πωλητή ως οι καλύτερες λύσεις για σύγχρονους εσωτερικούς χώρους.",
     more: "Άνοιγμα πλήρους καταλόγου",
   },
   lv: {
-    eyebrow: "Izceltais katalogs",
-    title: "Sāc ar 4 spēcīgiem treka modeļiem, kas uzreiz pārdod telpas noskaņu.",
-    text: "Šis sākuma komplekts domāts moderniem dzīvokļiem, boutique retail, kompaktām HoReCa zonām un interjera akcentiem, kur svarīgs ir pirmais vizuālais iespaids.",
+    eyebrow: "Ieteiktie produkti",
+    title: "Mūsu komandas atlasīta produktu izlase",
+    text: "Šīs preces pārdevējs ir izvēlējies kā labākos risinājumus mūsdienīgiem interjeriem.",
     more: "Atvērt pilnu katalogu",
   },
 } as const;
+
+const FEATURED_CATALOG_CACHE_KEY = "mdb-featured-catalog-v1";
+
+function readCachedProducts() {
+  if (typeof window === "undefined") return [];
+
+  try {
+    const cached = window.sessionStorage.getItem(FEATURED_CATALOG_CACHE_KEY);
+    if (!cached) return [];
+
+    const parsed = JSON.parse(cached) as { products?: ProductListRow[] };
+    return parsed.products ?? [];
+  } catch {
+    return [];
+  }
+}
 
 export function HomeFeaturedCatalog() {
   const { locale } = useLocale();
   const t = copy[locale];
   const supabaseReady = useMemo(() => isSupabaseConfigured(), []);
   const [products, setProducts] = useState<ProductListRow[]>([]);
+  const [loading, setLoading] = useState(supabaseReady);
 
   useEffect(() => {
     if (!supabaseReady) return;
@@ -65,10 +90,20 @@ export function HomeFeaturedCatalog() {
     let mounted = true;
 
     const load = async () => {
+      const cachedProducts = readCachedProducts();
+      if (cachedProducts.length > 0) {
+        setProducts(cachedProducts);
+        setLoading(false);
+      }
+
+      if (cachedProducts.length === 0 && products.length === 0) {
+        setLoading(true);
+      }
+
       const { data } = await supabase
         .from("products")
         .select(
-          "id, sku, slug, price_cents, currency, primary_image_url, product_translations(locale, name, short_description)",
+          "id, slug, category_id, price_cents, currency, primary_image_url, product_translations(locale, name, short_description), categories(slug, category_translations(locale, name))",
         )
         .eq("is_active", true)
         .eq("is_featured", true)
@@ -76,14 +111,27 @@ export function HomeFeaturedCatalog() {
         .limit(4);
 
       if (!mounted) return;
-      setProducts((data as ProductListRow[] | null) ?? []);
+      const nextProducts = (data as ProductListRow[] | null) ?? [];
+      setProducts(nextProducts);
+      setLoading(false);
+
+      if (typeof window !== "undefined") {
+        try {
+          window.sessionStorage.setItem(
+            FEATURED_CATALOG_CACHE_KEY,
+            JSON.stringify({ products: nextProducts }),
+          );
+        } catch {
+          // Ignore cache write failures.
+        }
+      }
     };
 
     void load();
     return () => {
       mounted = false;
     };
-  }, [supabaseReady]);
+  }, [products.length, supabaseReady]);
 
   const displayProducts =
     products.length > 0
@@ -92,26 +140,22 @@ export function HomeFeaturedCatalog() {
             product.product_translations?.find((item) => item.locale === locale) ||
             product.product_translations?.find((item) => item.locale === "en") ||
             product.product_translations?.[0];
+          const categoryTranslation =
+            product.categories?.category_translations?.find((item) => item.locale === locale) ||
+            product.categories?.category_translations?.find((item) => item.locale === "en") ||
+            product.categories?.category_translations?.[0];
 
           return {
             id: product.id,
             slug: product.slug,
             name: translation?.name || product.slug,
             teaser: translation?.short_description || "",
-            sku: product.sku,
             price: new Intl.NumberFormat("en-US", {
               style: "currency",
               currency: product.currency || "EUR",
             }).format(product.price_cents / 100),
             imageUrl: product.primary_image_url,
-            category:
-              locale === "ru"
-                ? "Трековый свет"
-                : locale === "lv"
-                  ? "Treka gaisma"
-                  : locale === "el"
-                    ? "Φωτισμός ράγας"
-                    : "Track lighting",
+            category: categoryTranslation?.name || product.categories?.slug || "",
           };
         })
       : featuredTrackProducts.map((product) => ({
@@ -119,17 +163,9 @@ export function HomeFeaturedCatalog() {
           slug: product.slug,
           name: product.name[locale],
           teaser: product.teaser[locale],
-          sku: product.sku,
           price: product.price,
           imageUrl: null,
-          category:
-            locale === "ru"
-              ? "Трековый свет"
-              : locale === "lv"
-                ? "Treka gaisma"
-                : locale === "el"
-                  ? "Φωτισμός ράγας"
-                  : "Track lighting",
+          category: product.category,
         }));
 
   return (
@@ -144,7 +180,7 @@ export function HomeFeaturedCatalog() {
             <p className="mt-4 max-w-2xl text-sm leading-7 text-[color:var(--muted)] sm:text-base">{t.text}</p>
           </div>
           <Link
-            href="/catalog"
+            href={localizePathname("/catalog", locale)}
             className="inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-xl bg-[#f4c64f] px-5 text-sm font-semibold text-[#1e2f4e] shadow-[0_14px_28px_rgba(244,198,79,0.28)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#efbf3e]"
           >
             {t.more}
@@ -153,18 +189,40 @@ export function HomeFeaturedCatalog() {
         </div>
 
         <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-          {displayProducts.map((product) => (
-            <CatalogProductCard
-              key={product.id}
-              href={`/products/${product.slug}`}
-              name={product.name}
-              teaser={product.teaser}
-              sku={product.sku}
-              price={product.price}
-              category={product.category}
-              imageUrl={product.imageUrl}
-            />
-          ))}
+          {loading && supabaseReady
+            ? Array.from({ length: 4 }).map((_, index) => (
+                <div
+                  key={`featured-skeleton-${index}`}
+                  className="overflow-hidden rounded-[1.5rem] border border-[#ece3d9] bg-white shadow-[0_16px_36px_rgba(27,42,74,0.06)]"
+                >
+                  <div className="aspect-[4/3] animate-pulse bg-[linear-gradient(180deg,#fffdfa_0%,#f7f1e7_100%)]" />
+                  <div className="space-y-3 px-5 py-5">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="h-3 w-24 rounded bg-[#efe4d5]" />
+                      <div className="h-4 w-4 rounded-full bg-[#efe4d5]" />
+                    </div>
+                    <div className="space-y-3">
+                      <div className="h-3 w-20 rounded bg-[#efe4d5]" />
+                      <div className="h-6 w-3/4 rounded bg-[#efe4d5]" />
+                      <div className="h-4 w-full rounded bg-[#f4ecdf]" />
+                      <div className="h-4 w-2/3 rounded bg-[#f4ecdf]" />
+                    </div>
+                  </div>
+                </div>
+              ))
+            : displayProducts.map((product, index) => (
+                <CatalogProductCard
+                  key={product.id}
+                  href={localizePathname(`/products/${product.slug}`, locale)}
+                  name={product.name}
+                  teaser={product.teaser}
+                  price={product.price}
+                  category={product.category}
+                  imageUrl={product.imageUrl}
+                  imageLoading={index < 2 ? "eager" : "lazy"}
+                  imageFetchPriority={index < 2 ? "high" : "auto"}
+                />
+              ))}
         </div>
       </div>
     </section>

@@ -39,6 +39,8 @@ type RegisterCopy = {
   description: string;
   firstName: string;
   lastName: string;
+  phone: string;
+  phonePlaceholder: string;
   email: string;
   emailPlaceholder: string;
   password: string;
@@ -59,6 +61,7 @@ type RegisterCopy = {
   errors: {
     firstNameRequired: string;
     lastNameRequired: string;
+    phoneRequired: string;
     emailRequired: string;
     emailInvalid: string;
     passwordRequired: string;
@@ -195,6 +198,8 @@ export const registerCopy: Record<Locale, RegisterCopy> = {
     description: "Sign up to save carts and continue to checkout.",
     firstName: "First name",
     lastName: "Last name",
+    phone: "Phone number",
+    phonePlaceholder: "+371 2XXXXXXX",
     email: "Email",
     emailPlaceholder: "you@example.com",
     password: "Password",
@@ -205,9 +210,9 @@ export const registerCopy: Record<Locale, RegisterCopy> = {
     create: "Create account",
     creating: "Creating account...",
     consent: "I agree to the terms, privacy rules, and account-based cart storage.",
-    successTitle: "Account created",
-    successText: "Your account has been created. If email confirmation is enabled in Supabase, check your inbox before signing in.",
-    successAction: "Go to login",
+    successTitle: "Account successfully created",
+    successText: "Your account has been created. You can now save products, place orders, and manage your purchases. Please check your email to confirm your account before logging in.",
+    successAction: "Log in",
     missingConfig: "Supabase is not configured yet. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.",
     authErrorFallback: "Could not create the account. Please try again.",
     strengths: ["Enter a password", "Weak password", "Medium password", "Strong password", "Very strong password"],
@@ -215,6 +220,7 @@ export const registerCopy: Record<Locale, RegisterCopy> = {
     errors: {
       firstNameRequired: "Enter your first name.",
       lastNameRequired: "Enter your last name.",
+      phoneRequired: "Enter your phone number.",
       emailRequired: "Enter your email.",
       emailInvalid: "Enter a valid email address.",
       passwordRequired: "Enter your password.",
@@ -234,6 +240,8 @@ export const registerCopy: Record<Locale, RegisterCopy> = {
     description: "Регистрация сохраняет корзину и открывает checkout.",
     firstName: "Имя",
     lastName: "Фамилия",
+    phone: "Телефон",
+    phonePlaceholder: "+371 2XXXXXXX",
     email: "Email",
     emailPlaceholder: "you@example.com",
     password: "Пароль",
@@ -244,9 +252,9 @@ export const registerCopy: Record<Locale, RegisterCopy> = {
     create: "Создать аккаунт",
     creating: "Создаем аккаунт...",
     consent: "Я согласен с правилами, политикой конфиденциальности и хранением корзины по аккаунту.",
-    successTitle: "Аккаунт создан",
-    successText: "Аккаунт создан. Если в Supabase включено подтверждение email, проверьте почту перед входом.",
-    successAction: "Перейти ко входу",
+    successTitle: "Аккаунт успешно создан",
+    successText: "Ваш аккаунт создан. Теперь вы можете сохранять товары, оформлять заказы и управлять своими покупками. Проверьте почту для подтверждения email перед входом.",
+    successAction: "Войти в аккаунт",
     missingConfig: "Supabase еще не настроен. Добавьте NEXT_PUBLIC_SUPABASE_URL и NEXT_PUBLIC_SUPABASE_ANON_KEY.",
     authErrorFallback: "Не удалось создать аккаунт. Попробуйте еще раз.",
     strengths: ["Введите пароль", "Слабый пароль", "Средний пароль", "Сильный пароль", "Очень сильный пароль"],
@@ -254,6 +262,7 @@ export const registerCopy: Record<Locale, RegisterCopy> = {
     errors: {
       firstNameRequired: "Введите имя.",
       lastNameRequired: "Введите фамилию.",
+      phoneRequired: "Введите номер телефона.",
       emailRequired: "Введите email.",
       emailInvalid: "Введите корректный email.",
       passwordRequired: "Введите пароль.",
@@ -273,6 +282,8 @@ export const registerCopy: Record<Locale, RegisterCopy> = {
     description: "Η εγγραφή αποθηκεύει το καλάθι και ανοίγει το checkout.",
     firstName: "Όνομα",
     lastName: "Επώνυμο",
+    phone: "Τηλέφωνο",
+    phonePlaceholder: "+371 2XXXXXXX",
     email: "Email",
     emailPlaceholder: "you@example.com",
     password: "Κωδικός",
@@ -284,8 +295,8 @@ export const registerCopy: Record<Locale, RegisterCopy> = {
     creating: "Δημιουργία λογαριασμού...",
     consent: "Συμφωνώ με τους όρους, την πολιτική απορρήτου και την αποθήκευση καλαθιού βάσει λογαριασμού.",
     successTitle: "Ο λογαριασμός δημιουργήθηκε",
-    successText: "Ο λογαριασμός δημιουργήθηκε. Αν στο Supabase είναι ενεργή η επιβεβαίωση email, ελέγξτε το inbox πριν συνδεθείτε.",
-    successAction: "Μετάβαση στη σύνδεση",
+    successText: "Ο λογαριασμός σας δημιουργήθηκε. Μπορείτε πλέον να αποθηκεύετε προϊόντα, να κάνετε παραγγελίες και να διαχειρίζεστε τις αγορές σας. Ελέγξτε το email σας για επιβεβαίωση πριν συνδεθείτε.",
+    successAction: "Σύνδεση",
     missingConfig: "Το Supabase δεν έχει ρυθμιστεί ακόμα. Προσθέστε NEXT_PUBLIC_SUPABASE_URL και NEXT_PUBLIC_SUPABASE_ANON_KEY.",
     authErrorFallback: "Δεν ήταν δυνατή η δημιουργία λογαριασμού. Δοκιμάστε ξανά.",
     strengths: ["Εισαγάγετε κωδικό", "Αδύναμος κωδικός", "Μέτριος κωδικός", "Ισχυρός κωδικός", "Πολύ ισχυρός κωδικός"],
@@ -293,6 +304,7 @@ export const registerCopy: Record<Locale, RegisterCopy> = {
     errors: {
       firstNameRequired: "Συμπληρώστε το όνομα.",
       lastNameRequired: "Συμπληρώστε το επώνυμο.",
+      phoneRequired: "Συμπληρώστε τον αριθμό τηλεφώνου.",
       emailRequired: "Συμπληρώστε το email.",
       emailInvalid: "Συμπληρώστε έγκυρο email.",
       passwordRequired: "Συμπληρώστε τον κωδικό.",
@@ -312,6 +324,8 @@ export const registerCopy: Record<Locale, RegisterCopy> = {
     description: "Reģistrācija saglabā grozu un atver checkout.",
     firstName: "Vārds",
     lastName: "Uzvārds",
+    phone: "Tālrunis",
+    phonePlaceholder: "+371 2XXXXXXX",
     email: "Email",
     emailPlaceholder: "you@example.com",
     password: "Parole",
@@ -322,9 +336,9 @@ export const registerCopy: Record<Locale, RegisterCopy> = {
     create: "Izveidot kontu",
     creating: "Notiek konta izveide...",
     consent: "Es piekrītu noteikumiem, privātuma politikai un groza glabāšanai pēc konta principa.",
-    successTitle: "Konts ir izveidots",
-    successText: "Konts ir izveidots. Ja Supabase ieslēgta email apstiprināšana, pārbaudiet savu pastkasti pirms pieslēgšanās.",
-    successAction: "Pāriet uz pieslēgšanos",
+    successTitle: "Konts veiksmīgi izveidots",
+    successText: "Jūsu konts ir izveidots. Tagad varat saglabāt preces, veikt pasūtījumus un pārvaldīt savus pirkumus. Lūdzu, pārbaudiet e-pastu, lai apstiprinātu kontu pirms pieslēgšanās.",
+    successAction: "Pieslēgties",
     missingConfig: "Supabase vēl nav iestatīts. Pievienojiet NEXT_PUBLIC_SUPABASE_URL un NEXT_PUBLIC_SUPABASE_ANON_KEY.",
     authErrorFallback: "Neizdevās izveidot kontu. Mēģiniet vēlreiz.",
     strengths: ["Ievadiet paroli", "Vāja parole", "Vidēja parole", "Spēcīga parole", "Ļoti spēcīga parole"],
@@ -332,6 +346,7 @@ export const registerCopy: Record<Locale, RegisterCopy> = {
     errors: {
       firstNameRequired: "Ievadiet vārdu.",
       lastNameRequired: "Ievadiet uzvārdu.",
+      phoneRequired: "Ievadiet tālruņa numuru.",
       emailRequired: "Ievadiet email.",
       emailInvalid: "Ievadiet derīgu email adresi.",
       passwordRequired: "Ievadiet paroli.",

@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
-import { ShoppingCart, CircleUserRound, LoaderCircle, LogOut } from "lucide-react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { ShoppingCart, CircleUserRound, LoaderCircle, LogOut, ReceiptText } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useLocale } from "@/components/ui/locale-provider";
 import {
@@ -13,14 +13,13 @@ import {
 import {
   clearCachedAccountProfile,
   readCachedAccountProfile,
+  subscribeCachedAccountProfile,
   writeCachedAccountProfile,
+  type CachedAccountProfile,
 } from "@/lib/account-cache";
+import { CART_UPDATED_EVENT, getActiveCartCount, getCurrentUserId } from "@/lib/cart";
 
-type ProfileRow = {
-  first_name: string | null;
-  last_name: string | null;
-  full_name: string | null;
-};
+type ProfileRow = CachedAccountProfile;
 
 const signInLabelByLocale = {
   en: "Login",
@@ -29,16 +28,28 @@ const signInLabelByLocale = {
   lv: "Piesl\u0113gties",
 } as const;
 
+const ordersLabelByLocale = {
+  en: "Orders",
+  ru: "Заказы",
+  el: "Παραγγελίες",
+  lv: "Pasūtījumi",
+} as const;
+
 export function AccountControls() {
   const router = useRouter();
   const { locale } = useLocale();
   const t = useTranslations("accountControls");
   const supabaseReady = isSupabaseConfigured();
-  const initialCachedProfile = readCachedAccountProfile();
-  const [loading, setLoading] = useState(supabaseReady && !initialCachedProfile);
-  const [isAuthenticated, setIsAuthenticated] = useState(Boolean(initialCachedProfile));
-  const [profile, setProfile] = useState<ProfileRow | null>(initialCachedProfile);
+  const cachedProfile = useSyncExternalStore(
+    subscribeCachedAccountProfile,
+    readCachedAccountProfile,
+    () => null,
+  );
+  const [loading, setLoading] = useState(supabaseReady);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [profile, setProfile] = useState<ProfileRow | null>(null);
   const [signingOut, setSigningOut] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
 
   useEffect(() => {
     if (!supabaseReady) {
@@ -47,6 +58,26 @@ export function AccountControls() {
 
     const supabase = createSupabaseBrowserClient();
     let mounted = true;
+
+    const syncCartCount = async () => {
+      const userId = await getCurrentUserId(supabase);
+      if (!mounted) return;
+      if (!userId) {
+        setCartCount(0);
+        return;
+      }
+
+      try {
+        const count = await getActiveCartCount(supabase, userId);
+        if (mounted) {
+          setCartCount(count);
+        }
+      } catch {
+        if (mounted) {
+          setCartCount(0);
+        }
+      }
+    };
 
     const hydrateFromSession = async () => {
       const {
@@ -61,6 +92,7 @@ export function AccountControls() {
       if (!user) {
         clearCachedAccountProfile();
         setProfile(null);
+        setCartCount(0);
         setLoading(false);
         return;
       }
@@ -71,22 +103,25 @@ export function AccountControls() {
         first_name: meta.first_name ?? null,
         last_name: meta.last_name ?? null,
         full_name: meta.full_name ?? null,
+        phone: meta.phone ?? null,
       };
 
       writeCachedAccountProfile(nextProfile);
       setProfile(nextProfile);
       setLoading(false);
+      void syncCartCount();
 
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("first_name, last_name, full_name")
+        .select("first_name, last_name, full_name, phone")
         .eq("id", user.id)
         .maybeSingle();
 
       if (!mounted) return;
       if (profileData) {
-        writeCachedAccountProfile({ ...nextProfile, ...profileData });
-        setProfile(profileData);
+        const mergedProfile = { ...nextProfile, ...profileData };
+        writeCachedAccountProfile(mergedProfile);
+        setProfile(mergedProfile);
       }
     };
 
@@ -101,6 +136,7 @@ export function AccountControls() {
       if (!user) {
         clearCachedAccountProfile();
         setProfile(null);
+        setCartCount(0);
         setLoading(false);
         return;
       }
@@ -111,24 +147,37 @@ export function AccountControls() {
         first_name: meta.first_name ?? null,
         last_name: meta.last_name ?? null,
         full_name: meta.full_name ?? null,
+        phone: meta.phone ?? null,
       };
 
       writeCachedAccountProfile(nextProfile);
       setProfile(nextProfile);
       setLoading(false);
+      void syncCartCount();
       void hydrateFromSession();
     });
+
+    const handleCartUpdated = () => {
+      void syncCartCount();
+    };
+
+    window.addEventListener(CART_UPDATED_EVENT, handleCartUpdated);
 
     return () => {
       mounted = false;
       subscription.unsubscribe();
+      window.removeEventListener(CART_UPDATED_EVENT, handleCartUpdated);
     };
   }, [supabaseReady]);
 
   const displayName = useMemo(() => {
-    if (!profile) return "";
-    return profile.full_name || [profile.first_name, profile.last_name].filter(Boolean).join(" ");
-  }, [profile]);
+    const source = profile ?? cachedProfile;
+    if (!source) return "";
+    return source.full_name || [source.first_name, source.last_name].filter(Boolean).join(" ");
+  }, [cachedProfile, profile]);
+
+  const resolvedAuthenticated = isAuthenticated || Boolean(cachedProfile);
+  const resolvedLoading = loading && !cachedProfile;
 
   const handleSignOut = async () => {
     if (!supabaseReady || signingOut) {
@@ -147,18 +196,32 @@ export function AccountControls() {
     <div className="flex items-center gap-2 whitespace-nowrap xl:gap-3">
       <Link
         href="/cart"
-        className="flex h-9 w-9 items-center justify-center rounded-xl border border-[color:var(--line)] bg-white/72 text-[color:var(--muted)] transition duration-300 hover:-translate-y-0.5 hover:border-[color:var(--accent)]/30 hover:text-[color:var(--headline)]"
+        className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-[color:var(--line)] bg-white/72 text-[color:var(--muted)] transition duration-300 hover:-translate-y-0.5 hover:border-[color:var(--accent)]/30 hover:text-[color:var(--headline)]"
         aria-label={t("cart")}
       >
         <ShoppingCart className="h-4.5 w-4.5" />
+        {cartCount > 0 ? (
+          <span className="absolute -right-1.5 -top-1.5 inline-flex min-w-[18px] items-center justify-center rounded-full bg-[color:var(--accent)] px-1.5 text-[10px] font-semibold leading-5 text-[#203153] shadow-[0_8px_16px_rgba(244,198,79,0.28)]">
+            {cartCount > 99 ? "99+" : cartCount}
+          </span>
+        ) : null}
       </Link>
 
-      {loading ? (
+      {resolvedLoading ? (
         <div className="flex h-9 items-center gap-2 rounded-xl border border-[color:var(--line)] bg-white/72 px-3 text-[color:var(--muted)]">
           <LoaderCircle className="h-4 w-4 animate-spin" />
         </div>
-      ) : isAuthenticated ? (
+      ) : resolvedAuthenticated ? (
         <>
+          <Link
+            href="/orders"
+            className="inline-flex h-9 shrink-0 items-center gap-2 whitespace-nowrap rounded-xl border border-[color:var(--line)] bg-white/72 px-3 text-sm font-medium text-[color:var(--headline)] transition duration-300 hover:-translate-y-0.5 hover:border-[color:var(--accent)]/30 hover:text-[color:var(--headline)]"
+            aria-label={ordersLabelByLocale[locale]}
+          >
+            <ReceiptText className="h-4 w-4" />
+            <span className="hidden xl:inline">{ordersLabelByLocale[locale]}</span>
+          </Link>
+
           <Link
             href="/account"
             className="flex h-10 min-w-[150px] max-w-[220px] items-center gap-2 rounded-2xl border border-emerald-300 bg-emerald-50 px-3 text-left text-[color:var(--headline)] shadow-[0_10px_24px_rgba(16,185,129,0.12)] transition duration-300 hover:-translate-y-0.5 hover:border-emerald-400 xl:min-w-[170px]"

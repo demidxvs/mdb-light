@@ -9,6 +9,16 @@
   --accent: #f4c64f;
   --accent-soft: #fff7dd;
   --headline: #223250;
+  --font-dm-sans:
+    "DM Sans",
+    "Inter",
+    "Segoe UI",
+    sans-serif;
+  --font-display:
+    "Space Grotesk",
+    "Inter",
+    "Segoe UI",
+    sans-serif;
 }
 
 @theme inline {

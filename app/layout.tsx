@@ -8,6 +8,10 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "MDB Light",
   description: "LED lighting marketplace with multilingual catalog and admin workflow.",
+  icons: {
+    icon: "/logo/mdb-light-logo.svg",
+    shortcut: "/logo/mdb-light-logo.svg",
+  },
 };
 
 export default async function RootLayout({

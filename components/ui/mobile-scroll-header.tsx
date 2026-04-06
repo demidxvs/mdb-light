@@ -7,35 +7,9 @@ type MobileScrollHeaderProps = {
 };
 
 export function MobileScrollHeader({ children }: MobileScrollHeaderProps) {
-  const wrapperRef = useRef<HTMLDivElement | null>(null);
   const stopTimerRef = useRef<number | null>(null);
   const lastScrollYRef = useRef(0);
   const [isVisible, setIsVisible] = useState(true);
-  const [mobileHeight, setMobileHeight] = useState(0);
-
-  useEffect(() => {
-    const updateHeight = () => {
-      const height = wrapperRef.current?.getBoundingClientRect().height ?? 0;
-      setMobileHeight(height);
-    };
-
-    updateHeight();
-
-    const observer =
-      typeof ResizeObserver !== "undefined"
-        ? new ResizeObserver(() => {
-            updateHeight();
-          })
-        : null;
-
-    if (observer && wrapperRef.current) {
-      observer.observe(wrapperRef.current);
-    }
-
-    return () => {
-      observer?.disconnect();
-    };
-  }, []);
 
   useEffect(() => {
     lastScrollYRef.current = window.scrollY;
@@ -72,16 +46,13 @@ export function MobileScrollHeader({ children }: MobileScrollHeaderProps) {
   }, []);
 
   return (
-    <>
-      <div aria-hidden className="lg:hidden" style={{ height: mobileHeight }} />
-      <div
-        ref={wrapperRef}
-        className={`fixed inset-x-0 top-0 z-50 transform transition-transform duration-300 ease-out will-change-transform lg:sticky lg:translate-y-0 ${
-          isVisible ? "translate-y-0" : "-translate-y-[calc(100%+0.75rem)]"
-        }`}
-      >
-        {children}
-      </div>
-    </>
+    <div
+      className={`sticky z-50 transform transition-transform duration-300 ease-out will-change-transform ${
+        isVisible ? "translate-y-0" : "-translate-y-[calc(100%+0.75rem)]"
+      }`}
+      style={{ top: "env(safe-area-inset-top, 0px)" }}
+    >
+      {children}
+    </div>
   );
 }

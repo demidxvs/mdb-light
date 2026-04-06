@@ -20,6 +20,7 @@ import { LanguageSwitcher } from "@/components/ui/language-switcher";
 import { useLocale } from "@/components/ui/locale-provider";
 import { SiteNavigation } from "@/components/ui/site-navigation";
 import { AccountControls } from "@/components/ui/account-controls";
+import { MobileScrollHeader } from "@/components/ui/mobile-scroll-header";
 import { HomeFeaturedCatalog } from "@/components/ui/home-featured-catalog";
 import { HomeCategories } from "@/components/ui/home-categories";
 import { ProjectShowcaseSection } from "@/components/ui/project-showcase-section";
@@ -197,38 +198,40 @@ export default function Home() {
         </div>
       </div>
 
-      <header className="sticky top-0 z-50 border-b border-[color:var(--line)] bg-white/92 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-1 sm:px-10 lg:px-12">
-          <a href="#" className="flex min-w-0 items-center overflow-visible">
-            <Image
-              src="/logo/mdb-light-logo.svg"
-              alt="MDB Light logo"
-              width={1080}
-              height={182}
-              priority
-              className="h-14 w-auto origin-left scale-150 object-contain sm:h-16"
-            />
-          </a>
-          <div className="ml-auto hidden xl:block">
-            <SiteNavigation />
-          </div>
-          <div className="hidden items-center gap-3 lg:flex">
-            <LanguageSwitcher />
-            <AccountControls />
-          </div>
-        </div>
-        <div className="border-t border-[color:var(--line)] px-4 py-3 lg:hidden">
-          <div className="mx-auto flex max-w-7xl flex-col gap-3">
-            <div className="flex items-center gap-2">
-              <SiteNavigation compact className="min-w-0 flex-1" />
-              <LanguageSwitcher className="shrink-0" />
+      <MobileScrollHeader>
+        <header className="border-b border-[color:var(--line)] bg-white/92 backdrop-blur-xl">
+          <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-1 sm:px-10 lg:px-12">
+            <a href="#" className="flex min-w-0 items-center overflow-visible">
+              <Image
+                src="/logo/mdb-light-logo.svg"
+                alt="MDB Light logo"
+                width={1080}
+                height={182}
+                priority
+                className="h-14 w-auto origin-left scale-150 object-contain sm:h-16"
+              />
+            </a>
+            <div className="ml-auto hidden xl:block">
+              <SiteNavigation />
             </div>
-            <div className="overflow-x-auto pb-1">
+            <div className="hidden items-center gap-3 lg:flex">
+              <LanguageSwitcher />
               <AccountControls />
             </div>
           </div>
-        </div>
-      </header>
+          <div className="border-t border-[color:var(--line)] px-4 py-3 lg:hidden">
+            <div className="mx-auto flex max-w-7xl flex-col gap-3">
+              <div className="flex items-center gap-2">
+                <SiteNavigation compact className="min-w-0 flex-1" />
+                <LanguageSwitcher className="shrink-0" />
+              </div>
+              <div className="overflow-x-auto pb-1">
+                <AccountControls />
+              </div>
+            </div>
+          </div>
+        </header>
+      </MobileScrollHeader>
 
       {authNotice ? (
         <section className="mx-auto max-w-7xl px-6 pt-6 sm:px-10 lg:px-12">

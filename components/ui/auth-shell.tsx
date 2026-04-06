@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
 import { SiteNavigation } from "@/components/ui/site-navigation";
 import { AccountControls } from "@/components/ui/account-controls";
+import { MobileScrollHeader } from "@/components/ui/mobile-scroll-header";
 import {
   createSupabaseBrowserClient,
   isSupabaseConfigured,
@@ -73,38 +74,40 @@ export function AuthShell({
         </div>
       </div>
 
-      <header className="sticky top-0 z-50 border-b border-[color:var(--line)] bg-white/92 backdrop-blur-xl">
-        <div className="flex w-full items-center gap-4 py-1 pl-1 pr-6 sm:pl-2 sm:pr-10 lg:pl-2 lg:pr-12">
-          <Link href="/" className="flex min-w-0 items-center overflow-visible xl:ml-[360px] 2xl:ml-[380px]">
-            <Image
-              src="/logo/mdb-light-logo.svg"
-              alt="MDB Light logo"
-              width={1080}
-              height={182}
-              priority
-              className="h-14 w-auto origin-left scale-150 object-contain sm:h-16"
-            />
-          </Link>
-          <div className="ml-auto hidden xl:block">
-            <SiteNavigation basePath="/" />
-          </div>
-          <div className="hidden items-center gap-3 lg:flex">
-            <LanguageSwitcher />
-            <AccountControls />
-          </div>
-        </div>
-        <div className="border-t border-[color:var(--line)] px-4 py-3 lg:hidden">
-          <div className="mx-auto flex max-w-7xl flex-col gap-3">
-            <div className="flex items-center gap-2">
-              <SiteNavigation compact className="min-w-0 flex-1" />
-              <LanguageSwitcher className="shrink-0" />
+      <MobileScrollHeader>
+        <header className="border-b border-[color:var(--line)] bg-white/92 backdrop-blur-xl">
+          <div className="flex w-full items-center gap-4 py-1 pl-1 pr-6 sm:pl-2 sm:pr-10 lg:pl-2 lg:pr-12">
+            <Link href="/" className="flex min-w-0 items-center overflow-visible xl:ml-[360px] 2xl:ml-[380px]">
+              <Image
+                src="/logo/mdb-light-logo.svg"
+                alt="MDB Light logo"
+                width={1080}
+                height={182}
+                priority
+                className="h-14 w-auto origin-left scale-150 object-contain sm:h-16"
+              />
+            </Link>
+            <div className="ml-auto hidden xl:block">
+              <SiteNavigation basePath="/" />
             </div>
-            <div className="overflow-x-auto pb-1">
+            <div className="hidden items-center gap-3 lg:flex">
+              <LanguageSwitcher />
               <AccountControls />
             </div>
           </div>
-        </div>
-      </header>
+          <div className="border-t border-[color:var(--line)] px-4 py-3 lg:hidden">
+            <div className="mx-auto flex max-w-7xl flex-col gap-3">
+              <div className="flex items-center gap-2">
+                <SiteNavigation compact className="min-w-0 flex-1" />
+                <LanguageSwitcher className="shrink-0" />
+              </div>
+              <div className="overflow-x-auto pb-1">
+                <AccountControls />
+              </div>
+            </div>
+          </div>
+        </header>
+      </MobileScrollHeader>
 
       <section className="px-4 py-5 sm:px-8 sm:py-6 lg:px-10">
         <div className="mx-auto max-w-xl">
@@ -161,7 +164,6 @@ export function AuthShell({
     </main>
   );
 }
-
 
 
 

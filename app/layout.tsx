@@ -6,7 +6,7 @@ import { getMessages } from "@/i18n/messages";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://mdb-light.com"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://www.mdblight.com"),
   title: {
     default: "MDB Light (MDB) - LED Lighting in Riga, Latvia & Cyprus",
     template: "%s | MDB Light",

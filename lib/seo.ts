@@ -30,7 +30,7 @@ export type SeoProduct = {
 
 const SITE_NAME = "MDB Light";
 const SITE_ALT_NAME = "MDB";
-const FALLBACK_SITE_URL = "https://mdb-light.com";
+const FALLBACK_SITE_URL = "https://www.mdblight.com";
 
 const CYRILLIC_MAP: Record<string, string> = {
   а: "a", б: "b", в: "v", г: "g", д: "d", е: "e", ё: "e", ж: "zh", з: "z", и: "i", й: "y",

@@ -16,14 +16,12 @@ import {
   Truck,
   Wrench,
 } from "lucide-react";
-import { LanguageSwitcher } from "@/components/ui/language-switcher";
 import { useLocale } from "@/components/ui/locale-provider";
-import { SiteNavigation } from "@/components/ui/site-navigation";
-import { AccountControls } from "@/components/ui/account-controls";
-import { MobileScrollHeader } from "@/components/ui/mobile-scroll-header";
 import { HomeFeaturedCatalog } from "@/components/ui/home-featured-catalog";
 import { HomeCategories } from "@/components/ui/home-categories";
 import { ProjectShowcaseSection } from "@/components/ui/project-showcase-section";
+import { SiteFooter } from "@/components/ui/site-footer";
+import { SiteHeader } from "@/components/ui/site-header";
 import { localizePathname } from "@/i18n/config";
 import { useEffect, useState } from "react";
 
@@ -43,7 +41,6 @@ export default function Home() {
       paragraphs: [
         "MDB Light is a multilingual lighting store and project partner for LED lighting in Riga, across Latvia and for installation-oriented projects in Cyprus.",
         "We focus on track lighting, magnetic systems, LED panels, decorative fixtures and practical product selection for apartments, retail and commercial interiors.",
-        "If users search for MDB, MDB Light, lighting Riga, LED lighting Latvia or lighting Cyprus, this site is built to connect those intents with real products, categories and installation support.",
       ],
       links: [
         { href: localizePathname("/en/locations/riga", locale), label: "Lighting Riga" },
@@ -59,12 +56,11 @@ export default function Home() {
       paragraphs: [
         "MDB Light — это многоязычный магазин и проектный партнёр по LED освещению в Риге, по всей Латвии и для installation-проектов на Кипре.",
         "Мы фокусируемся на трековом освещении, магнитных системах, LED панелях, декоративных светильниках и практичном подборе света для квартир, retail и коммерческих интерьеров.",
-        "Если пользователь ищет MDB, MDB Light, освещение в Риге, LED lighting Latvia или lighting Cyprus, главная страница должна связывать этот интент с реальными товарами, категориями и монтажом.",
       ],
       links: [
         { href: localizePathname("/ru/locations/riga", locale), label: "Освещение в Риге" },
-        { href: localizePathname("/ru/locations/latvia", locale), label: "LED lighting Latvia" },
-        { href: localizePathname("/ru/locations/cyprus", locale), label: "Lighting Cyprus" },
+        { href: localizePathname("/ru/locations/latvia", locale), label: "LED-освещение в Латвии" },
+        { href: localizePathname("/ru/locations/cyprus", locale), label: "Освещение на Кипре" },
         { href: localizePathname("/ru/services/lighting-installation", locale), label: "Монтаж освещения" },
         { href: localizePathname("/ru/services/track-lighting", locale), label: "Трековое освещение" },
       ],
@@ -75,30 +71,28 @@ export default function Home() {
       paragraphs: [
         "MDB Light ir daudzvalodu apgaismojuma veikals un projektu partneris LED apgaismojumam Rīgā, visā Latvijā un uzstādīšanas projektiem Kiprā.",
         "Mēs koncentrējamies uz sliežu apgaismojumu, magnētiskajām sistēmām, LED paneļiem, dekoratīviem gaismekļiem un praktisku atlasi dzīvokļiem, retail un komerciāliem interjeriem.",
-        "Ja lietotāji meklē MDB, MDB Light, apgaismojums Rīgā, LED lighting Latvia vai lighting Cyprus, sākumlapa sasaista šo nodomu ar reālām produktu kategorijām un montāžas atbalstu.",
       ],
       links: [
         { href: localizePathname("/lv/locations/riga", locale), label: "Apgaismojums Rīgā" },
-        { href: localizePathname("/lv/locations/latvia", locale), label: "LED Lighting Latvia" },
-        { href: localizePathname("/lv/locations/cyprus", locale), label: "Lighting Cyprus" },
+        { href: localizePathname("/lv/locations/latvia", locale), label: "LED apgaismojums Latvijā" },
+        { href: localizePathname("/lv/locations/cyprus", locale), label: "Apgaismojums Kiprā" },
         { href: localizePathname("/lv/services/lighting-installation", locale), label: "Apgaismojuma montāža" },
         { href: localizePathname("/lv/services/track-lighting", locale), label: "Sliežu apgaismojums" },
       ],
     },
     el: {
-      eyebrow: "MDB Light in Riga",
-      title: "MDB Light (MDB) for lighting in Riga, Latvia and Cyprus",
+      eyebrow: "MDB Light στη Ρίγα",
+      title: "MDB Light (MDB): φωτισμός στη Ρίγα, στη Λετονία και στην Κύπρο",
       paragraphs: [
-        "MDB Light is a multilingual lighting store and project partner for LED lighting in Riga, across Latvia and for installation-oriented projects in Cyprus.",
-        "We focus on track lighting, magnetic systems, LED panels, decorative fixtures and practical product selection for apartments, retail and commercial interiors.",
-        "If users search for MDB, MDB Light, lighting Riga, LED lighting Latvia or lighting Cyprus, this homepage should connect that intent with real categories, products and installation support.",
+        "Το MDB Light είναι ένα πολύγλωσσο κατάστημα φωτισμού και συνεργάτης έργων για LED φωτισμό στη Ρίγα, σε όλη τη Λετονία και για έργα εγκατάστασης στην Κύπρο.",
+        "Εστιάζουμε σε φωτισμό ράγας, μαγνητικά συστήματα, LED panels, διακοσμητικά φωτιστικά και πρακτική επιλογή προϊόντων για διαμερίσματα, retail και εμπορικούς χώρους.",
       ],
       links: [
-        { href: localizePathname("/el/locations/riga", locale), label: "Lighting Riga" },
-        { href: localizePathname("/el/locations/latvia", locale), label: "LED Lighting Latvia" },
-        { href: localizePathname("/el/locations/cyprus", locale), label: "Lighting Cyprus" },
-        { href: localizePathname("/el/services/lighting-installation", locale), label: "Lighting Installation" },
-        { href: localizePathname("/el/services/track-lighting", locale), label: "Track Lighting" },
+        { href: localizePathname("/el/locations/riga", locale), label: "Φωτισμός στη Ρίγα" },
+        { href: localizePathname("/el/locations/latvia", locale), label: "LED φωτισμός στη Λετονία" },
+        { href: localizePathname("/el/locations/cyprus", locale), label: "Φωτισμός στην Κύπρο" },
+        { href: localizePathname("/el/services/lighting-installation", locale), label: "Εγκατάσταση φωτισμού" },
+        { href: localizePathname("/el/services/track-lighting", locale), label: "Φωτισμός ράγας" },
       ],
     },
   }[locale];
@@ -191,47 +185,7 @@ export default function Home() {
   ];
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.95),transparent_30%),linear-gradient(180deg,#fffdfa_0%,#f8f3eb_100%)]">
-      <div className="border-b border-[color:var(--line)] bg-white/85 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-3 text-xs text-[color:var(--muted)] sm:px-10 lg:px-12">
-          <div className="hidden md:block">+371 24443333 · info@mdbgroup.lv</div>
-          <div className="ml-auto">{t("top")}</div>
-        </div>
-      </div>
-
-      <MobileScrollHeader>
-        <header className="border-b border-[color:var(--line)] bg-white/92 backdrop-blur-xl">
-          <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-1 sm:px-10 lg:px-12">
-            <a href="#" className="flex min-w-0 items-center overflow-visible">
-              <Image
-                src="/logo/mdb-light-logo.svg"
-                alt="MDB Light logo"
-                width={1080}
-                height={182}
-                priority
-                className="h-14 w-auto origin-left scale-150 object-contain sm:h-16"
-              />
-            </a>
-            <div className="ml-auto hidden xl:block">
-              <SiteNavigation />
-            </div>
-            <div className="hidden items-center gap-3 lg:flex">
-              <LanguageSwitcher />
-              <AccountControls />
-            </div>
-          </div>
-          <div className="border-t border-[color:var(--line)] px-4 py-3 lg:hidden">
-            <div className="mx-auto flex max-w-7xl flex-col gap-3">
-              <div className="flex items-center gap-2">
-                <SiteNavigation compact className="min-w-0 flex-1" />
-                <LanguageSwitcher className="shrink-0" />
-              </div>
-              <div className="overflow-x-auto pb-1">
-                <AccountControls />
-              </div>
-            </div>
-          </div>
-        </header>
-      </MobileScrollHeader>
+      <SiteHeader topLabel={t("top")} />
 
       {authNotice ? (
         <section className="mx-auto max-w-7xl px-6 pt-6 sm:px-10 lg:px-12">
@@ -407,12 +361,7 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="mt-10 border-t border-[color:var(--line)] bg-white/72">
-        <div className="mx-auto max-w-7xl px-6 py-12 sm:px-10 lg:px-12">
-          <p className="font-display text-2xl font-semibold text-[color:var(--headline)]">MDB Light</p>
-          <p className="mt-3 max-w-xl text-sm leading-7 text-[color:var(--muted)]">{t("footer")}</p>
-        </div>
-      </footer>
+      <SiteFooter />
     </main>
   );
 }

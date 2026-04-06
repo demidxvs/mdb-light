@@ -29,8 +29,10 @@ export function SiteNavigation({
   return (
     <nav
       className={cn(
-        "inline-flex items-center rounded-[1.6rem] border border-[#ece3d9] bg-white/82 p-1 shadow-none",
-        compact && "w-full",
+        "rounded-[1.6rem] border border-[#ece3d9] bg-white/82 shadow-none",
+        compact
+          ? "grid w-full grid-cols-1 gap-1 p-1 sm:grid-cols-2"
+          : "inline-flex w-full items-center justify-start gap-1 py-1 pl-0.5 pr-1",
         className,
       )}
     >
@@ -41,11 +43,11 @@ export function SiteNavigation({
           <Link
             key={link.href}
             href={localizePathname(link.href, locale)}
-            className={`inline-flex h-9 items-center justify-center rounded-xl text-sm font-medium transition ${
+            className={`inline-flex items-center justify-center rounded-xl text-center text-sm font-medium leading-5 whitespace-nowrap transition ${
               isActive
                 ? "bg-[#7f91b7] text-white shadow-[0_10px_24px_rgba(127,145,183,0.24)]"
                 : "text-[color:var(--muted)] hover:bg-[#fff7ef] hover:text-[color:var(--headline)]"
-            } ${compact ? "flex-1 px-4" : "px-6"}`}
+            } ${compact ? "min-h-10 w-full px-4 py-2 whitespace-normal" : "min-h-9 px-4 py-2"}`}
           >
             {link.label}
           </Link>

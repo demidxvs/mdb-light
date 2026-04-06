@@ -35,7 +35,7 @@ const ordersLabelByLocale = {
   lv: "Pasūtījumi",
 } as const;
 
-export function AccountControls() {
+export function AccountControls({ compact = false }: { compact?: boolean } = {}) {
   const router = useRouter();
   const { locale } = useLocale();
   const t = useTranslations("accountControls");
@@ -219,7 +219,7 @@ export function AccountControls() {
             aria-label={ordersLabelByLocale[locale]}
           >
             <ReceiptText className="h-4 w-4" />
-            <span className="hidden lg:inline xl:inline">{ordersLabelByLocale[locale]}</span>
+            <span className={compact ? "hidden" : "hidden lg:inline xl:inline"}>{ordersLabelByLocale[locale]}</span>
           </Link>
 
           <Link
@@ -230,7 +230,9 @@ export function AccountControls() {
             <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-white text-emerald-700">
               <CircleUserRound className="h-4.5 w-4.5" />
             </div>
-            <p className="hidden truncate text-sm font-semibold leading-4 sm:block">{displayName || t("account")}</p>
+            <p className={compact ? "hidden" : "hidden truncate text-sm font-semibold leading-4 sm:block"}>
+              {displayName || t("account")}
+            </p>
           </Link>
 
           <button
@@ -241,7 +243,7 @@ export function AccountControls() {
             className="inline-flex h-9 shrink-0 items-center gap-2 whitespace-nowrap rounded-xl border border-[color:var(--line)] bg-white/72 px-2.5 text-sm font-medium text-[color:var(--headline)] transition duration-300 hover:-translate-y-0.5 hover:border-red-200 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-70 sm:px-3"
           >
             {signingOut ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />}
-            <span className="hidden 2xl:inline">{t("signOut")}</span>
+            <span className={compact ? "hidden" : "hidden 2xl:inline"}>{t("signOut")}</span>
           </button>
         </>
       ) : (
@@ -251,7 +253,7 @@ export function AccountControls() {
           aria-label={signInLabelByLocale[locale]}
         >
           <CircleUserRound className="h-4.5 w-4.5" />
-          <span className="hidden sm:inline">{signInLabelByLocale[locale]}</span>
+          <span className={compact ? "hidden" : "hidden sm:inline"}>{signInLabelByLocale[locale]}</span>
         </Link>
       )}
     </div>

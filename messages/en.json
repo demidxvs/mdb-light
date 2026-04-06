@@ -4,8 +4,11 @@
     "about": "About",
     "partners": "Partners",
     "projects": "Projects",
+    "privacy": "Privacy Policy",
+    "delivery": "Delivery / Returns",
     "support": "Support",
-    "security": "Security"
+    "security": "Security",
+    "terms": "Terms of Use"
   },
   "accountControls": {
     "cart": "Cart",

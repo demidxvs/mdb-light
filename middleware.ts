@@ -12,15 +12,18 @@ const REWRITTEN_PREFIXES = new Set([
   "checkout",
   "collections",
   "contacts",
+  "cookies",
+  "delivery",
   "forgot-password",
-  "lighting",
   "login",
   "orders",
   "panel-x9k2m4q7r2a",
+  "privacy",
   "products",
   "projects",
   "register",
   "security",
+  "terms",
 ]);
 
 export function middleware(request: NextRequest) {

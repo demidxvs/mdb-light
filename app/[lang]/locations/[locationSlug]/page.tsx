@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SeoLocaleAlternatesBridge } from "@/components/seo/seo-locale-alternates-bridge";
+import { SiteFooter } from "@/components/ui/site-footer";
+import { SiteHeader } from "@/components/ui/site-header";
 import { getLocationLanding } from "@/lib/seo-content";
 import { buildPageMetadata, getCommonStructuredData, getSiteName } from "@/lib/seo";
 import { isLocale, type Locale } from "@/i18n/config";
@@ -65,12 +67,14 @@ export default async function LocationLandingPage({
   ];
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(180deg,#fffdfa_0%,#f8f3eb_100%)] px-6 py-10 sm:px-10 lg:px-12">
+    <main className="min-h-screen bg-[linear-gradient(180deg,#fffdfa_0%,#f8f3eb_100%)]">
       <SeoLocaleAlternatesBridge alternates={alternates} />
       {structuredData.map((item, index) => (
         <script key={`location-schema-${index}`} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(item) }} />
       ))}
-      <section className="mx-auto max-w-5xl rounded-[2rem] border border-[#e7dfd4] bg-white p-8 shadow-[0_20px_60px_rgba(27,42,74,0.06)]">
+      <SiteHeader topLabel={landing.title[locale]} />
+      <section className="mx-auto max-w-5xl px-6 py-10 sm:px-10 lg:px-12">
+      <div className="rounded-[2rem] border border-[#e7dfd4] bg-white p-8 shadow-[0_20px_60px_rgba(27,42,74,0.06)]">
         <nav className="text-sm text-[color:var(--muted)]">
           <Link href={`/${locale}`}>{getSiteName()}</Link>
           <span className="mx-2">/</span>
@@ -84,9 +88,10 @@ export default async function LocationLandingPage({
             <p key={paragraph} className="text-base leading-8 text-[color:var(--muted)]">{paragraph}</p>
           ))}
         </div>
+      </div>
       </section>
 
-      <section className="mx-auto mt-8 grid max-w-5xl gap-5 md:grid-cols-2">
+      <section className="mx-auto mt-8 grid max-w-5xl gap-5 px-6 pb-10 sm:px-10 lg:px-12 md:grid-cols-2">
         {landing.faq[locale].map((item) => (
           <article key={item.question} className="rounded-[1.6rem] border border-[#e7dfd4] bg-white p-6 shadow-[0_16px_40px_rgba(27,42,74,0.05)]">
             <h2 className="font-display text-xl font-semibold text-[color:var(--headline)]">{item.question}</h2>
@@ -94,6 +99,7 @@ export default async function LocationLandingPage({
           </article>
         ))}
       </section>
+      <SiteFooter />
     </main>
   );
 }

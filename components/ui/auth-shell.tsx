@@ -1,13 +1,10 @@
 ﻿"use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
-import { LanguageSwitcher } from "@/components/ui/language-switcher";
-import { SiteNavigation } from "@/components/ui/site-navigation";
-import { AccountControls } from "@/components/ui/account-controls";
-import { MobileScrollHeader } from "@/components/ui/mobile-scroll-header";
+import { SiteFooter } from "@/components/ui/site-footer";
+import { SiteHeader } from "@/components/ui/site-header";
 import {
   createSupabaseBrowserClient,
   isSupabaseConfigured,
@@ -67,47 +64,7 @@ export function AuthShell({
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.95),transparent_30%),linear-gradient(180deg,#fffdfa_0%,#f8f3eb_100%)]">
-      <div className="border-b border-[color:var(--line)] bg-white/85 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-3 text-xs text-[color:var(--muted)] sm:px-10 lg:px-12">
-          <div className="hidden md:block">+371 24443333 · info@mdbgroup.lv</div>
-          <div className="ml-auto">{topLabel}</div>
-        </div>
-      </div>
-
-      <MobileScrollHeader>
-        <header className="border-b border-[color:var(--line)] bg-white/92 backdrop-blur-xl">
-          <div className="flex w-full items-center gap-4 py-1 pl-1 pr-6 sm:pl-2 sm:pr-10 lg:pl-2 lg:pr-12">
-            <Link href="/" className="flex min-w-0 items-center overflow-visible xl:ml-[360px] 2xl:ml-[380px]">
-              <Image
-                src="/logo/mdb-light-logo.svg"
-                alt="MDB Light logo"
-                width={1080}
-                height={182}
-                priority
-                className="h-14 w-auto origin-left scale-150 object-contain sm:h-16"
-              />
-            </Link>
-            <div className="ml-auto hidden xl:block">
-              <SiteNavigation basePath="/" />
-            </div>
-            <div className="hidden items-center gap-3 lg:flex">
-              <LanguageSwitcher />
-              <AccountControls />
-            </div>
-          </div>
-          <div className="border-t border-[color:var(--line)] px-4 py-3 lg:hidden">
-            <div className="mx-auto flex max-w-7xl flex-col gap-3">
-              <div className="flex items-center gap-2">
-                <SiteNavigation compact className="min-w-0 flex-1" />
-                <LanguageSwitcher className="shrink-0" />
-              </div>
-              <div className="overflow-x-auto pb-1">
-                <AccountControls />
-              </div>
-            </div>
-          </div>
-        </header>
-      </MobileScrollHeader>
+      <SiteHeader topLabel={topLabel} />
 
       <section className="px-4 py-5 sm:px-8 sm:py-6 lg:px-10">
         <div className="mx-auto max-w-xl">
@@ -161,9 +118,8 @@ export function AuthShell({
           </section>
         </div>
       </section>
+      <SiteFooter />
     </main>
   );
 }
-
-
 

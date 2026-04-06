@@ -1,5 +1,6 @@
 ﻿import type { Metadata } from "next";
 import { cookies, headers } from "next/headers";
+import { CookieConsent } from "@/components/ui/cookie-consent";
 import { LocaleProvider } from "@/components/ui/locale-provider";
 import { defaultLocale, isLocale } from "@/i18n/config";
 import { getMessages } from "@/i18n/messages";
@@ -54,6 +55,7 @@ export default async function RootLayout({
       <body suppressHydrationWarning className="min-h-full flex flex-col">
         <LocaleProvider initialLocale={locale} initialMessages={messages}>
           {children}
+          <CookieConsent />
         </LocaleProvider>
       </body>
     </html>

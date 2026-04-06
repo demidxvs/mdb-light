@@ -19,19 +19,19 @@ export const serviceLandings: Record<string, SeoLanding> = {
       en: "Lighting Installation in Riga, Latvia and Cyprus",
       ru: "Монтаж освещения в Риге, Латвии и на Кипре",
       lv: "Apgaismojuma montāža Rīgā, Latvijā un Kiprā",
-      el: "Lighting Installation in Riga, Latvia and Cyprus",
+      el: "Εγκατάσταση φωτισμού στη Ρίγα, στη Λετονία και στην Κύπρο",
     },
     description: {
       en: "Professional lighting installation for residential, retail and commercial projects. MDB Light serves Riga, Latvia and Cyprus.",
       ru: "Профессиональный монтаж освещения для квартир, магазинов и коммерческих объектов. MDB Light работает в Риге, Латвии и на Кипре.",
       lv: "Profesionāla apgaismojuma montāža dzīvokļiem, veikaliem un komerctelpām. MDB Light strādā Rīgā, Latvijā un Kiprā.",
-      el: "Professional lighting installation for residential, retail and commercial projects in Riga, Latvia and Cyprus.",
+      el: "Επαγγελματική εγκατάσταση φωτισμού για οικιστικά, retail και εμπορικά έργα στη Ρίγα, στη Λετονία και στην Κύπρο.",
     },
     intro: {
       en: "MDB Light handles lighting installation for LED fixtures, magnetic track systems, linear lighting and turnkey project delivery.",
       ru: "MDB Light выполняет монтаж LED светильников, магнитных трековых систем, линейного света и проекты под ключ.",
       lv: "MDB Light veic LED gaismekļu, magnētisko sliežu sistēmu, lineārā apgaismojuma un pilna cikla projektu montāžu.",
-      el: "MDB Light delivers installation for LED fixtures, magnetic track systems, linear lighting and turnkey projects.",
+      el: "Το MDB Light αναλαμβάνει εγκατάσταση για LED φωτιστικά, μαγνητικά συστήματα ράγας, γραμμικό φωτισμό και έργα turnkey.",
     },
     body: {
       en: [
@@ -50,9 +50,9 @@ export const serviceLandings: Record<string, SeoLanding> = {
         "Projektiem Kiprā mēs izvēlamies uzticamus LED risinājumus, sakārtotu draiveru izvietojumu un ērtu piekļuvi apkopei siltā klimatā.",
       ],
       el: [
-        "A reliable installation starts before ceilings are finished. We coordinate luminaire positions, driver access, power planning and maintenance zones to avoid costly changes later.",
-        "For retail projects in Riga, magnetic track systems and adjustable spotlights make it easier to adapt lighting when merchandising changes.",
-        "For Cyprus projects, we prioritize durable LED systems, clean driver management and maintenance-friendly layouts in warm climate conditions.",
+        "Μια αξιόπιστη εγκατάσταση ξεκινά πριν ολοκληρωθούν οι οροφές. Συντονίζουμε θέσεις φωτιστικών, πρόσβαση σε drivers, σχεδιασμό τροφοδοσίας και ζώνες συντήρησης ώστε να αποφευχθούν ακριβές αλλαγές αργότερα.",
+        "Για retail έργα στη Ρίγα, τα μαγνητικά συστήματα ράγας και τα ρυθμιζόμενα spot κάνουν πιο εύκολη την προσαρμογή του φωτισμού όταν αλλάζει το merchandising.",
+        "Για έργα στην Κύπρο, δίνουμε προτεραιότητα σε ανθεκτικά LED συστήματα, σωστή διαχείριση drivers και διατάξεις που διευκολύνουν τη συντήρηση σε θερμές κλιματικές συνθήκες.",
       ],
     },
     faq: {
@@ -69,8 +69,8 @@ export const serviceLandings: Record<string, SeoLanding> = {
         { question: "Vai jūs montējat sliežu sistēmas?", answer: "Jā. MDB Light uzstāda magnētiskās un standarta sliežu sistēmas dzīvokļiem, veikaliem un komerctelpām." },
       ],
       el: [
-        { question: "Do you work only in Riga?", answer: "No. We work in Riga, throughout Latvia and also support installation projects in Cyprus." },
-        { question: "Do you install track systems?", answer: "Yes. MDB Light installs magnetic and standard track systems for apartments, retail and commercial spaces." },
+        { question: "Δουλεύετε μόνο στη Ρίγα;", answer: "Όχι. Εργαζόμαστε στη Ρίγα, σε όλη τη Λετονία και υποστηρίζουμε επίσης έργα εγκατάστασης στην Κύπρο." },
+        { question: "Εγκαθιστάτε συστήματα ράγας;", answer: "Ναι. Το MDB Light εγκαθιστά μαγνητικά και standard συστήματα ράγας για διαμερίσματα, retail και εμπορικούς χώρους." },
       ],
     },
     keywords: ["lighting installation", "installation Riga", "installation Latvia", "installation Cyprus"],
@@ -81,19 +81,19 @@ export const serviceLandings: Record<string, SeoLanding> = {
       en: "Track Lighting Systems for Riga, Latvia and Cyprus",
       ru: "Трековое освещение для Риги, Латвии и Кипра",
       lv: "Sliežu apgaismojums Rīgai, Latvijai un Kiprai",
-      el: "Track Lighting for Riga, Latvia and Cyprus",
+      el: "Φωτισμός ράγας για τη Ρίγα, τη Λετονία και την Κύπρο",
     },
     description: {
       en: "Magnetic and standard track lighting systems for homes, showrooms and retail spaces. MDB Light supplies and installs in Riga, Latvia and Cyprus.",
       ru: "Магнитные и стандартные трековые системы для квартир, шоурумов и магазинов. MDB Light поставляет и монтирует в Риге, Латвии и на Кипре.",
       lv: "Magnētiskās un standarta sliežu sistēmas mājām, showroom un veikaliem. MDB Light piegādā un montē Rīgā, Latvijā un Kiprā.",
-      el: "Magnetic and standard track lighting systems for homes, showrooms and retail spaces in Riga, Latvia and Cyprus.",
+      el: "Μαγνητικά και standard συστήματα φωτισμού ράγας για σπίτια, showrooms και retail χώρους στη Ρίγα, στη Λετονία και στην Κύπρο.",
     },
     intro: {
       en: "Track lighting remains one of the strongest SEO and commercial categories for MDB Light because it matches residential, retail and hospitality use cases.",
       ru: "Трековое освещение остаётся одной из ключевых категорий MDB Light, потому что подходит для жилых, коммерческих и hospitality-проектов.",
       lv: "Sliežu apgaismojums ir viena no galvenajām MDB Light kategorijām, jo tas der dzīvojamiem, komerciāliem un hospitality projektiem.",
-      el: "Track lighting is one of the strongest MDB Light categories for residential, retail and hospitality projects.",
+      el: "Ο φωτισμός ράγας είναι μία από τις βασικές κατηγορίες του MDB Light για οικιστικά, retail και hospitality έργα.",
     },
     body: {
       en: [
@@ -112,9 +112,9 @@ export const serviceLandings: Record<string, SeoLanding> = {
         "Veikaliem Latvijā un Kiprā sliežu apgaismojums palīdz ātri pielāgot gaismu jaunām kolekcijām, vitrīnām un kustības plūsmai.",
       ],
       el: [
-        "Track systems are ideal when ceiling geometry is complex or when lighting needs to stay flexible after installation.",
-        "For Riga apartments, compact magnetic tracks create cleaner ceilings and better control over accent lighting.",
-        "For retail projects in Latvia and Cyprus, track lighting adapts quickly to changing displays, collections and visitor paths.",
+        "Τα συστήματα ράγας είναι ιδανικά όταν η γεωμετρία της οροφής είναι σύνθετη ή όταν ο φωτισμός πρέπει να παραμείνει ευέλικτος μετά την εγκατάσταση.",
+        "Για διαμερίσματα στη Ρίγα, οι compact μαγνητικές ράγες δημιουργούν καθαρότερες οροφές και καλύτερο έλεγχο στον accent φωτισμό.",
+        "Για retail έργα στη Λετονία και στην Κύπρο, ο φωτισμός ράγας προσαρμόζεται γρήγορα σε αλλαγές βιτρίνας, συλλογών και διαδρομών επισκεπτών.",
       ],
     },
     faq: {
@@ -131,8 +131,8 @@ export const serviceLandings: Record<string, SeoLanding> = {
         { question: "Vai sliežu apgaismojumu var uzstādīt dzīvoklī?", answer: "Jā. Rīgā tās bieži izmanto virtuvēs, dzīvojamās zonās, garderobēs un gaiteņos." },
       ],
       el: [
-        { question: "What is the difference between magnetic and standard track lighting?", answer: "Magnetic systems are visually cleaner and easier to reconfigure, while standard tracks are often more budget-friendly." },
-        { question: "Can track lighting be used in apartments?", answer: "Yes. It is a strong option for kitchens, living rooms, wardrobes and corridors in Riga apartments." },
+        { question: "Ποια είναι η διαφορά ανάμεσα σε μαγνητικό και standard φωτισμό ράγας;", answer: "Τα μαγνητικά συστήματα είναι πιο καθαρά οπτικά και πιο εύκολα στην αναδιαμόρφωση, ενώ οι standard ράγες είναι συνήθως πιο οικονομικές." },
+        { question: "Μπορεί ο φωτισμός ράγας να χρησιμοποιηθεί σε διαμερίσματα;", answer: "Ναι. Είναι εξαιρετική λύση για κουζίνες, σαλόνια, ντουλάπες και διαδρόμους σε διαμερίσματα της Ρίγας." },
       ],
     },
     keywords: ["track lighting", "magnetic track systems", "track lights Riga", "LED lighting Latvia"],
@@ -146,19 +146,19 @@ export const locationLandings: Record<string, SeoLanding> = {
       en: "Lighting in Riga: LED Fixtures, Track Systems and Installation",
       ru: "Освещение в Риге: LED светильники, треки и монтаж",
       lv: "Apgaismojums Rīgā: LED gaismekļi, sliedes un montāža",
-      el: "Lighting in Riga: LED Fixtures, Track Systems and Installation",
+      el: "Φωτισμός στη Ρίγα: LED φωτιστικά, συστήματα ράγας και εγκατάσταση",
     },
     description: {
       en: "MDB Light provides lighting in Riga for apartments, retail, showrooms and commercial spaces with supply and installation support.",
       ru: "MDB Light предлагает освещение в Риге для квартир, магазинов, шоурумов и коммерческих объектов с поставкой и монтажом.",
       lv: "MDB Light nodrošina apgaismojumu Rīgā dzīvokļiem, veikaliem, showroom un komerctelpām ar piegādi un montāžu.",
-      el: "MDB Light provides lighting in Riga for apartments, retail and commercial spaces with supply and installation.",
+      el: "Το MDB Light προσφέρει φωτισμό στη Ρίγα για διαμερίσματα, retail και εμπορικούς χώρους με προμήθεια και εγκατάσταση.",
     },
     intro: {
       en: "This landing targets the core commercial query group around lighting Riga, track lighting Riga and LED lighting in Riga.",
       ru: "Эта страница ориентирована на основные коммерческие запросы: освещение Рига, трековое освещение Рига и LED lighting in Riga.",
       lv: "Šī lapa mērķē uz galvenajiem komerciālajiem meklējumiem: apgaismojums Rīgā, sliežu apgaismojums Rīgā un LED lighting in Riga.",
-      el: "This page targets the main commercial searches around lighting Riga, track lighting Riga and LED lighting in Riga.",
+      el: "Αυτή η σελίδα στοχεύει στα βασικά εμπορικά searches γύρω από lighting Riga, track lighting Riga και LED lighting in Riga.",
     },
     body: {
       en: [
@@ -177,9 +177,9 @@ export const locationLandings: Record<string, SeoLanding> = {
         "Ja nepieciešams, mēs nodrošinām arī projektēšanu, atlasi un apgaismojuma montāžu Rīgā pilna cikla projektos.",
       ],
       el: [
-        "Riga projects usually require a balance between aesthetics, installation speed and maintenance access.",
-        "MDB Light supplies LED panels, decorative fixtures, magnetic tracks and adjustable spotlight systems for apartments and commercial interiors.",
-        "We also support product selection, specification and installation for turnkey lighting projects in Riga.",
+        "Τα έργα στη Ρίγα συνήθως απαιτούν ισορροπία ανάμεσα στην αισθητική, την ταχύτητα εγκατάστασης και την εύκολη συντήρηση.",
+        "Το MDB Light προμηθεύει LED panels, διακοσμητικά φωτιστικά, μαγνητικές ράγες και ρυθμιζόμενα spot systems για διαμερίσματα και εμπορικούς εσωτερικούς χώρους.",
+        "Υποστηρίζουμε επίσης επιλογή προϊόντων, specification και εγκατάσταση για turnkey έργα φωτισμού στη Ρίγα.",
       ],
     },
     faq: {
@@ -196,8 +196,8 @@ export const locationLandings: Record<string, SeoLanding> = {
         { question: "Vai jūs nodrošināt gan produktus, gan montāžu?", answer: "Jā. Atkarībā no projekta mēs varam piegādāt produktus vai pārvaldīt arī plašāku montāžas apjomu." },
       ],
       el: [
-        { question: "Do you work with apartments in Riga?", answer: "Yes. MDB Light supports apartment lighting, renovations, new-builds and private interiors in Riga." },
-        { question: "Do you provide both products and installation?", answer: "Yes. Depending on scope, we can supply products only or support the full installation package." },
+        { question: "Δουλεύετε με διαμερίσματα στη Ρίγα;", answer: "Ναι. Το MDB Light υποστηρίζει φωτισμό διαμερισμάτων, ανακαινίσεις, νέες κατασκευές και ιδιωτικά εσωτερικά έργα στη Ρίγα." },
+        { question: "Παρέχετε και προϊόντα και εγκατάσταση;", answer: "Ναι. Ανάλογα με το scope, μπορούμε να προμηθεύσουμε μόνο προϊόντα ή να υποστηρίξουμε ολόκληρο το πακέτο εγκατάστασης." },
       ],
     },
     keywords: ["lighting Riga", "track lighting Riga", "LED lighting Riga"],
@@ -208,19 +208,19 @@ export const locationLandings: Record<string, SeoLanding> = {
       en: "LED Lighting Latvia: Supply and Installation by MDB Light",
       ru: "LED lighting Latvia: поставка и монтаж от MDB Light",
       lv: "LED lighting Latvia: piegāde un montāža no MDB Light",
-      el: "LED Lighting Latvia: Supply and Installation by MDB Light",
+      el: "LED φωτισμός στη Λετονία: προμήθεια και εγκατάσταση από το MDB Light",
     },
     description: {
       en: "LED lighting across Latvia for residential, retail and commercial projects. MDB Light covers specification, product supply and installation.",
       ru: "LED освещение по всей Латвии для жилых, торговых и коммерческих проектов. MDB Light ведёт подбор, поставку и монтаж.",
       lv: "LED apgaismojums visā Latvijā dzīvojamiem, tirdzniecības un komerciāliem projektiem. MDB Light nodrošina atlasi, piegādi un montāžu.",
-      el: "LED lighting across Latvia for residential, retail and commercial projects.",
+      el: "LED φωτισμός σε όλη τη Λετονία για οικιστικά, retail και εμπορικά έργα.",
     },
     intro: {
       en: "This page expands SEO beyond Riga and supports broader intent around LED lighting Latvia and lighting design Latvia.",
       ru: "Эта страница расширяет SEO за пределы Риги и закрывает более широкий интент вокруг LED lighting Latvia и lighting design Latvia.",
       lv: "Šī lapa paplašina SEO ārpus Rīgas un aptver plašāku pieprasījumu kopu ap LED lighting Latvia un lighting design Latvia.",
-      el: "This page expands SEO beyond Riga and targets broader intent around LED lighting Latvia and lighting design Latvia.",
+      el: "Αυτή η σελίδα επεκτείνει το SEO πέρα από τη Ρίγα και στοχεύει σε ευρύτερο intent γύρω από LED lighting Latvia και lighting design Latvia.",
     },
     body: {
       en: [
@@ -239,9 +239,9 @@ export const locationLandings: Record<string, SeoLanding> = {
         "Labākais rezultāts rodas, apvienojot pareizo gaismekļu kategoriju ar reālistisku montāžas plānu un uzturēšanas piekļuvi.",
       ],
       el: [
-        "Projects across Latvia often require both product supply and specification support, especially when contractors need exact fixture references and mounting details.",
-        "MDB Light supports LED panels, track systems, architectural lighting, decorative lighting and installation planning.",
-        "The best results come from combining the right fixture category with realistic installation planning and maintenance access.",
+        "Τα έργα σε όλη τη Λετονία συχνά απαιτούν τόσο προμήθεια προϊόντων όσο και υποστήριξη specification, ειδικά όταν οι contractors χρειάζονται ακριβείς αναφορές φωτιστικών και λεπτομέρειες τοποθέτησης.",
+        "Το MDB Light υποστηρίζει LED panels, συστήματα ράγας, αρχιτεκτονικό φωτισμό, διακοσμητικό φωτισμό και planning εγκατάστασης.",
+        "Τα καλύτερα αποτελέσματα προκύπτουν από τον συνδυασμό της σωστής κατηγορίας φωτιστικών με ρεαλιστικό σχεδιασμό εγκατάστασης και εύκολη πρόσβαση συντήρησης.",
       ],
     },
     faq: {
@@ -258,8 +258,8 @@ export const locationLandings: Record<string, SeoLanding> = {
         { question: "Vai jūs palīdzat ar lighting design Latvia projektiem?", answer: "Jā. Mēs palīdzam ar koncepciju, kategoriju izvēli, specifikāciju un montāžai piemērotu risinājumu atlasi." },
       ],
       el: [
-        { question: "Do you work outside Riga?", answer: "Yes. MDB Light supports projects across Latvia depending on scope and installation requirements." },
-        { question: "Can you help with lighting design Latvia projects?", answer: "Yes. We support concept selection, specification and installation-oriented product choices." },
+        { question: "Δουλεύετε εκτός Ρίγας;", answer: "Ναι. Το MDB Light υποστηρίζει έργα σε όλη τη Λετονία ανάλογα με το scope και τις απαιτήσεις εγκατάστασης." },
+        { question: "Μπορείτε να βοηθήσετε με έργα lighting design Latvia;", answer: "Ναι. Υποστηρίζουμε επιλογή concept, specification και επιλογές προϊόντων με προσανατολισμό στην εγκατάσταση." },
       ],
     },
     keywords: ["LED lighting Latvia", "lighting design Latvia", "lighting Latvia"],
@@ -270,19 +270,19 @@ export const locationLandings: Record<string, SeoLanding> = {
       en: "Lighting Cyprus: LED Supply and Installation Support",
       ru: "Lighting Cyprus: LED поставка и монтаж",
       lv: "Lighting Cyprus: LED piegāde un montāžas atbalsts",
-      el: "Lighting Cyprus: LED Supply and Installation Support",
+      el: "Φωτισμός στην Κύπρο: υποστήριξη προμήθειας LED και εγκατάστασης",
     },
     description: {
       en: "Lighting Cyprus solutions from MDB Light: LED fixtures, track systems and installation support for commercial and residential projects.",
       ru: "Lighting Cyprus решения от MDB Light: LED светильники, трековые системы и монтаж для коммерческих и жилых проектов.",
       lv: "Lighting Cyprus risinājumi no MDB Light: LED gaismekļi, sliežu sistēmas un montāžas atbalsts komerciāliem un dzīvojamiem projektiem.",
-      el: "Lighting Cyprus solutions from MDB Light with LED fixtures, track systems and installation support.",
+      el: "Λύσεις φωτισμού στην Κύπρο από το MDB Light με LED φωτιστικά, συστήματα ράγας και υποστήριξη εγκατάστασης.",
     },
     intro: {
       en: "This landing supports the commercial intent around lighting Cyprus and lighting installation Cyprus.",
       ru: "Эта страница закрывает коммерческий интент вокруг lighting Cyprus и lighting installation Cyprus.",
       lv: "Šī lapa aptver komerciālo pieprasījumu grupu ap lighting Cyprus un lighting installation Cyprus.",
-      el: "This landing targets the commercial intent around lighting Cyprus and lighting installation Cyprus.",
+      el: "Αυτό το landing page στοχεύει το εμπορικό intent γύρω από lighting Cyprus και lighting installation Cyprus.",
     },
     body: {
       en: [
@@ -301,9 +301,9 @@ export const locationLandings: Record<string, SeoLanding> = {
         "Spēcīgs lighting Cyprus piedāvājums balstās uz produktu kvalitāti, draiveru pārvaldību un ērtu servisu pēc nodošanas ekspluatācijā.",
       ],
       el: [
-        "Cyprus projects often need practical LED solutions that handle heat, maintenance access and efficient power planning.",
-        "MDB Light supports apartments, villas, hospitality and retail spaces with track systems and reliable LED categories.",
-        "A strong Cyprus lighting package balances product quality, driver management and easy servicing after handover.",
+        "Τα έργα στην Κύπρο συχνά χρειάζονται πρακτικές LED λύσεις που αντέχουν στη ζέστη, προσφέρουν εύκολη πρόσβαση συντήρησης και σωστό σχεδιασμό τροφοδοσίας.",
+        "Το MDB Light υποστηρίζει διαμερίσματα, βίλες, hospitality και retail χώρους με συστήματα ράγας και αξιόπιστες LED κατηγορίες.",
+        "Ένα ισχυρό πακέτο φωτισμού για την Κύπρο ισορροπεί ανάμεσα στην ποιότητα προϊόντων, τη διαχείριση drivers και την εύκολη συντήρηση μετά την παράδοση.",
       ],
     },
     faq: {
@@ -320,8 +320,8 @@ export const locationLandings: Record<string, SeoLanding> = {
         { question: "Kuri produkti vislabāk der Kiprai?", answer: "Tas atkarīgs no objekta, taču parasti labākais sākums ir uzticami LED gaismekļi, sliežu sistēmas un servisam ērti risinājumi." },
       ],
       el: [
-        { question: "Do you support lighting installation Cyprus projects?", answer: "Yes. MDB Light supports supply and installation-oriented lighting projects in Cyprus depending on scope." },
-        { question: "Which products are best for Cyprus?", answer: "Durable LED fixtures, track systems and service-friendly layouts are usually the right starting point." },
+        { question: "Υποστηρίζετε έργα lighting installation Cyprus;", answer: "Ναι. Το MDB Light υποστηρίζει έργα φωτισμού στην Κύπρο με προμήθεια και προσανατολισμό στην εγκατάσταση ανάλογα με το scope." },
+        { question: "Ποια προϊόντα είναι καλύτερα για την Κύπρο;", answer: "Ανθεκτικά LED φωτιστικά, συστήματα ράγας και layouts φιλικά στη συντήρηση είναι συνήθως το σωστό σημείο εκκίνησης." },
       ],
     },
     keywords: ["lighting Cyprus", "lighting installation Cyprus", "LED Cyprus"],

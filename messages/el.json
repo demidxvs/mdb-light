@@ -4,8 +4,11 @@
     "about": "Σχετικά",
     "partners": "Συνεργάτες",
     "projects": "Έργα",
+    "privacy": "Privacy Policy",
+    "delivery": "Delivery / Returns",
     "support": "Υποστήριξη",
-    "security": "Ασφάλεια"
+    "security": "Ασφάλεια",
+    "terms": "Terms of Use"
   },
   "accountControls": {
     "cart": "Καλάθι",

@@ -8,6 +8,7 @@ import { useLocale } from "@/components/ui/locale-provider";
 import PasswordInput from "@/components/ui/password-input-1";
 import { registerCopy } from "@/lib/auth-copy";
 import { localizePathname } from "@/i18n/config";
+import { buildPublicUrl } from "@/lib/site-url";
 import {
   createSupabaseBrowserClient,
   isSupabaseConfigured,
@@ -107,10 +108,7 @@ export default function RegisterPage() {
 
     try {
       const supabase = createSupabaseBrowserClient();
-      const redirectTo =
-        typeof window !== "undefined"
-          ? `${window.location.origin}${localizePathname("/login", locale)}`
-          : undefined;
+      const redirectTo = buildPublicUrl(localizePathname("/login", locale));
 
       const { error } = await supabase.auth.signUp({
         email: email.trim(),

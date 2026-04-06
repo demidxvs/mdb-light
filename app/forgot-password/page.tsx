@@ -7,6 +7,7 @@ import { AuthShell } from "@/components/ui/auth-shell";
 import { useLocale } from "@/components/ui/locale-provider";
 import { localizePathname } from "@/i18n/config";
 import { loginCopy } from "@/lib/auth-copy";
+import { buildPublicUrl } from "@/lib/site-url";
 import {
   createSupabaseBrowserClient,
   isSupabaseConfigured,
@@ -99,10 +100,7 @@ export default function ForgotPasswordPage() {
 
     try {
       const supabase = createSupabaseBrowserClient();
-      const redirectTo =
-        typeof window !== "undefined"
-          ? `${window.location.origin}${localizePathname("/login", locale)}`
-          : undefined;
+      const redirectTo = buildPublicUrl(localizePathname("/login", locale));
 
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
         redirectTo,

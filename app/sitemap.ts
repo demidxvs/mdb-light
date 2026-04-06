@@ -88,6 +88,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     alternates: buildAlternatesForPath((locale) => `${siteUrl}/${locale}/locations/${landing.slug}`),
   }));
 
+  const legalPages = ["privacy", "cookies", "delivery", "terms"] as const;
+  const legalEntries = legalPages.flatMap((page) =>
+    locales.map((locale) => ({
+      url: `${siteUrl}/${locale}/${page}`,
+      lastModified: now,
+      changeFrequency: "yearly" as const,
+      priority: 0.3,
+      alternates: buildAlternatesForPath((targetLocale) => `${siteUrl}/${targetLocale}/${page}`),
+    })),
+  );
+
   return [
     ...homeEntries,
     ...categoryEntries,
@@ -96,5 +107,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...blogArticleEntries,
     ...serviceEntries,
     ...locationEntries,
+    ...legalEntries,
   ];
 }

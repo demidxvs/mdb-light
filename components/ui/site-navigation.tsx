@@ -31,7 +31,7 @@ export function SiteNavigation({
       className={cn(
         "rounded-[1.6rem] border border-[#ece3d9] bg-white/82 shadow-none",
         compact
-          ? "grid w-full grid-cols-1 gap-1 p-1 sm:grid-cols-2"
+          ? "grid w-full grid-cols-2 gap-0.5 p-0.5"
           : "inline-flex w-full items-center justify-start gap-1 py-1 pl-0.5 pr-1",
         className,
       )}
@@ -47,7 +47,7 @@ export function SiteNavigation({
               isActive
                 ? "bg-[#7f91b7] text-white shadow-[0_10px_24px_rgba(127,145,183,0.24)]"
                 : "text-[color:var(--muted)] hover:bg-[#fff7ef] hover:text-[color:var(--headline)]"
-            } ${compact ? "min-h-10 w-full px-4 py-2 whitespace-normal" : "min-h-9 px-4 py-2"}`}
+            } ${compact ? "min-h-[3.45rem] w-full px-2 py-1 text-[12px] whitespace-nowrap sm:min-h-10 sm:px-4 sm:py-2 sm:text-sm" : "min-h-9 px-4 py-2"}`}
           >
             {link.label}
           </Link>

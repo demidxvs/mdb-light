@@ -16,12 +16,14 @@ export function SiteHeader({
   topLabel,
   topContact = "+371 24443333 · info@mdbgroup.lv",
 }: SiteHeaderProps) {
+  const resolvedTopLabel = topLabel.trim() || "Multilingual LED marketplace";
+
   return (
     <>
       <div className="border-b border-[color:var(--line)] bg-white/85 backdrop-blur-sm">
         <div className="flex w-full items-center justify-between gap-4 px-6 py-3 text-xs text-[color:var(--muted)] sm:px-10 lg:px-12">
           <div className="hidden md:block">{topContact}</div>
-          <div className="w-full text-center md:ml-auto md:w-auto md:text-right">{topLabel}</div>
+          <div className="w-full text-right md:ml-auto md:w-auto">{resolvedTopLabel}</div>
         </div>
       </div>
 
@@ -35,7 +37,7 @@ export function SiteHeader({
                 width={1080}
                 height={182}
                 priority
-                className="h-15 w-auto object-contain xl:h-16"
+                className="h-16 w-auto object-contain xl:h-[4.5rem]"
               />
             </Link>
             <div className="ml-auto">
@@ -48,26 +50,26 @@ export function SiteHeader({
           </div>
 
           <div className="lg:hidden">
-            <div className="border-t border-[color:var(--line)] px-6 py-6">
-              <Link href="/" className="flex items-center">
+            <div className="border-t border-[color:var(--line)] px-5 py-4">
+              <Link href="/" className="flex items-center justify-center">
                 <Image
                   src="/logo/mdb-light-logo.svg"
                   alt="MDB Light logo"
                   width={1080}
                   height={182}
                   priority
-                  className="h-14 w-auto object-contain"
+                  className="h-12 w-auto object-contain"
                 />
               </Link>
             </div>
 
-            <div className="border-t border-[color:var(--line)] px-4 py-6">
-              <div className="mx-auto flex max-w-7xl flex-col gap-4">
-                <div className="grid grid-cols-[1.6fr_1fr] gap-4">
-                  <SiteNavigation compact className="min-w-0" />
-                  <LanguageSwitcher className="w-full justify-center" />
+            <div className="border-t border-[color:var(--line)] px-3 py-3">
+              <div className="mx-auto flex max-w-7xl flex-col gap-3">
+                <div className="flex items-stretch gap-2">
+                  <SiteNavigation compact className="w-[13rem] min-w-0" />
+                  <LanguageSwitcher compact className="w-[9.25rem] justify-center" />
                 </div>
-                <div className="overflow-x-auto pb-1">
+                <div className="overflow-x-auto">
                   <AccountControls compact />
                 </div>
               </div>

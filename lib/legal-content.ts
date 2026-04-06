@@ -623,7 +623,7 @@ export function getLegalPageContent(locale: Locale, page: LegalPageKey) {
   return content[locale][page];
 }
 
-export function getLegalPageAlternates(page: Exclude<LegalPageKey, "cookies">) {
+export function getLegalPageAlternates(page: LegalPageKey) {
   return {
     languages: {
       en: `/en/${page}`,

@@ -112,12 +112,7 @@ const SUPPORTING_TEXT = {
 } satisfies LocaleRecord<string>;
 
 export function getSiteUrl() {
-  return (
-    process.env.NEXT_PUBLIC_SITE_URL ||
-    process.env.SITE_URL ||
-    process.env.NEXT_PUBLIC_APP_URL ||
-    FALLBACK_SITE_URL
-  ).replace(/\/$/, "");
+  return FALLBACK_SITE_URL;
 }
 
 export function absoluteUrl(pathname: string) {

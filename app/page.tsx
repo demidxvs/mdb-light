@@ -35,6 +35,72 @@ export default function Home() {
   const { locale } = useLocale();
   const t = useTranslations("home");
   const [authNotice, setAuthNotice] = useState<string | null>(null);
+  const seoHub = {
+    en: {
+      eyebrow: "MDB Light in Riga",
+      title: "MDB Light (MDB) for lighting in Riga, Latvia and Cyprus",
+      paragraphs: [
+        "MDB Light is a multilingual lighting store and project partner for LED lighting in Riga, across Latvia and for installation-oriented projects in Cyprus.",
+        "We focus on track lighting, magnetic systems, LED panels, decorative fixtures and practical product selection for apartments, retail and commercial interiors.",
+        "If users search for MDB, MDB Light, lighting Riga, LED lighting Latvia or lighting Cyprus, this site is built to connect those intents with real products, categories and installation support.",
+      ],
+      links: [
+        { href: localizePathname("/en/locations/riga", locale), label: "Lighting Riga" },
+        { href: localizePathname("/en/locations/latvia", locale), label: "LED Lighting Latvia" },
+        { href: localizePathname("/en/locations/cyprus", locale), label: "Lighting Cyprus" },
+        { href: localizePathname("/en/services/lighting-installation", locale), label: "Lighting Installation" },
+        { href: localizePathname("/en/services/track-lighting", locale), label: "Track Lighting" },
+      ],
+    },
+    ru: {
+      eyebrow: "MDB Light в Риге",
+      title: "MDB Light (MDB): освещение в Риге, Латвии и на Кипре",
+      paragraphs: [
+        "MDB Light — это многоязычный магазин и проектный партнёр по LED освещению в Риге, по всей Латвии и для installation-проектов на Кипре.",
+        "Мы фокусируемся на трековом освещении, магнитных системах, LED панелях, декоративных светильниках и практичном подборе света для квартир, retail и коммерческих интерьеров.",
+        "Если пользователь ищет MDB, MDB Light, освещение в Риге, LED lighting Latvia или lighting Cyprus, главная страница должна связывать этот интент с реальными товарами, категориями и монтажом.",
+      ],
+      links: [
+        { href: localizePathname("/ru/locations/riga", locale), label: "Освещение в Риге" },
+        { href: localizePathname("/ru/locations/latvia", locale), label: "LED lighting Latvia" },
+        { href: localizePathname("/ru/locations/cyprus", locale), label: "Lighting Cyprus" },
+        { href: localizePathname("/ru/services/lighting-installation", locale), label: "Монтаж освещения" },
+        { href: localizePathname("/ru/services/track-lighting", locale), label: "Трековое освещение" },
+      ],
+    },
+    lv: {
+      eyebrow: "MDB Light Rīgā",
+      title: "MDB Light (MDB): apgaismojums Rīgā, Latvijā un Kiprā",
+      paragraphs: [
+        "MDB Light ir daudzvalodu apgaismojuma veikals un projektu partneris LED apgaismojumam Rīgā, visā Latvijā un uzstādīšanas projektiem Kiprā.",
+        "Mēs koncentrējamies uz sliežu apgaismojumu, magnētiskajām sistēmām, LED paneļiem, dekoratīviem gaismekļiem un praktisku atlasi dzīvokļiem, retail un komerciāliem interjeriem.",
+        "Ja lietotāji meklē MDB, MDB Light, apgaismojums Rīgā, LED lighting Latvia vai lighting Cyprus, sākumlapa sasaista šo nodomu ar reālām produktu kategorijām un montāžas atbalstu.",
+      ],
+      links: [
+        { href: localizePathname("/lv/locations/riga", locale), label: "Apgaismojums Rīgā" },
+        { href: localizePathname("/lv/locations/latvia", locale), label: "LED Lighting Latvia" },
+        { href: localizePathname("/lv/locations/cyprus", locale), label: "Lighting Cyprus" },
+        { href: localizePathname("/lv/services/lighting-installation", locale), label: "Apgaismojuma montāža" },
+        { href: localizePathname("/lv/services/track-lighting", locale), label: "Sliežu apgaismojums" },
+      ],
+    },
+    el: {
+      eyebrow: "MDB Light in Riga",
+      title: "MDB Light (MDB) for lighting in Riga, Latvia and Cyprus",
+      paragraphs: [
+        "MDB Light is a multilingual lighting store and project partner for LED lighting in Riga, across Latvia and for installation-oriented projects in Cyprus.",
+        "We focus on track lighting, magnetic systems, LED panels, decorative fixtures and practical product selection for apartments, retail and commercial interiors.",
+        "If users search for MDB, MDB Light, lighting Riga, LED lighting Latvia or lighting Cyprus, this homepage should connect that intent with real categories, products and installation support.",
+      ],
+      links: [
+        { href: localizePathname("/el/locations/riga", locale), label: "Lighting Riga" },
+        { href: localizePathname("/el/locations/latvia", locale), label: "LED Lighting Latvia" },
+        { href: localizePathname("/el/locations/cyprus", locale), label: "Lighting Cyprus" },
+        { href: localizePathname("/el/services/lighting-installation", locale), label: "Lighting Installation" },
+        { href: localizePathname("/el/services/track-lighting", locale), label: "Track Lighting" },
+      ],
+    },
+  }[locale];
 
   useEffect(() => {
     const rawNotice = window.sessionStorage.getItem("mdb-light-auth-notice");
@@ -310,6 +376,31 @@ export default function Home() {
             </div>
           </div>
           <ContactFormCard />
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-6 pb-12 sm:px-10 lg:px-12">
+        <div className="rounded-[2rem] border border-[#e5e8ee] bg-white p-6 shadow-[0_20px_60px_rgba(27,42,74,0.06)] sm:p-8">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[color:var(--accent)]">{seoHub.eyebrow}</p>
+          <h2 className="mt-3 max-w-4xl font-display text-3xl font-semibold tracking-[-0.05em] text-[color:var(--headline)] sm:text-4xl">
+            {seoHub.title}
+          </h2>
+          <div className="mt-5 grid gap-4 text-sm leading-7 text-[color:var(--muted)] sm:text-base">
+            {seoHub.paragraphs.map((paragraph) => (
+              <p key={paragraph}>{paragraph}</p>
+            ))}
+          </div>
+          <div className="mt-6 flex flex-wrap gap-3">
+            {seoHub.links.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="inline-flex min-h-11 items-center rounded-xl border border-[#ece3d9] bg-[#fffcf7] px-4 py-2 text-sm font-medium text-[color:var(--headline)] transition hover:-translate-y-0.5 hover:border-[color:var(--accent)]/30"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 

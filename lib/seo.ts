@@ -29,6 +29,7 @@ export type SeoProduct = {
 };
 
 const SITE_NAME = "MDB Light";
+const SITE_ALT_NAME = "MDB";
 const FALLBACK_SITE_URL = "https://mdb-light.com";
 
 const CYRILLIC_MAP: Record<string, string> = {
@@ -82,24 +83,24 @@ const GEO_KEYWORDS = {
 
 const HOME_SEO = {
   en: {
-    title: "LED Lighting in Riga, Latvia & Cyprus | MDB Light",
+    title: "MDB Light (MDB) - LED Lighting in Riga, Latvia & Cyprus",
     description:
-      "LED lighting in Riga, Latvia and Cyprus. Track lights, magnetic systems, LED panels and lighting installation by MDB Light.",
+      "MDB Light (MDB) supplies LED lighting in Riga, Latvia and Cyprus. Track lights, magnetic systems, LED panels and lighting installation for residential and commercial projects.",
   },
   ru: {
-    title: "Освещение в Риге, Латвии и на Кипре | MDB Light",
+    title: "MDB Light (MDB) - освещение в Риге, Латвии и на Кипре",
     description:
-      "Профессиональное освещение в Риге, Латвии и на Кипре. LED светильники, магнитные трековые системы, LED панели и монтаж под ключ.",
+      "MDB Light (MDB) предлагает профессиональное освещение в Риге, Латвии и на Кипре. LED светильники, магнитные трековые системы, LED панели и монтаж под ключ.",
   },
   lv: {
-    title: "Apgaismojums Rīgā, Latvijā un Kiprā | MDB Light",
+    title: "MDB Light (MDB) - apgaismojums Rīgā, Latvijā un Kiprā",
     description:
-      "LED apgaismojums Rīgā, Latvijā un Kiprā. Magnētiskās sliežu sistēmas, LED paneļi un apgaismojuma uzstādīšana no MDB Light.",
+      "MDB Light (MDB) nodrošina LED apgaismojumu Rīgā, Latvijā un Kiprā. Magnētiskās sliežu sistēmas, LED paneļi un apgaismojuma uzstādīšana.",
   },
   el: {
-    title: "Lighting in Riga, Latvia and Cyprus | MDB Light",
+    title: "MDB Light (MDB) - Lighting in Riga, Latvia and Cyprus",
     description:
-      "LED lighting in Riga, Latvia and Cyprus. Track systems, LED panels and professional lighting installation by MDB Light.",
+      "MDB Light (MDB) delivers LED lighting in Riga, Latvia and Cyprus with track systems, LED panels and professional lighting installation.",
   },
 } satisfies LocaleRecord<{ title: string; description: string }>;
 
@@ -322,7 +323,7 @@ export function getHomeMetadata(locale: Locale) {
     description: HOME_SEO[locale].description,
     pathnameByLocale,
     image: "/hero/hero-banner.png",
-    keywords: [SITE_NAME, "Riga", "Latvia", "Cyprus"],
+    keywords: [SITE_NAME, SITE_ALT_NAME, "MDB", "MDB Light", "Riga", "Latvia", "Cyprus", "lighting"],
   });
 }
 
@@ -404,10 +405,18 @@ export function getCommonStructuredData(locale: Locale) {
       "@context": "https://schema.org",
       "@type": "Organization",
       name: SITE_NAME,
+      alternateName: [SITE_ALT_NAME, "MDB Light"],
       url: getSiteUrl(),
       logo: absoluteUrl("/logo/mdb-light-logo.svg"),
       areaServed: ["Latvia", "Cyprus"],
       knowsAbout: ["LED lighting", "track systems", "lighting installation"],
+      contactPoint: {
+        "@type": "ContactPoint",
+        telephone: "+37124443333",
+        contactType: "sales",
+        areaServed: ["LV", "CY"],
+        availableLanguage: ["en", "ru", "lv", "el"],
+      },
     },
     {
       "@context": "https://schema.org",
@@ -422,6 +431,19 @@ export function getCommonStructuredData(locale: Locale) {
       serviceType: ["LED lighting", "track systems", "lighting installation"],
       availableLanguage: [locale, "en", "ru", "lv", "el"],
       url: getSiteUrl(),
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      name: SITE_NAME,
+      alternateName: SITE_ALT_NAME,
+      url: getSiteUrl(),
+      inLanguage: [locale, "en", "ru", "lv", "el"],
+      potentialAction: {
+        "@type": "SearchAction",
+        target: `${getSiteUrl()}/catalog?query={search_term_string}`,
+        "query-input": "required name=search_term_string",
+      },
     },
   ];
 }

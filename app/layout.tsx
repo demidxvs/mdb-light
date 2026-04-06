@@ -8,10 +8,11 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://mdb-light.com"),
   title: {
-    default: "MDB Light",
+    default: "MDB Light (MDB) - LED Lighting in Riga, Latvia & Cyprus",
     template: "%s | MDB Light",
   },
-  description: "LED lighting marketplace for Riga, Latvia and Cyprus with multilingual catalog and installation services.",
+  description: "MDB Light (MDB) is a multilingual LED lighting marketplace for Riga, Latvia and Cyprus with track systems, lighting installation and commercial product supply.",
+  keywords: ["MDB", "MDB Light", "lighting Riga", "освещение в Риге", "LED lighting Latvia", "lighting Cyprus"],
   icons: {
     icon: "/logo/mdb-light-logo.svg",
     shortcut: "/logo/mdb-light-logo.svg",
@@ -19,6 +20,8 @@ export const metadata: Metadata = {
   openGraph: {
     siteName: "MDB Light",
     type: "website",
+    title: "MDB Light (MDB) - LED Lighting in Riga, Latvia & Cyprus",
+    description: "MDB Light supplies LED lighting, track systems and installation support in Riga, Latvia and Cyprus.",
     images: [{ url: "/hero/hero-banner.png" }],
   },
   verification: {

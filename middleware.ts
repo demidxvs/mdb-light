@@ -3,6 +3,25 @@ import { defaultLocale, getLocaleFromPathname, isLocale, localizePathname, strip
 
 const PUBLIC_FILE = /\.(.*)$/;
 const LOCALE_HEADER = "x-mdb-locale";
+const REWRITTEN_PREFIXES = new Set([
+  "account",
+  "admin-auth",
+  "auth",
+  "cart",
+  "catalog",
+  "checkout",
+  "collections",
+  "contacts",
+  "forgot-password",
+  "lighting",
+  "login",
+  "orders",
+  "panel-x9k2m4q7r2a",
+  "products",
+  "projects",
+  "register",
+  "security",
+]);
 
 export function middleware(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
@@ -30,15 +49,25 @@ export function middleware(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set(LOCALE_HEADER, localeFromPath);
 
+  const strippedPathname = stripLocalePrefix(pathname);
+  const firstSegment = strippedPathname.split("/").filter(Boolean)[0] || "";
+  const shouldRewrite = REWRITTEN_PREFIXES.has(firstSegment);
+
   const rewriteUrl = request.nextUrl.clone();
-  rewriteUrl.pathname = stripLocalePrefix(pathname);
+  rewriteUrl.pathname = strippedPathname;
   rewriteUrl.search = search;
 
-  const response = NextResponse.rewrite(rewriteUrl, {
-    request: {
-      headers: requestHeaders,
-    },
-  });
+  const response = shouldRewrite
+    ? NextResponse.rewrite(rewriteUrl, {
+        request: {
+          headers: requestHeaders,
+        },
+      })
+    : NextResponse.next({
+        request: {
+          headers: requestHeaders,
+        },
+      });
 
   response.cookies.set("mdb-light-locale", localeFromPath, {
     path: "/",

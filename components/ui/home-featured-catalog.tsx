@@ -7,6 +7,7 @@ import { useLocale } from "@/components/ui/locale-provider";
 import { CatalogProductCard } from "@/components/ui/catalog-product-card";
 import { localizePathname } from "@/i18n/config";
 import { featuredTrackProducts } from "@/lib/mock-track-products";
+import { buildProductPath } from "@/lib/seo";
 import {
   createSupabaseBrowserClient,
   isSupabaseConfigured,
@@ -213,7 +214,11 @@ export function HomeFeaturedCatalog() {
             : displayProducts.map((product, index) => (
                 <CatalogProductCard
                   key={product.id}
-                  href={localizePathname(`/products/${product.slug}`, locale)}
+                  href={
+                    products.length > 0 && products[index]?.categories
+                      ? buildProductPath(locale, products[index].categories, products[index])
+                      : localizePathname(`/products/${product.slug}`, locale)
+                  }
                   name={product.name}
                   teaser={product.teaser}
                   price={product.price}

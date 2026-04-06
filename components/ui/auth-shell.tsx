@@ -93,11 +93,22 @@ export function AuthShell({
             <AccountControls />
           </div>
         </div>
+        <div className="border-t border-[color:var(--line)] px-4 py-3 lg:hidden">
+          <div className="mx-auto flex max-w-7xl flex-col gap-3">
+            <div className="flex items-center gap-2">
+              <SiteNavigation compact className="min-w-0 flex-1" />
+              <LanguageSwitcher className="shrink-0" />
+            </div>
+            <div className="overflow-x-auto pb-1">
+              <AccountControls />
+            </div>
+          </div>
+        </div>
       </header>
 
-      <section className="px-5 py-6 sm:px-8 lg:px-10">
+      <section className="px-4 py-5 sm:px-8 sm:py-6 lg:px-10">
         <div className="mx-auto max-w-xl">
-          <div className="mb-3 flex items-center justify-between gap-3">
+          <div className="mb-3 flex flex-col items-stretch justify-between gap-3 sm:flex-row sm:items-center">
             <Link
               href={isAuthenticated ? "/account" : "/"}
               className="inline-flex items-center gap-2 rounded-xl border border-[#ece3d9] bg-white px-4 py-2 text-sm font-medium text-[color:var(--headline)] hover:border-[color:var(--accent)]/25"
@@ -150,7 +161,6 @@ export function AuthShell({
     </main>
   );
 }
-
 
 
 

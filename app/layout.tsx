@@ -6,11 +6,23 @@ import { getMessages } from "@/i18n/messages";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "MDB Light",
-  description: "LED lighting marketplace with multilingual catalog and admin workflow.",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://mdb-light.com"),
+  title: {
+    default: "MDB Light",
+    template: "%s | MDB Light",
+  },
+  description: "LED lighting marketplace for Riga, Latvia and Cyprus with multilingual catalog and installation services.",
   icons: {
     icon: "/logo/mdb-light-logo.svg",
     shortcut: "/logo/mdb-light-logo.svg",
+  },
+  openGraph: {
+    siteName: "MDB Light",
+    type: "website",
+    images: [{ url: "/hero/hero-banner.png" }],
+  },
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
   },
 };
 

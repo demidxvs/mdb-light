@@ -132,7 +132,7 @@ export default function Home() {
       </div>
 
       <header className="sticky top-0 z-50 border-b border-[color:var(--line)] bg-white/92 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl items-center gap-4 px-6 py-1 sm:px-10 lg:px-12">
+        <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-1 sm:px-10 lg:px-12">
           <a href="#" className="flex min-w-0 items-center overflow-visible">
             <Image
               src="/logo/mdb-light-logo.svg"
@@ -149,6 +149,17 @@ export default function Home() {
           <div className="hidden items-center gap-3 lg:flex">
             <LanguageSwitcher />
             <AccountControls />
+          </div>
+        </div>
+        <div className="border-t border-[color:var(--line)] px-4 py-3 lg:hidden">
+          <div className="mx-auto flex max-w-7xl flex-col gap-3">
+            <div className="flex items-center gap-2">
+              <SiteNavigation compact className="min-w-0 flex-1" />
+              <LanguageSwitcher className="shrink-0" />
+            </div>
+            <div className="overflow-x-auto pb-1">
+              <AccountControls />
+            </div>
           </div>
         </div>
       </header>
@@ -174,22 +185,22 @@ export default function Home() {
         </section>
       ) : null}
 
-      <section className="mx-auto max-w-7xl px-6 py-10 sm:px-10 lg:px-12">
-        <div className="rounded-[2rem] border border-[#e9e1d4] bg-white p-6 shadow-[0_20px_60px_rgba(27,42,74,0.06)]">
-          <div className="relative overflow-hidden rounded-[1.7rem] px-4 py-5 text-white sm:px-8 sm:py-8">
+      <section className="mx-auto max-w-7xl px-4 py-6 sm:px-10 sm:py-10 lg:px-12">
+        <div className="rounded-[1.6rem] border border-[#e9e1d4] bg-white p-4 shadow-[0_20px_60px_rgba(27,42,74,0.06)] sm:rounded-[2rem] sm:p-6">
+          <div className="relative overflow-hidden rounded-[1.35rem] px-4 py-5 text-white sm:rounded-[1.7rem] sm:px-8 sm:py-8">
             <Image
               src="/hero/hero-banner.svg"
               alt="Lighting hero banner"
               fill
               priority
-              className="object-cover object-[72%_56%]"
+              className="object-cover object-[78%_58%] sm:object-[72%_56%]"
             />
             <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(15,25,45,0.9)_0%,rgba(20,31,54,0.84)_34%,rgba(24,36,60,0.56)_52%,rgba(24,36,60,0.18)_72%,rgba(24,36,60,0.04)_100%)]" />
-            <div className="absolute inset-y-0 left-0 w-[62%] bg-[radial-gradient(circle_at_15%_25%,rgba(255,255,255,0.08),transparent_36%)]" />
+            <div className="absolute inset-y-0 left-0 w-[100%] bg-[radial-gradient(circle_at_15%_25%,rgba(255,255,255,0.08),transparent_36%)] sm:w-[62%]" />
 
-            <div className="relative grid min-h-[540px] items-center lg:grid-cols-[minmax(0,640px)_1fr]">
-              <div className="flex min-h-[450px] max-w-[640px] flex-col pr-0 lg:pr-10">
-                <div className="flex flex-wrap items-center gap-3">
+            <div className="relative grid min-h-[660px] items-center sm:min-h-[620px] lg:min-h-[540px] lg:grid-cols-[minmax(0,640px)_1fr]">
+              <div className="flex min-h-[620px] max-w-[640px] flex-col pr-0 sm:min-h-[520px] lg:min-h-[450px] lg:pr-10">
+                <div className="flex flex-col items-start gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
                   <div aria-hidden="true" className={heroChipClass}>
                     <Layers3 className="h-4 w-4 text-[#f4c64f]" />
                     {t("badge1")}
@@ -205,8 +216,8 @@ export default function Home() {
                 <h1
                   className={`font-display mt-4 font-semibold leading-[0.98] tracking-[-0.05em] ${
                     isCompactHero
-                      ? "max-w-[520px] text-[2.35rem] sm:text-[2.75rem] lg:text-[3.2rem]"
-                      : "max-w-[560px] text-[2.55rem] sm:text-[3rem] lg:text-[3.6rem]"
+                      ? "max-w-[300px] text-[2.2rem] sm:max-w-[520px] sm:text-[2.75rem] lg:text-[3.2rem]"
+                      : "max-w-[310px] text-[2.35rem] sm:max-w-[560px] sm:text-[3rem] lg:text-[3.6rem]"
                   }`}
                 >
                   {t("heroLead")} <span className="text-[#f4c64f]">{t("heroAccent")}</span>{" "}
@@ -215,18 +226,18 @@ export default function Home() {
                 <p
                   className={`mt-5 text-white/84 ${
                     isCompactHero
-                      ? "max-w-[500px] text-[14px] leading-6 sm:text-[15px]"
-                      : "max-w-[520px] text-[15px] leading-7 sm:text-base"
+                      ? "max-w-[315px] text-[14px] leading-6 sm:max-w-[500px] sm:text-[15px]"
+                      : "max-w-[320px] text-[15px] leading-7 sm:max-w-[520px] sm:text-base"
                   }`}
                 >
                   {t("heroText")}
                 </p>
-                <div className="mt-auto flex flex-wrap items-center gap-3 pt-6">
-                  <Link href={localizePathname("/catalog", locale)} className={heroPrimaryButtonClass}>
+                <div className="mt-auto grid w-full gap-3 pt-6 sm:flex sm:w-auto sm:flex-wrap sm:items-center">
+                  <Link href={localizePathname("/catalog", locale)} className={`${heroPrimaryButtonClass} w-full sm:w-auto`}>
                     {t("cta1")}
                     <ArrowRight className="h-4 w-4" />
                   </Link>
-                  <Link href={localizePathname("/projects", locale)} className={heroSecondaryButtonClass}>
+                  <Link href={localizePathname("/projects", locale)} className={`${heroSecondaryButtonClass} w-full sm:w-auto`}>
                     {t("cta2")}
                     <ArrowRight className="h-4 w-4" />
                   </Link>
@@ -236,20 +247,20 @@ export default function Home() {
             </div>
           </div>
 
-          <div id="partners" className="mt-8 grid gap-4 xl:grid-cols-3">
+          <div id="partners" className="mt-6 grid gap-4 xl:grid-cols-3">
             {audience.map(({ title, description, icon: Icon }) => (
               <article
                 key={title}
-                className="flex h-[126px] items-center gap-4 rounded-[1.4rem] border border-[#ece3d9] bg-[#fffcf7] px-5 py-4"
+                className="flex min-h-[118px] items-center gap-4 rounded-[1.4rem] border border-[#ece3d9] bg-[#fffcf7] px-4 py-4 sm:h-[126px] sm:px-5"
               >
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[color:var(--accent)]/18 bg-[color:var(--accent-soft)] text-[color:var(--accent)]">
                   <Icon className="h-5 w-5" />
                 </div>
                 <div className="flex-1">
-                  <h2 className="font-display text-lg font-semibold text-[color:var(--headline)]">{title}</h2>
+                  <h2 className="font-display text-base font-semibold text-[color:var(--headline)] sm:text-lg">{title}</h2>
                   <p className="mt-1 line-clamp-2 text-sm text-[color:var(--muted)]">{description}</p>
                 </div>
-                <ChevronRight className="h-5 w-5 text-[#8f9eb8]" />
+                <ChevronRight className="hidden h-5 w-5 text-[#8f9eb8] sm:block" />
               </article>
             ))}
           </div>

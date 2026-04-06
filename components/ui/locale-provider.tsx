@@ -87,12 +87,24 @@ export function LocaleProvider({
       window.localStorage.setItem("mdb-light-locale", nextLocale);
       document.cookie = `mdb-light-locale=${nextLocale}; path=/; max-age=31536000; samesite=lax`;
       document.documentElement.lang = nextLocale;
-      const nextPathname = localizePathname(pathname || "/", nextLocale);
+      let nextPathname = localizePathname(pathname || "/", nextLocale);
+      const alternates = document.documentElement.dataset.localeAlternates;
+      if (alternates) {
+        try {
+          const parsed = JSON.parse(alternates) as Record<string, string>;
+          if (typeof parsed[nextLocale] === "string") {
+            nextPathname = parsed[nextLocale];
+          }
+        } catch {
+          // Ignore malformed alternates payloads.
+        }
+      }
       const query = searchParams?.toString();
       const nextUrl = query ? `${nextPathname}?${query}` : nextPathname;
-      window.history.replaceState(window.history.state, "", nextUrl);
+      router.push(nextUrl);
+      router.refresh();
     },
-    [locale, pathname, searchParams],
+    [locale, pathname, router, searchParams],
   );
 
   return (

@@ -193,10 +193,10 @@ export function AccountControls() {
   };
 
   return (
-    <div className="flex items-center gap-2 whitespace-nowrap xl:gap-3">
+    <div className="flex items-center gap-1.5 whitespace-nowrap sm:gap-2 xl:gap-3">
       <Link
         href="/cart"
-        className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-[color:var(--line)] bg-white/72 text-[color:var(--muted)] transition duration-300 hover:-translate-y-0.5 hover:border-[color:var(--accent)]/30 hover:text-[color:var(--headline)]"
+        className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[color:var(--line)] bg-white/72 text-[color:var(--muted)] transition duration-300 hover:-translate-y-0.5 hover:border-[color:var(--accent)]/30 hover:text-[color:var(--headline)]"
         aria-label={t("cart")}
       >
         <ShoppingCart className="h-4.5 w-4.5" />
@@ -215,22 +215,22 @@ export function AccountControls() {
         <>
           <Link
             href="/orders"
-            className="inline-flex h-9 shrink-0 items-center gap-2 whitespace-nowrap rounded-xl border border-[color:var(--line)] bg-white/72 px-3 text-sm font-medium text-[color:var(--headline)] transition duration-300 hover:-translate-y-0.5 hover:border-[color:var(--accent)]/30 hover:text-[color:var(--headline)]"
+            className="inline-flex h-9 shrink-0 items-center gap-2 whitespace-nowrap rounded-xl border border-[color:var(--line)] bg-white/72 px-2.5 text-sm font-medium text-[color:var(--headline)] transition duration-300 hover:-translate-y-0.5 hover:border-[color:var(--accent)]/30 hover:text-[color:var(--headline)] sm:px-3"
             aria-label={ordersLabelByLocale[locale]}
           >
             <ReceiptText className="h-4 w-4" />
-            <span className="hidden xl:inline">{ordersLabelByLocale[locale]}</span>
+            <span className="hidden lg:inline xl:inline">{ordersLabelByLocale[locale]}</span>
           </Link>
 
           <Link
             href="/account"
-            className="flex h-10 min-w-[150px] max-w-[220px] items-center gap-2 rounded-2xl border border-emerald-300 bg-emerald-50 px-3 text-left text-[color:var(--headline)] shadow-[0_10px_24px_rgba(16,185,129,0.12)] transition duration-300 hover:-translate-y-0.5 hover:border-emerald-400 xl:min-w-[170px]"
+            className="flex h-10 min-w-[42px] max-w-[220px] items-center gap-2 rounded-2xl border border-emerald-300 bg-emerald-50 px-2.5 text-left text-[color:var(--headline)] shadow-[0_10px_24px_rgba(16,185,129,0.12)] transition duration-300 hover:-translate-y-0.5 hover:border-emerald-400 sm:min-w-[150px] sm:px-3 xl:min-w-[170px]"
             aria-label={t("account")}
           >
             <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-white text-emerald-700">
               <CircleUserRound className="h-4.5 w-4.5" />
             </div>
-            <p className="truncate text-sm font-semibold leading-4">{displayName || t("account")}</p>
+            <p className="hidden truncate text-sm font-semibold leading-4 sm:block">{displayName || t("account")}</p>
           </Link>
 
           <button
@@ -238,7 +238,7 @@ export function AccountControls() {
             onClick={handleSignOut}
             disabled={signingOut}
             aria-label={t("signOut")}
-            className="inline-flex h-9 shrink-0 items-center gap-2 whitespace-nowrap rounded-xl border border-[color:var(--line)] bg-white/72 px-3 text-sm font-medium text-[color:var(--headline)] transition duration-300 hover:-translate-y-0.5 hover:border-red-200 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-70"
+            className="inline-flex h-9 shrink-0 items-center gap-2 whitespace-nowrap rounded-xl border border-[color:var(--line)] bg-white/72 px-2.5 text-sm font-medium text-[color:var(--headline)] transition duration-300 hover:-translate-y-0.5 hover:border-red-200 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-70 sm:px-3"
           >
             {signingOut ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />}
             <span className="hidden 2xl:inline">{t("signOut")}</span>
@@ -247,11 +247,11 @@ export function AccountControls() {
       ) : (
         <Link
           href="/login"
-          className="inline-flex h-9 shrink-0 items-center gap-2 whitespace-nowrap rounded-xl border border-[color:var(--line)] bg-white/72 px-3 text-sm font-medium text-[color:var(--headline)] transition duration-300 hover:-translate-y-0.5 hover:border-[color:var(--accent)]/30 hover:text-[color:var(--headline)]"
+          className="inline-flex h-9 shrink-0 items-center gap-2 whitespace-nowrap rounded-xl border border-[color:var(--line)] bg-white/72 px-2.5 text-sm font-medium text-[color:var(--headline)] transition duration-300 hover:-translate-y-0.5 hover:border-[color:var(--accent)]/30 hover:text-[color:var(--headline)] sm:px-3"
           aria-label={signInLabelByLocale[locale]}
         >
           <CircleUserRound className="h-4.5 w-4.5" />
-          <span>{signInLabelByLocale[locale]}</span>
+          <span className="hidden sm:inline">{signInLabelByLocale[locale]}</span>
         </Link>
       )}
     </div>

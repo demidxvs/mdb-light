@@ -123,8 +123,8 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
         </div>
       </div>
       <header className="sticky top-0 z-50 border-b border-[color:var(--line)] bg-white/92 backdrop-blur-xl">
-        <div className="flex w-full items-center gap-4 py-1 pl-1 pr-6 sm:pl-2 sm:pr-10 lg:pl-2 lg:pr-12">
-          <Link href="/" className="flex min-w-0 items-center overflow-visible xl:ml-[360px] 2xl:ml-[380px]">
+        <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-1 sm:px-10 lg:px-12">
+          <Link href="/" className="flex min-w-0 items-center overflow-visible">
             <Image src="/logo/mdb-light-logo.svg" alt="MDB Light logo" width={1080} height={182} priority className="h-14 w-auto origin-left scale-150 object-contain sm:h-16" />
           </Link>
           <div className="ml-auto hidden xl:block"><SiteNavigation /></div>
@@ -133,10 +133,21 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
             <AccountControls />
           </div>
         </div>
+        <div className="border-t border-[color:var(--line)] px-4 py-3 lg:hidden">
+          <div className="mx-auto flex max-w-7xl flex-col gap-3">
+            <div className="flex items-center gap-2">
+              <SiteNavigation compact className="min-w-0 flex-1" />
+              <LanguageSwitcher className="shrink-0" />
+            </div>
+            <div className="overflow-x-auto pb-1">
+              <AccountControls />
+            </div>
+          </div>
+        </div>
       </header>
-      <section className="mx-auto max-w-7xl px-6 py-8 sm:px-10 lg:px-12">
+      <section className="mx-auto max-w-7xl px-4 py-6 sm:px-10 sm:py-8 lg:px-12">
         <div className="overflow-hidden rounded-[2rem] border border-[#e5e8ee] bg-white shadow-[0_20px_60px_rgba(27,42,74,0.06)]">
-          <div className="relative min-h-[260px] overflow-hidden">
+          <div className="relative min-h-[220px] overflow-hidden sm:min-h-[260px]">
             {category?.cover_image_url ? (
               <Image
                 src={category.cover_image_url}
@@ -149,16 +160,16 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
               <div className="absolute inset-0 bg-[linear-gradient(135deg,#1f2633,#454f62,#0f1116)]" />
             )}
             <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(8,10,14,0.82)_0%,rgba(8,10,14,0.68)_40%,rgba(8,10,14,0.28)_70%,rgba(8,10,14,0.08)_100%)]" />
-            <div className="relative px-6 py-8 text-white sm:px-8 sm:py-10">
+            <div className="relative px-5 py-6 text-white sm:px-8 sm:py-10">
               <Link href="/catalog" className="inline-flex items-center gap-2 rounded-xl border border-white/18 bg-white/10 px-4 py-2 text-sm font-medium text-white/90"><ArrowLeft className="h-4 w-4" />{t.back}</Link>
-              <p className="mt-8 text-xs font-semibold uppercase tracking-[0.24em] text-[#f4c64f]">{t.allCategories}</p>
-              <h1 className="mt-3 max-w-3xl font-display text-4xl font-semibold tracking-[-0.05em]">{categoryTranslation?.name || slug}</h1>
-              <p className="mt-4 max-w-4xl text-sm leading-7 text-white/82 sm:text-base">{categoryTranslation?.description || ""}</p>
+              <p className="mt-6 text-xs font-semibold uppercase tracking-[0.24em] text-[#f4c64f]">{t.allCategories}</p>
+              <h1 className="mt-3 max-w-3xl font-display text-3xl font-semibold tracking-[-0.05em] sm:text-4xl">{categoryTranslation?.name || slug}</h1>
+              <p className="mt-4 max-w-4xl text-sm leading-6 text-white/82 sm:text-base sm:leading-7">{categoryTranslation?.description || ""}</p>
             </div>
           </div>
         </div>
       </section>
-      <section className="mx-auto max-w-7xl px-6 pb-16 sm:px-10 lg:px-12">
+      <section className="mx-auto max-w-7xl px-4 pb-12 sm:px-10 sm:pb-16 lg:px-12">
         {loading ? (
           <div className="rounded-[2rem] border border-[#e5e8ee] bg-white px-6 py-12 text-sm text-[color:var(--muted)] shadow-[0_20px_60px_rgba(27,42,74,0.06)]">{t.loading}</div>
         ) : products.length === 0 ? (

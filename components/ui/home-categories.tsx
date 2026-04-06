@@ -7,6 +7,7 @@ import {
   isSupabaseConfigured,
 } from "@/lib/supabase-client";
 import { useLocale } from "@/components/ui/locale-provider";
+import { buildCategoryPath } from "@/lib/seo";
 
 type LocaleKey = "en" | "ru" | "el" | "lv";
 
@@ -163,7 +164,7 @@ export function HomeCategories({
         : [];
 
   return (
-    <section id="catalog" className="mx-auto max-w-7xl px-6 py-2 sm:px-10 lg:px-12">
+    <section id="catalog" className="mx-auto max-w-7xl px-4 py-2 sm:px-10 lg:px-12">
       <div className="rounded-[2rem] border border-[#e5e8ee] bg-white p-6 sm:p-8">
         {eyebrow ? (
           <p className="text-sm font-medium uppercase tracking-[0.2em] text-[color:var(--accent)]">
@@ -194,7 +195,7 @@ export function HomeCategories({
             : displayCards.map((card, index) => (
                 <Link
                   key={card.id}
-                  href={categories.length > 0 ? `/catalog/${card.slug}` : "/catalog"}
+                  href={categories.length > 0 ? buildCategoryPath(locale, categories[index]) : "/catalog"}
                   className="block"
                 >
                   <article className="group overflow-hidden rounded-[1.45rem] border border-[#e9e0d3] bg-[#111111] shadow-[0_18px_40px_rgba(27,42,74,0.12)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_48px_rgba(27,42,74,0.18)]">
@@ -217,7 +218,7 @@ export function HomeCategories({
                     </div>
 
                     <div className="bg-[#111111] px-4 py-3 text-center">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white sm:text-[11px]">
                         {card.title}
                       </p>
                       {countsLoaded ? (

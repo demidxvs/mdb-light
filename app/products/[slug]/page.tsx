@@ -546,8 +546,8 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
         </div>
       </div>
       <header className="sticky top-0 z-50 border-b border-[color:var(--line)] bg-white/92 backdrop-blur-xl">
-        <div className="flex w-full items-center gap-4 py-1 pl-1 pr-6 sm:pl-2 sm:pr-10 lg:pl-2 lg:pr-12">
-          <Link href="/" className="flex min-w-0 items-center overflow-visible xl:ml-[360px] 2xl:ml-[380px]">
+        <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-1 sm:px-10 lg:px-12">
+          <Link href="/" className="flex min-w-0 items-center overflow-visible">
             <Image src="/logo/mdb-light-logo.svg" alt="MDB Light logo" width={1080} height={182} priority className="h-14 w-auto origin-left scale-150 object-contain sm:h-16" />
           </Link>
           <div className="ml-auto hidden xl:block"><SiteNavigation /></div>
@@ -556,8 +556,19 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
             <AccountControls />
           </div>
         </div>
+        <div className="border-t border-[color:var(--line)] px-4 py-3 lg:hidden">
+          <div className="mx-auto flex max-w-7xl flex-col gap-3">
+            <div className="flex items-center gap-2">
+              <SiteNavigation compact className="min-w-0 flex-1" />
+              <LanguageSwitcher className="shrink-0" />
+            </div>
+            <div className="overflow-x-auto pb-1">
+              <AccountControls />
+            </div>
+          </div>
+        </div>
       </header>
-      <section className="mx-auto max-w-7xl px-6 py-8 sm:px-10 lg:px-12">
+      <section className="mx-auto max-w-7xl px-4 py-6 sm:px-10 sm:py-8 lg:px-12">
         {loading || !product ? (
           <div className="rounded-[2rem] border border-[#e5e8ee] bg-white px-6 py-12 text-sm text-[color:var(--muted)] shadow-[0_20px_60px_rgba(27,42,74,0.06)]">{t.loading}</div>
         ) : (
@@ -579,7 +590,7 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
                 )}
               </div>
               {galleryImages.length > 1 ? (
-                <div className="grid grid-cols-4 gap-3 border-t border-[#e5e8ee] p-4 sm:grid-cols-5">
+                <div className="grid grid-cols-4 gap-2 border-t border-[#e5e8ee] p-3 sm:grid-cols-5 sm:gap-3 sm:p-4">
                   {galleryImages.map((imageUrl, index) => (
                     <button
                       key={`${imageUrl}-${index}`}
@@ -599,18 +610,18 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
                 </div>
               ) : null}
             </div>
-            <div className="rounded-[2rem] border border-[#e5e8ee] bg-white p-6 shadow-[0_20px_60px_rgba(27,42,74,0.06)] sm:p-8">
+            <div className="rounded-[2rem] border border-[#e5e8ee] bg-white p-5 shadow-[0_20px_60px_rgba(27,42,74,0.06)] sm:p-8">
               <Link href={category ? `/catalog/${category.slug}` : "/catalog"} className="inline-flex items-center gap-2 rounded-xl border border-[#ece3d9] bg-[#fffcf7] px-4 py-2 text-sm font-medium text-[color:var(--headline)]"><ArrowLeft className="h-4 w-4" />{t.backCatalog}</Link>
               <div className="mt-6">
                 <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[color:var(--accent)]">{categoryName || t.category}</p>
-                <h1 className="mt-3 font-display text-4xl font-semibold tracking-[-0.05em] text-[color:var(--headline)]">{translation?.name || product.slug}</h1>
+                <h1 className="mt-3 font-display text-3xl font-semibold tracking-[-0.05em] text-[color:var(--headline)] sm:text-4xl">{translation?.name || product.slug}</h1>
               </div>
-              <div className="mt-8 flex flex-wrap items-end gap-4">
-                <div>
-                  <p className="font-display text-4xl font-semibold tracking-[-0.05em] text-[color:var(--headline)]">{new Intl.NumberFormat("en-US", { style: "currency", currency: product.currency || "EUR" }).format(adjustedPriceCents / 100)}</p>
+              <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end">
+                <div className="min-w-0">
+                  <p className="font-display text-3xl font-semibold tracking-[-0.05em] text-[color:var(--headline)] sm:text-4xl">{new Intl.NumberFormat("en-US", { style: "currency", currency: product.currency || "EUR" }).format(adjustedPriceCents / 100)}</p>
                   {stockStatus ? <p className={`mt-3 text-sm font-medium ${product.stock_quantity === 0 ? "text-red-600" : "text-amber-600"}`}>{stockStatus}</p> : null}
                 </div>
-                <button type="button" onClick={() => void handleAddToCart()} disabled={product.stock_quantity === 0 || addingToCart} className="inline-flex h-14 items-center gap-2 rounded-xl bg-[color:var(--accent)] px-6 text-sm font-semibold text-[#203153] shadow-[0_14px_30px_rgba(244,198,79,0.28)] disabled:cursor-not-allowed disabled:opacity-50"><ShoppingCart className="h-4 w-4" />{addingToCart ? t.addingToCart : t.addToCart}</button>
+                <button type="button" onClick={() => void handleAddToCart()} disabled={product.stock_quantity === 0 || addingToCart} className="inline-flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-[color:var(--accent)] px-6 text-sm font-semibold text-[#203153] shadow-[0_14px_30px_rgba(244,198,79,0.28)] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"><ShoppingCart className="h-4 w-4" />{addingToCart ? t.addingToCart : t.addToCart}</button>
               </div>
               {cartError ? <p className="mt-3 text-sm font-medium text-red-600">{cartError}</p> : null}
               <div className="mt-8 grid gap-3 rounded-[1.5rem] border border-[#ece3d9] bg-[#fffcf7] p-5 text-sm text-[color:var(--headline)]">

@@ -94,6 +94,7 @@ const copy = {
     empty: "No categories yet. Create the first one to replace the static homepage cards.",
     order: "Order",
     edit: "Edit",
+    manageProducts: "Products",
     remove: "Delete",
     moveUp: "Up",
     moveDown: "Down",
@@ -137,6 +138,7 @@ const copy = {
     empty: "Категорий пока нет. Создайте первую, чтобы заменить статичные карточки на главной.",
     order: "Порядок",
     edit: "Редактировать",
+    manageProducts: "Товары",
     remove: "Удалить",
     moveUp: "Вверх",
     moveDown: "Вниз",
@@ -180,6 +182,7 @@ const copy = {
     empty: "Δεν υπάρχουν ακόμη κατηγορίες. Δημιουργήστε την πρώτη για να αντικαταστήσετε τις στατικές κάρτες στην αρχική.",
     order: "Σειρά",
     edit: "Επεξεργασία",
+    manageProducts: "Προϊόντα",
     remove: "Διαγραφή",
     moveUp: "Πάνω",
     moveDown: "Κάτω",
@@ -223,6 +226,7 @@ const copy = {
     empty: "Kategoriju vēl nav. Izveidojiet pirmo, lai aizstātu statiskās kartītes sākumlapā.",
     order: "Secība",
     edit: "Rediģēt",
+    manageProducts: "Produkti",
     remove: "Dzēst",
     moveUp: "Uz augšu",
     moveDown: "Uz leju",
@@ -655,6 +659,7 @@ export default function AdminCategoriesPage() {
                       <div className="mt-4 flex flex-wrap gap-2">
                         <button type="button" onClick={() => moveCategory(index, -1)} className="inline-flex h-10 items-center gap-2 rounded-xl border border-[#ece3d9] bg-white px-3 text-sm font-medium text-[color:var(--headline)] transition hover:border-[color:var(--accent)]/25"><ArrowUp className="h-4 w-4" />{t.moveUp}</button>
                         <button type="button" onClick={() => moveCategory(index, 1)} className="inline-flex h-10 items-center gap-2 rounded-xl border border-[#ece3d9] bg-white px-3 text-sm font-medium text-[color:var(--headline)] transition hover:border-[color:var(--accent)]/25"><ArrowDown className="h-4 w-4" />{t.moveDown}</button>
+                        <Link href={localizePathname(`/panel-x9k2m4q7r2a/categories/${category.id}/products`, locale)} className="inline-flex h-10 items-center gap-2 rounded-xl border border-[#ece3d9] bg-white px-3 text-sm font-medium text-[color:var(--headline)] transition hover:border-[color:var(--accent)]/25"><FolderTree className="h-4 w-4" />{t.manageProducts}</Link>
                         <button type="button" onClick={() => startEdit(category)} className="inline-flex h-10 items-center gap-2 rounded-xl border border-[#ece3d9] bg-white px-3 text-sm font-medium text-[color:var(--headline)] transition hover:border-[color:var(--accent)]/25"><PencilLine className="h-4 w-4" />{t.edit}</button>
                         <button type="button" onClick={() => void deleteCategory(category.id)} className="inline-flex h-10 items-center gap-2 rounded-xl border border-[#f3d8cf] bg-[#fff7f2] px-3 text-sm font-medium text-[#af4b2b] transition hover:border-[#e9b8a7]"><Trash2 className="h-4 w-4" />{t.remove}</button>
                       </div>

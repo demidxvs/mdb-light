@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { ContactInlineLinks } from "@/components/ui/contact-links";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
 import { AdminAccountControls } from "@/components/ui/admin-account-controls";
 import { AdminNavigation } from "@/components/ui/admin-navigation";
@@ -31,7 +32,7 @@ export function AdminShell({ topLabel, title, description, children }: AdminShel
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.95),transparent_30%),linear-gradient(180deg,#fffdfa_0%,#f8f3eb_100%)]">
       <div className="border-b border-[color:var(--line)] bg-white/85 backdrop-blur-sm">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-3 text-xs text-[color:var(--muted)] sm:px-10 lg:px-12">
-          <div className="hidden md:block">+371 24443333 · info@mdbgroup.lv</div>
+          <ContactInlineLinks className="hidden md:block" />
           <div className="ml-auto">{topLabel}</div>
         </div>
       </div>

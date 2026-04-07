@@ -18,12 +18,14 @@ import {
 import { AdminShell } from "@/components/ui/admin-shell";
 import { useLocale } from "@/components/ui/locale-provider";
 import { isAdminSupabaseConfigured } from "@/lib/admin-supabase-client";
+import { slugify } from "@/lib/seo";
 import { uploadAdminImage } from "@/lib/storage";
 import { localizePathname } from "@/i18n/config";
 
 type LocaleKey = "en" | "ru" | "el" | "lv";
 type TranslationFields = {
   name: string;
+  slug: string;
   description: string;
 };
 type CategoryFormState = {
@@ -42,6 +44,7 @@ type CategoryRow = {
   category_translations?: Array<{
     locale: LocaleKey;
     name: string;
+    slug: string | null;
     description: string | null;
   }>;
 };
@@ -236,21 +239,12 @@ function createInitialForm(): CategoryFormState {
     coverImageUrl: "",
     isActive: true,
     translations: {
-      en: { name: "", description: "" },
-      ru: { name: "", description: "" },
-      el: { name: "", description: "" },
-      lv: { name: "", description: "" },
+      en: { name: "", slug: "", description: "" },
+      ru: { name: "", slug: "", description: "" },
+      el: { name: "", slug: "", description: "" },
+      lv: { name: "", slug: "", description: "" },
     },
   };
-}
-
-function slugify(value: string) {
-  return value
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 80);
 }
 
 export default function AdminCategoriesPage() {
@@ -343,18 +337,22 @@ export default function AdminCategoriesPage() {
     value: string,
   ) => {
     setForm((current) => {
+      const normalizedValue = field === "slug" ? slugify(value) : value;
       const next = {
         ...current,
         translations: {
           ...current.translations,
           [localeKey]: {
             ...current.translations[localeKey],
-            [field]: value,
+            [field]: normalizedValue,
           },
         },
       };
+      if (field === "name" && !current.translations[localeKey].slug.trim()) {
+        next.translations[localeKey].slug = slugify(value);
+      }
       if (localeKey === "en" && field === "name" && !current.slug.trim()) {
-        next.slug = slugify(value);
+        next.slug = slugify(normalizedValue);
       }
       return next;
     });
@@ -385,7 +383,7 @@ export default function AdminCategoriesPage() {
     setError("");
     setSuccess("");
 
-    const finalSlug = form.slug.trim() || slugify(form.translations.en.name);
+    const finalSlug = form.slug.trim() || form.translations.en.slug.trim() || slugify(form.translations.en.name);
     if (!finalSlug) {
       setError(t.slugRequired);
       return;
@@ -414,6 +412,7 @@ export default function AdminCategoriesPage() {
           translations: locales.map((localeKey) => ({
             locale: localeKey,
             name: form.translations[localeKey].name.trim(),
+            slug: form.translations[localeKey].slug.trim(),
             description: form.translations[localeKey].description.trim() || null,
           })),
         }),
@@ -448,6 +447,7 @@ export default function AdminCategoriesPage() {
       const translation = category.category_translations?.find((item) => item.locale === localeKey);
       nextForm.translations[localeKey] = {
         name: translation?.name || "",
+        slug: translation?.slug || "",
         description: translation?.description || "",
       };
     }
@@ -593,6 +593,10 @@ export default function AdminCategoriesPage() {
                     <label className="space-y-2 text-sm font-medium text-[color:var(--headline)]">
                       <span>{t.categoryName}</span>
                       <input value={form.translations[localeKey].name} onChange={(event) => handleTranslationChange(localeKey, "name", event.target.value)} className="h-11 w-full rounded-xl border border-[#ece3d9] bg-white px-4 outline-none transition focus:border-[color:var(--accent)]" />
+                    </label>
+                    <label className="space-y-2 text-sm font-medium text-[color:var(--headline)]">
+                      <span>{`${t.slug} (${localeKey.toUpperCase()})`}</span>
+                      <input value={form.translations[localeKey].slug} onChange={(event) => handleTranslationChange(localeKey, "slug", event.target.value)} className="h-11 w-full rounded-xl border border-[#ece3d9] bg-white px-4 outline-none transition focus:border-[color:var(--accent)]" />
                     </label>
                     <label className="space-y-2 text-sm font-medium text-[color:var(--headline)]">
                       <span>{t.categoryDescription}</span>

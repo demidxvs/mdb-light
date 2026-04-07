@@ -44,6 +44,7 @@ create table if not exists public.category_translations (
   category_id uuid not null references public.categories(id) on delete cascade,
   locale text not null check (locale in ('en', 'ru', 'el', 'lv')),
   name text not null,
+  slug text,
   description text,
   meta_title text,
   meta_description text,
@@ -55,6 +56,7 @@ create table if not exists public.products (
   category_id uuid references public.categories(id) on delete set null,
   sku text not null unique,
   slug text not null unique,
+  sort_order integer not null default 0,
   brand text,
   currency char(3) not null default 'EUR',
   price_cents integer not null check (price_cents >= 0),
@@ -76,6 +78,7 @@ create table if not exists public.product_translations (
   product_id uuid not null references public.products(id) on delete cascade,
   locale text not null check (locale in ('en', 'ru', 'el', 'lv')),
   name text not null,
+  slug text,
   short_description text,
   description text,
   specs jsonb not null default '{}'::jsonb,
@@ -263,6 +266,13 @@ alter table public.product_attribute_values
 create index if not exists profiles_email_idx on public.profiles(email);
 create index if not exists categories_parent_id_idx on public.categories(parent_id);
 create index if not exists categories_sort_order_idx on public.categories(sort_order);
+create unique index if not exists category_translations_locale_slug_idx
+  on public.category_translations(locale, slug)
+  where slug is not null;
+create unique index if not exists product_translations_locale_slug_idx
+  on public.product_translations(locale, slug)
+  where slug is not null;
+create index if not exists products_category_sort_order_idx on public.products(category_id, sort_order, created_at desc);
 create index if not exists products_category_id_idx on public.products(category_id);
 create index if not exists products_is_active_idx on public.products(is_active);
 create index if not exists products_is_featured_idx on public.products(is_featured);

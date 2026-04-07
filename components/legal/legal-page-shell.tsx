@@ -1,6 +1,8 @@
+import { ContactDetailLinks } from "@/components/ui/contact-links";
 import { SiteFooter } from "@/components/ui/site-footer";
 import { SiteHeader } from "@/components/ui/site-header";
 import type { Locale } from "@/i18n/config";
+import { CONTACT_CITY } from "@/lib/contact-info";
 import { companyInfoLabels, getLegalPageContent } from "@/lib/legal-content";
 
 type LegalPageShellProps = {
@@ -58,16 +60,9 @@ export function LegalPageShell({ locale, page }: LegalPageShellProps) {
             <div className="mt-4 grid gap-3 text-sm text-[color:var(--muted)] sm:grid-cols-3 sm:text-base">
               <p>
                 <span className="font-medium text-[color:var(--headline)]">{labels.location}: </span>
-                Riga, Latvia
+                {CONTACT_CITY}
               </p>
-              <p>
-                <span className="font-medium text-[color:var(--headline)]">{labels.email}: </span>
-                info@mdblight.com
-              </p>
-              <p>
-                <span className="font-medium text-[color:var(--headline)]">{labels.phone}: </span>
-                +371 24443333
-              </p>
+              <ContactDetailLinks emailLabel={labels.email} phoneLabel={labels.phone} />
             </div>
           </section>
         </section>

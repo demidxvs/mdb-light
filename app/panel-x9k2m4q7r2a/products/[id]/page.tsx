@@ -13,17 +13,19 @@ import {
   normalizeSelectedChoiceValues,
   type RawAttributeOptionValue,
 } from "@/lib/attribute-options";
+import { slugify } from "@/lib/seo";
 import { uploadAdminImage } from "@/lib/storage";
 import { localizePathname } from "@/i18n/config";
-import { slugify } from "@/lib/product-utils";
 
 type LocaleKey = "en" | "ru" | "el" | "lv";
 type TranslationFields = {
   name: string;
+  slug: string;
 };
 type FormState = {
   sku: string;
   slug: string;
+  sortOrder: string;
   categoryId: string;
   currency: string;
   price: string;
@@ -38,7 +40,7 @@ type FormState = {
 type CategoryRow = {
   id: string;
   slug: string;
-  category_translations?: Array<{ locale: LocaleKey; name: string }>;
+  category_translations?: Array<{ locale: LocaleKey; name: string; slug?: string | null }>;
 };
 type AttributeRow = {
   id: string;
@@ -303,6 +305,7 @@ function createInitialForm(): FormState {
   return {
     sku: "",
     slug: "",
+    sortOrder: "0",
     categoryId: "",
     currency: "EUR",
     price: "",
@@ -313,10 +316,10 @@ function createInitialForm(): FormState {
     isFeatured: false,
     trackInventory: true,
     translations: {
-      en: { name: "" },
-      ru: { name: "" },
-      el: { name: "" },
-      lv: { name: "" },
+      en: { name: "", slug: "" },
+      ru: { name: "", slug: "" },
+      el: { name: "", slug: "" },
+      lv: { name: "", slug: "" },
     },
   };
 }
@@ -413,6 +416,7 @@ export default function AdminProductEditPage() {
         product?: {
           sku: string;
           slug: string;
+          sort_order: number;
           category_id: string | null;
           currency: string;
           price_cents: number;
@@ -422,7 +426,7 @@ export default function AdminProductEditPage() {
           is_active: boolean;
           is_featured: boolean;
           track_inventory: boolean;
-          product_translations?: Array<{ locale: LocaleKey; name: string }>;
+          product_translations?: Array<{ locale: LocaleKey; name: string; slug?: string | null }>;
         };
         categories?: CategoryRow[];
         attributes?: AttributeRow[];
@@ -449,6 +453,7 @@ export default function AdminProductEditPage() {
       const productData = payload.product;
       nextForm.sku = productData.sku;
       nextForm.slug = productData.slug;
+      nextForm.sortOrder = String(productData.sort_order ?? 0);
       nextForm.categoryId = productData.category_id || "";
       nextForm.currency = productData.currency || "EUR";
       nextForm.price = String(productData.price_cents / 100);
@@ -468,6 +473,7 @@ export default function AdminProductEditPage() {
         const translation = productData.product_translations?.find((item) => item.locale === localeKey);
         nextForm.translations[localeKey] = {
           name: translation?.name || "",
+          slug: translation?.slug || "",
         };
       }
 
@@ -533,10 +539,14 @@ export default function AdminProductEditPage() {
           ...current.translations,
           [localeKey]: {
             ...current.translations[localeKey],
-            [field]: value,
+            [field]: field === "slug" ? slugify(value) : value,
           },
         },
       };
+
+      if (field === "name" && !current.translations[localeKey].slug.trim()) {
+        next.translations[localeKey].slug = slugify(value);
+      }
 
       if (localeKey === "en" && field === "name" && !current.slug.trim()) {
         next.slug = slugify(value);
@@ -691,7 +701,7 @@ export default function AdminProductEditPage() {
       return;
     }
 
-    const finalSlug = form.slug.trim() || slugify(form.translations.en.name || form.sku);
+    const finalSlug = form.slug.trim() || form.translations.en.slug.trim() || slugify(form.translations.en.name || form.sku);
     if (!finalSlug) {
       setError(t.slugRequired);
       return;
@@ -744,6 +754,7 @@ export default function AdminProductEditPage() {
           categoryId: form.categoryId || null,
           sku: form.sku.trim(),
           slug: finalSlug,
+          sortOrder: Math.max(0, Number.parseInt(form.sortOrder || "0", 10) || 0),
           currency: form.currency.trim().toUpperCase() || "EUR",
           priceCents: Math.round(price * 100),
           stockQuantity: Math.max(0, Number.parseInt(form.stockQuantity || "0", 10) || 0),
@@ -755,6 +766,7 @@ export default function AdminProductEditPage() {
           translations: locales.map((localeKey) => ({
             locale: localeKey,
             name: form.translations[localeKey].name.trim(),
+            slug: form.translations[localeKey].slug.trim(),
           })),
           attributes: normalizedAttributes.map((item) => ({
             attributeId: item.attributeId,
@@ -859,6 +871,10 @@ export default function AdminProductEditPage() {
                   <input value={form.slug} onChange={(event) => handleFieldChange("slug", slugify(event.target.value))} className="h-11 w-full rounded-xl border border-[#ece3d9] bg-[#fffcf7] px-4 outline-none transition focus:border-[color:var(--accent)]" />
                 </label>
                 <label className="space-y-2 text-sm font-medium text-[color:var(--headline)]">
+                  <span>Position</span>
+                  <input type="number" min="0" step="1" value={form.sortOrder} onChange={(event) => handleFieldChange("sortOrder", event.target.value)} className="h-11 w-full rounded-xl border border-[#ece3d9] bg-[#fffcf7] px-4 outline-none transition focus:border-[color:var(--accent)]" />
+                </label>
+                <label className="space-y-2 text-sm font-medium text-[color:var(--headline)]">
                   <span>{t.category}</span>
                   <select value={form.categoryId} onChange={(event) => handleFieldChange("categoryId", event.target.value)} className="h-11 w-full rounded-xl border border-[#ece3d9] bg-[#fffcf7] px-4 outline-none transition focus:border-[color:var(--accent)]">
                     <option value="">{t.noCategory}</option>
@@ -957,6 +973,10 @@ export default function AdminProductEditPage() {
                     <label className="space-y-2 text-sm font-medium text-[color:var(--headline)]">
                       <span>{t.productName}</span>
                       <input value={form.translations[localeKey].name} onChange={(event) => handleTranslationChange(localeKey, "name", event.target.value)} className="h-11 w-full rounded-xl border border-[#ece3d9] bg-white px-4 outline-none transition focus:border-[color:var(--accent)]" />
+                    </label>
+                    <label className="space-y-2 text-sm font-medium text-[color:var(--headline)]">
+                      <span>{`${t.slug} (${localeKey.toUpperCase()})`}</span>
+                      <input value={form.translations[localeKey].slug} onChange={(event) => handleTranslationChange(localeKey, "slug", event.target.value)} className="h-11 w-full rounded-xl border border-[#ece3d9] bg-white px-4 outline-none transition focus:border-[color:var(--accent)]" />
                     </label>
                   </div>
                 ))}

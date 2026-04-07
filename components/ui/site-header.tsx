@@ -3,26 +3,23 @@
 import Image from "next/image";
 import Link from "next/link";
 import { AccountControls } from "@/components/ui/account-controls";
+import { ContactInlineLinks } from "@/components/ui/contact-links";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
 import { MobileScrollHeader } from "@/components/ui/mobile-scroll-header";
 import { SiteNavigation } from "@/components/ui/site-navigation";
 
 type SiteHeaderProps = {
   topLabel: string;
-  topContact?: string;
 };
 
-export function SiteHeader({
-  topLabel,
-  topContact = "+371 24443333 · info@mdbgroup.lv",
-}: SiteHeaderProps) {
+export function SiteHeader({ topLabel }: SiteHeaderProps) {
   const resolvedTopLabel = topLabel.trim() || "Multilingual LED marketplace";
 
   return (
     <>
       <div className="border-b border-[color:var(--line)] bg-white/85 backdrop-blur-sm">
         <div className="flex w-full items-center justify-between gap-4 px-6 py-3 text-xs text-[color:var(--muted)] sm:px-10 lg:px-12">
-          <div className="hidden md:block">{topContact}</div>
+          <ContactInlineLinks className="hidden md:block" />
           <div className="w-full text-right md:ml-auto md:w-auto">{resolvedTopLabel}</div>
         </div>
       </div>

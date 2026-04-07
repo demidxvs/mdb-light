@@ -3,6 +3,8 @@ import {
   createStorefrontServiceClient,
   requireAdminUser,
 } from "@/lib/storefront-admin-server";
+import { ensureUniqueBaseSlug, ensureUniqueLocalizedSlugs } from "@/lib/admin-localized-slugs";
+import { normalizeSlugInput } from "@/lib/localized-slugs";
 
 type LocaleKey = "en" | "ru" | "el" | "lv";
 
@@ -10,6 +12,7 @@ type ProductUpdatePayload = {
   categoryId?: string | null;
   sku?: string;
   slug?: string;
+  sortOrder?: number;
   currency?: string;
   priceCents?: number;
   stockQuantity?: number;
@@ -21,6 +24,7 @@ type ProductUpdatePayload = {
   translations?: Array<{
     locale: LocaleKey;
     name: string;
+    slug?: string;
   }>;
   attributes?: Array<{
     attributeId: string;
@@ -52,7 +56,7 @@ export async function GET(
     ] = await Promise.all([
       storefront
         .from("categories")
-        .select("id, slug, category_translations(locale, name)")
+        .select("id, slug, category_translations(locale, name, slug)")
         .order("sort_order", { ascending: true }),
       storefront
         .from("attributes")
@@ -61,7 +65,7 @@ export async function GET(
       storefront
         .from("products")
         .select(
-          "id, sku, slug, category_id, currency, price_cents, stock_quantity, primary_image_url, image_urls, is_active, is_featured, track_inventory, product_translations(locale, name)",
+          "id, sku, slug, sort_order, category_id, currency, price_cents, stock_quantity, primary_image_url, image_urls, is_active, is_featured, track_inventory, product_translations(locale, name, slug)",
         )
         .eq("id", id)
         .maybeSingle(),
@@ -108,6 +112,7 @@ export async function PATCH(
       body.translations?.map((item) => ({
         locale: item.locale,
         name: normalizeText(item.name),
+        slug: normalizeSlugInput(item.slug),
       })) ?? [];
     const imageUrls =
       body.imageUrls?.map((value) => normalizeText(value)).filter(Boolean) ?? [];
@@ -127,7 +132,7 @@ export async function PATCH(
           ) ?? {},
       }))?.filter((item) => item.attribute_id && item.value) ?? [];
 
-    if (!normalizeText(body.sku) || !normalizeText(body.slug)) {
+    if (!normalizeText(body.sku)) {
       return NextResponse.json({ error: "Product SKU and slug are required" }, { status: 400 });
     }
 
@@ -138,12 +143,37 @@ export async function PATCH(
       );
     }
 
+    const localizedSlugs = await ensureUniqueLocalizedSlugs(storefront, {
+      entity: "product",
+      currentId: id,
+      names: {
+        en: translations.find((item) => item.locale === "en")?.name || "",
+        ru: translations.find((item) => item.locale === "ru")?.name || "",
+        el: translations.find((item) => item.locale === "el")?.name || "",
+        lv: translations.find((item) => item.locale === "lv")?.name || "",
+      },
+      slugs: {
+        en: translations.find((item) => item.locale === "en")?.slug || "",
+        ru: translations.find((item) => item.locale === "ru")?.slug || "",
+        el: translations.find((item) => item.locale === "el")?.slug || "",
+        lv: translations.find((item) => item.locale === "lv")?.slug || "",
+      },
+      fallback: normalizeText(body.slug) || normalizeText(body.sku) || "product",
+    });
+
+    const baseSlug = await ensureUniqueBaseSlug(storefront, {
+      entity: "product",
+      currentId: id,
+      slug: normalizeText(body.slug) || localizedSlugs.en,
+    });
+
     const { error: updateError } = await storefront
       .from("products")
       .update({
         category_id: normalizeText(body.categoryId) || null,
         sku: normalizeText(body.sku),
-        slug: normalizeText(body.slug),
+        slug: baseSlug,
+        sort_order: Number.isFinite(body.sortOrder) ? Math.max(0, Math.trunc(body.sortOrder ?? 0)) : 0,
         currency: normalizeText(body.currency).toUpperCase() || "EUR",
         price_cents: Math.max(0, Math.round(body.priceCents ?? 0)),
         stock_quantity: Math.max(0, Math.round(body.stockQuantity ?? 0)),
@@ -164,11 +194,12 @@ export async function PATCH(
       .from("product_translations")
       .upsert(
         translations.map((item) => ({
-          product_id: id,
-          locale: item.locale,
-          name: item.name,
-          short_description: null,
-          description: null,
+            product_id: id,
+            locale: item.locale,
+            name: item.name,
+            slug: localizedSlugs[item.locale],
+            short_description: null,
+            description: null,
         })),
         { onConflict: "product_id,locale" },
       );
@@ -205,9 +236,10 @@ export async function PATCH(
 
     return NextResponse.json({ ok: true });
   } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to update product";
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to update product" },
-      { status: 500 },
+      { error: message },
+      { status: message === "Этот slug уже используется" ? 400 : 500 },
     );
   }
 }

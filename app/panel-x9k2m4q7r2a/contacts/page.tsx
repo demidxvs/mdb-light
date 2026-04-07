@@ -4,6 +4,7 @@ import { ArrowRight, Mail, Phone, ShieldCheck } from 'lucide-react';
 import { AdminShell } from '@/components/ui/admin-shell';
 import { useLocale } from '@/components/ui/locale-provider';
 import { localizePathname } from '@/i18n/config';
+import { CONTACT_EMAIL, CONTACT_EMAIL_HREF, CONTACT_PHONE, CONTACT_PHONE_HREF } from '@/lib/contact-info';
 const copy = {
   en: {
     top: 'Protected admin contact area',
@@ -61,14 +62,14 @@ export default function AdminContactsPage() {
             <Mail className="h-6 w-6" />
           </div>
           <p className="mt-4 text-xs font-semibold uppercase tracking-[0.24em] text-[color:var(--accent)]">{t.mail}</p>
-          <p className="mt-3 text-lg font-semibold text-[color:var(--headline)]">info@mdbgroup.lv</p>
+          <a href={CONTACT_EMAIL_HREF} className="mt-3 inline-flex text-lg font-semibold text-[color:var(--headline)] transition hover:text-[color:var(--muted)]">{CONTACT_EMAIL}</a>
         </section>
         <section className="rounded-[1.75rem] border border-[#ece3d9] bg-white p-6 shadow-[0_16px_40px_rgba(27,42,74,0.05)]">
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[color:var(--accent)]/15 text-[color:var(--headline)]">
             <Phone className="h-6 w-6" />
           </div>
           <p className="mt-4 text-xs font-semibold uppercase tracking-[0.24em] text-[color:var(--accent)]">{t.phone}</p>
-          <p className="mt-3 text-lg font-semibold text-[color:var(--headline)]">+371 24443333</p>
+          <a href={CONTACT_PHONE_HREF} className="mt-3 inline-flex text-lg font-semibold text-[color:var(--headline)] transition hover:text-[color:var(--muted)]">{CONTACT_PHONE}</a>
         </section>
         <section className="rounded-[1.75rem] border border-[#ece3d9] bg-white p-6 shadow-[0_16px_40px_rgba(27,42,74,0.05)]">
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[color:var(--accent)]/15 text-[color:var(--headline)]">

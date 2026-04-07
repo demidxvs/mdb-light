@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ContactDetailLinks } from "@/components/ui/contact-links";
 import { defaultLocale, localizePathname } from "@/i18n/config";
 import { useLocale } from "@/components/ui/locale-provider";
+import { CONTACT_CITY } from "@/lib/contact-info";
 import { companyInfoLabels, legalPageLabels, type LegalPageKey } from "@/lib/legal-content";
 
 const legalPages: LegalPageKey[] = ["privacy", "cookies", "delivery", "terms"];
@@ -40,19 +42,8 @@ export function SiteFooter() {
         <div className="grid gap-8 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
           <div className="space-y-3 text-sm leading-7 text-[color:var(--muted)]">
             <p className="text-base font-semibold text-[color:var(--headline)]">{copy[locale].company}</p>
-            <p>Riga, Latvia</p>
-            <p>
-              <span className="font-medium text-[color:var(--headline)]">{labels.email}: </span>
-              <a href="mailto:info@mdblight.com" className="transition hover:text-[color:var(--headline)]">
-                info@mdblight.com
-              </a>
-            </p>
-            <p>
-              <span className="font-medium text-[color:var(--headline)]">{labels.phone}: </span>
-              <a href="tel:+37124443333" className="transition hover:text-[color:var(--headline)]">
-                +371 24443333
-              </a>
-            </p>
+            <p>{CONTACT_CITY}</p>
+            <ContactDetailLinks emailLabel={labels.email} phoneLabel={labels.phone} />
           </div>
 
           <nav className="grid gap-3 text-sm text-[color:var(--muted)] sm:grid-cols-2">

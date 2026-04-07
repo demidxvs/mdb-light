@@ -3,15 +3,19 @@ import {
   createStorefrontServiceClient,
   requireAdminUser,
 } from "@/lib/storefront-admin-server";
+import { ensureUniqueBaseSlug, ensureUniqueLocalizedSlugs } from "@/lib/admin-localized-slugs";
+import { normalizeSlugInput } from "@/lib/localized-slugs";
 
 type LocaleKey = "en" | "ru" | "el" | "lv";
 
 type ProductCreatePayload = {
   sku?: string;
   slug?: string;
+  sortOrder?: number;
   translations?: Array<{
     locale: LocaleKey;
     name: string;
+    slug?: string;
   }>;
 };
 
@@ -28,8 +32,9 @@ export async function GET() {
     const { data, error } = await storefront
       .from("products")
       .select(
-        "id, sku, slug, price_cents, stock_quantity, is_active, is_featured, created_at, product_translations(locale, name)",
+        "id, sku, slug, sort_order, category_id, price_cents, stock_quantity, is_active, is_featured, created_at, product_translations(locale, name, slug)",
       )
+      .order("sort_order", { ascending: true })
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -57,6 +62,7 @@ export async function POST(request: Request) {
       body.translations?.map((item) => ({
         locale: item.locale,
         name: normalizeText(item.name),
+        slug: normalizeSlugInput(item.slug),
       })) ?? [];
 
     if (!sku || !slug) {
@@ -71,11 +77,34 @@ export async function POST(request: Request) {
     }
 
     const storefront = createStorefrontServiceClient();
+    const localizedSlugs = await ensureUniqueLocalizedSlugs(storefront, {
+      entity: "product",
+      names: {
+        en: translations.find((item) => item.locale === "en")?.name || "",
+        ru: translations.find((item) => item.locale === "ru")?.name || "",
+        el: translations.find((item) => item.locale === "el")?.name || "",
+        lv: translations.find((item) => item.locale === "lv")?.name || "",
+      },
+      slugs: {
+        en: translations.find((item) => item.locale === "en")?.slug || "",
+        ru: translations.find((item) => item.locale === "ru")?.slug || "",
+        el: translations.find((item) => item.locale === "el")?.slug || "",
+        lv: translations.find((item) => item.locale === "lv")?.slug || "",
+      },
+      fallback: slug || sku || "product",
+    });
+
+    const baseSlug = await ensureUniqueBaseSlug(storefront, {
+      entity: "product",
+      slug: slug || localizedSlugs.en,
+    });
+
     const { data: product, error: productError } = await storefront
       .from("products")
       .insert({
         sku,
-        slug,
+        slug: baseSlug,
+        sort_order: Number.isFinite(body.sortOrder) ? Math.max(0, Math.trunc(body.sortOrder ?? 0)) : 0,
         currency: "EUR",
         price_cents: 0,
         stock_quantity: 0,
@@ -99,12 +128,13 @@ export async function POST(request: Request) {
       .from("product_translations")
       .insert(
         translations.map((item) => ({
-          product_id: product.id,
-          locale: item.locale,
-          name: item.name,
-          short_description: null,
-          description: null,
-        })),
+            product_id: product.id,
+            locale: item.locale,
+            name: item.name,
+            slug: localizedSlugs[item.locale],
+            short_description: null,
+            description: null,
+          })),
       );
 
     if (translationError) {
@@ -113,9 +143,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ ok: true, id: product.id });
   } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to create product";
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to create product" },
-      { status: 500 },
+      { error: message },
+      { status: message === "Этот slug уже используется" ? 400 : 500 },
     );
   }
 }

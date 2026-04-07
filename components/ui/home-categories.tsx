@@ -19,6 +19,7 @@ type CategoryRow = {
   category_translations?: Array<{
     locale: LocaleKey;
     name: string;
+    slug?: string | null;
     description: string | null;
   }>;
 };
@@ -87,14 +88,28 @@ export function HomeCategories({
         setLoading(true);
       }
 
-      const { data: categoryData } = await supabase
+      const categoryQuery = await supabase
         .from("categories")
         .select(
-          "id, slug, sort_order, cover_image_url, category_translations(locale, name, description)",
+          "id, slug, sort_order, cover_image_url, category_translations(locale, name, slug, description)",
         )
         .eq("is_active", true)
         .order("sort_order", { ascending: true })
         .limit(limit);
+      let categoryData: CategoryRow[] | null = (categoryQuery.data as CategoryRow[] | null) ?? null;
+      const categoryError = categoryQuery.error;
+
+      if (categoryError?.message.includes("slug does not exist")) {
+        const fallback = await supabase
+          .from("categories")
+          .select(
+            "id, slug, sort_order, cover_image_url, category_translations(locale, name, description)",
+          )
+          .eq("is_active", true)
+          .order("sort_order", { ascending: true })
+          .limit(limit);
+        categoryData = (fallback.data as CategoryRow[] | null) ?? null;
+      }
 
       if (!mounted) return;
 

@@ -2,6 +2,7 @@ import { cache } from "react";
 import type { Locale } from "@/i18n/config";
 import { createStorefrontServiceClient } from "@/lib/storefront-admin-server";
 import {
+  getCategorySlugCandidates,
   getLocalizedCategorySlug,
   getProductSlugCandidates,
   type SeoCategory,
@@ -16,11 +17,23 @@ export type StorefrontProduct = SeoProduct & {
 
 export const getActiveCategories = cache(async () => {
   const storefront = createStorefrontServiceClient();
-  const { data, error } = await storefront
+  const categoriesQuery = await storefront
     .from("categories")
-    .select("id, slug, cover_image_url, sort_order, category_translations(locale, name, description)")
+    .select("id, slug, cover_image_url, sort_order, category_translations(locale, name, slug, description)")
     .eq("is_active", true)
     .order("sort_order", { ascending: true });
+  let data: StorefrontCategory[] | null = (categoriesQuery.data as StorefrontCategory[] | null) ?? null;
+  let error = categoriesQuery.error;
+
+  if (error?.message.includes("slug does not exist")) {
+    const fallback = await storefront
+      .from("categories")
+      .select("id, slug, cover_image_url, sort_order, category_translations(locale, name, description)")
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true });
+    data = (fallback.data as StorefrontCategory[] | null) ?? null;
+    error = fallback.error;
+  }
 
   if (error) {
     throw new Error(error.message);
@@ -31,13 +44,28 @@ export const getActiveCategories = cache(async () => {
 
 export const getActiveProducts = cache(async () => {
   const storefront = createStorefrontServiceClient();
-  const { data, error } = await storefront
+  const productsQuery = await storefront
     .from("products")
     .select(
-      "id, sku, slug, category_id, price_cents, currency, primary_image_url, image_urls, product_translations(locale, name, short_description, description), categories(id, slug, cover_image_url, category_translations(locale, name, description))",
+      "id, sku, slug, sort_order, category_id, price_cents, currency, primary_image_url, image_urls, product_translations(locale, name, slug, short_description, description), categories(id, slug, cover_image_url, category_translations(locale, name, slug, description))",
     )
     .eq("is_active", true)
+    .order("sort_order", { ascending: true })
     .order("created_at", { ascending: false });
+  let data = productsQuery.data;
+  let error = productsQuery.error;
+
+  if (error?.message.includes("slug does not exist") || error?.message.includes("sort_order does not exist")) {
+    const fallback = await storefront
+      .from("products")
+      .select(
+        "id, sku, slug, category_id, price_cents, currency, primary_image_url, image_urls, product_translations(locale, name, short_description, description), categories(id, slug, cover_image_url, category_translations(locale, name, description))",
+      )
+      .eq("is_active", true)
+      .order("created_at", { ascending: false });
+    data = fallback.data as typeof data;
+    error = fallback.error;
+  }
 
   if (error) {
     throw new Error(error.message);
@@ -56,7 +84,13 @@ export const getActiveProducts = cache(async () => {
 export async function getCategoryByLocalizedSlug(locale: Locale, categorySlug: string) {
   const categories = await getActiveCategories();
   return (
-    categories.find((item) => getLocalizedCategorySlug(item, locale) === categorySlug) || null
+    categories.find((item) => {
+      const normalized = categorySlug.trim().toLowerCase();
+      return (
+        getLocalizedCategorySlug(item, locale) === normalized ||
+        getCategorySlugCandidates(item).includes(normalized)
+      );
+    }) || null
   );
 }
 

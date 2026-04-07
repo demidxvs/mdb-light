@@ -9,6 +9,7 @@ import { useLocale } from "@/components/ui/locale-provider";
 import { CatalogProductCard } from "@/components/ui/catalog-product-card";
 import { SiteFooter } from "@/components/ui/site-footer";
 import { SiteHeader } from "@/components/ui/site-header";
+import { buildCategoryPath, buildProductPath } from "@/lib/seo";
 import {
   getAttributeOptionChoices,
   localizeStoredAttributeValue,
@@ -37,6 +38,7 @@ type ProductRow = {
   product_translations?: Array<{
     locale: LocaleKey;
     name: string | null;
+    slug?: string | null;
     short_description?: string | null;
   }>;
 };
@@ -50,6 +52,7 @@ type RelatedProductRow = {
   product_translations?: Array<{
     locale: LocaleKey;
     name: string | null;
+    slug?: string | null;
     short_description: string | null;
   }>;
 };
@@ -59,6 +62,7 @@ type CategoryRow = {
   category_translations?: Array<{
     locale: LocaleKey;
     name: string;
+    slug?: string | null;
   }>;
 };
 type ProductAttributeRow = {
@@ -269,12 +273,24 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
 
     const load = async () => {
       setLoading(true);
-      const { data: productData } = await supabase
+      const productQuery = await supabase
         .from("products")
-        .select("id, sku, slug, currency, price_cents, stock_quantity, primary_image_url, image_urls, category_id, product_translations(locale, name)")
+        .select("id, sku, slug, currency, price_cents, stock_quantity, primary_image_url, image_urls, category_id, product_translations(locale, name, slug)")
         .eq("slug", slug)
         .eq("is_active", true)
         .maybeSingle();
+      let productData: ProductRow | null = (productQuery.data as ProductRow | null) ?? null;
+      const productError = productQuery.error;
+
+      if (productError?.message.includes("slug does not exist")) {
+        const fallback = await supabase
+          .from("products")
+          .select("id, sku, slug, currency, price_cents, stock_quantity, primary_image_url, image_urls, category_id, product_translations(locale, name)")
+          .eq("slug", slug)
+          .eq("is_active", true)
+          .maybeSingle();
+        productData = (fallback.data as ProductRow | null) ?? null;
+      }
 
       if (!mounted) return;
       if (!productData) {
@@ -338,24 +354,50 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
       );
 
       if (typedProduct.category_id) {
-        const [{ data: categoryData }, { data: relatedData }] = await Promise.all([
+        const [categoryQuery, relatedQuery] = await Promise.all([
           supabase
             .from("categories")
-            .select("id, slug, category_translations(locale, name)")
+            .select("id, slug, category_translations(locale, name, slug)")
             .eq("id", typedProduct.category_id)
             .maybeSingle(),
           supabase
             .from("products")
-            .select("id, sku, slug, price_cents, currency, primary_image_url, product_translations(locale, name, short_description)")
+            .select("id, sku, slug, price_cents, currency, primary_image_url, product_translations(locale, name, slug, short_description)")
             .eq("category_id", typedProduct.category_id)
             .eq("is_active", true)
             .neq("id", typedProduct.id)
+            .order("sort_order", { ascending: true })
             .order("created_at", { ascending: false }),
         ]);
+        let resolvedCategoryData: CategoryRow | null = (categoryQuery.data as CategoryRow | null) ?? null;
+        let resolvedRelatedData: RelatedProductRow[] | null = (relatedQuery.data as RelatedProductRow[] | null) ?? null;
+
+        if (
+          categoryQuery.error?.message.includes("slug does not exist") ||
+          relatedQuery.error?.message.includes("slug does not exist") ||
+          relatedQuery.error?.message.includes("sort_order does not exist")
+        ) {
+          const [fallbackCategory, fallbackRelated] = await Promise.all([
+            supabase
+              .from("categories")
+              .select("id, slug, category_translations(locale, name)")
+              .eq("id", typedProduct.category_id)
+              .maybeSingle(),
+            supabase
+              .from("products")
+              .select("id, sku, slug, price_cents, currency, primary_image_url, product_translations(locale, name, short_description)")
+              .eq("category_id", typedProduct.category_id)
+              .eq("is_active", true)
+              .neq("id", typedProduct.id)
+              .order("created_at", { ascending: false }),
+          ]);
+          resolvedCategoryData = (fallbackCategory.data as CategoryRow | null) ?? null;
+          resolvedRelatedData = (fallbackRelated.data as RelatedProductRow[] | null) ?? null;
+        }
 
         if (!mounted) return;
-        setCategory((categoryData as CategoryRow | null) ?? null);
-        const shuffled = [ ...((relatedData as RelatedProductRow[] | null) ?? []) ]
+        setCategory((resolvedCategoryData as CategoryRow | null) ?? null);
+        const shuffled = [ ...((resolvedRelatedData as RelatedProductRow[] | null) ?? []) ]
           .sort(() => Math.random() - 0.5)
           .slice(0, 3);
         setRelatedProducts(shuffled);
@@ -582,7 +624,7 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
               ) : null}
             </div>
             <div className="rounded-[2rem] border border-[#e5e8ee] bg-white p-5 shadow-[0_20px_60px_rgba(27,42,74,0.06)] sm:p-8">
-              <Link href={category ? `/catalog/${category.slug}` : "/catalog"} className="inline-flex items-center gap-2 rounded-xl border border-[#ece3d9] bg-[#fffcf7] px-4 py-2 text-sm font-medium text-[color:var(--headline)]"><ArrowLeft className="h-4 w-4" />{t.backCatalog}</Link>
+              <Link href={category ? buildCategoryPath(locale, category) : "/catalog"} className="inline-flex items-center gap-2 rounded-xl border border-[#ece3d9] bg-[#fffcf7] px-4 py-2 text-sm font-medium text-[color:var(--headline)]"><ArrowLeft className="h-4 w-4" />{t.backCatalog}</Link>
               <div className="mt-6">
                 <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[color:var(--accent)]">{categoryName || t.category}</p>
                 <h1 className="mt-3 font-display text-3xl font-semibold tracking-[-0.05em] text-[color:var(--headline)] sm:text-4xl">{translation?.name || product.slug}</h1>
@@ -761,7 +803,7 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
                 return (
                   <CatalogProductCard
                     key={relatedProduct.id}
-                    href={`/products/${relatedProduct.slug}`}
+                    href={category ? buildProductPath(locale, category, relatedProduct) : `/products/${relatedProduct.slug}`}
                     name={relatedTranslation?.name || relatedProduct.slug}
                     teaser={relatedTranslation?.short_description || ""}
                     sku={relatedProduct.sku}

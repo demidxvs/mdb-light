@@ -8,6 +8,7 @@ import { useLocale } from "@/components/ui/locale-provider";
 import { CatalogProductCard } from "@/components/ui/catalog-product-card";
 import { SiteFooter } from "@/components/ui/site-footer";
 import { SiteHeader } from "@/components/ui/site-header";
+import { buildProductPath } from "@/lib/seo";
 import {
   createSupabaseBrowserClient,
   isSupabaseConfigured,
@@ -21,6 +22,7 @@ type CategoryRow = {
   category_translations?: Array<{
     locale: LocaleKey;
     name: string;
+    slug?: string | null;
     description: string | null;
   }>;
 };
@@ -28,12 +30,14 @@ type ProductRow = {
   id: string;
   sku: string;
   slug: string;
+  sort_order?: number;
   price_cents: number;
   currency: string;
   primary_image_url: string | null;
   product_translations?: Array<{
     locale: LocaleKey;
     name: string | null;
+    slug?: string | null;
     short_description: string | null;
   }>;
 };
@@ -72,12 +76,24 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
 
     const load = async () => {
       setLoading(true);
-      const { data: categoryData } = await supabase
+      const categoryQuery = await supabase
         .from("categories")
-        .select("id, slug, cover_image_url, category_translations(locale, name, description)")
+        .select("id, slug, cover_image_url, category_translations(locale, name, slug, description)")
         .eq("slug", slug)
         .eq("is_active", true)
         .maybeSingle();
+      let categoryData: CategoryRow | null = (categoryQuery.data as CategoryRow | null) ?? null;
+      const categoryError = categoryQuery.error;
+
+      if (categoryError?.message.includes("slug does not exist")) {
+        const fallback = await supabase
+          .from("categories")
+          .select("id, slug, cover_image_url, category_translations(locale, name, description)")
+          .eq("slug", slug)
+          .eq("is_active", true)
+          .maybeSingle();
+        categoryData = (fallback.data as CategoryRow | null) ?? null;
+      }
 
       if (!mounted) return;
       if (!categoryData) {
@@ -90,12 +106,25 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
       const typedCategory = categoryData as CategoryRow;
       setCategory(typedCategory);
 
-      const { data: productData } = await supabase
+      const productQuery = await supabase
         .from("products")
-        .select("id, sku, slug, price_cents, currency, primary_image_url, product_translations(locale, name, short_description)")
+        .select("id, sku, slug, sort_order, price_cents, currency, primary_image_url, product_translations(locale, name, slug, short_description)")
         .eq("category_id", typedCategory.id)
         .eq("is_active", true)
+        .order("sort_order", { ascending: true })
         .order("created_at", { ascending: false });
+      let productData: ProductRow[] | null = (productQuery.data as ProductRow[] | null) ?? null;
+      const productError = productQuery.error;
+
+      if (productError?.message.includes("slug does not exist") || productError?.message.includes("sort_order does not exist")) {
+        const fallback = await supabase
+          .from("products")
+          .select("id, sku, slug, price_cents, currency, primary_image_url, product_translations(locale, name, short_description)")
+          .eq("category_id", typedCategory.id)
+          .eq("is_active", true)
+          .order("created_at", { ascending: false });
+        productData = (fallback.data as ProductRow[] | null) ?? null;
+      }
 
       if (!mounted) return;
       setProducts((productData as ProductRow[] | null) ?? []);
@@ -156,7 +185,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
               return (
                 <CatalogProductCard
                   key={product.id}
-                  href={`/products/${product.slug}`}
+                  href={category ? buildProductPath(locale, category, product) : `/products/${product.slug}`}
                   name={translation?.name || product.slug}
                   teaser={translation?.short_description || ""}
                   sku={product.sku}

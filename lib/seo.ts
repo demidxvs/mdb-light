@@ -6,6 +6,7 @@ type LocaleRecord<T> = Record<Locale, T>;
 export type TranslationRecord = {
   locale: Locale;
   name: string | null;
+  slug?: string | null;
   short_description?: string | null;
   description?: string | null;
 };
@@ -21,6 +22,7 @@ export type SeoProduct = {
   id: string;
   sku?: string;
   slug: string;
+  sort_order?: number;
   price_cents: number;
   currency: string;
   primary_image_url?: string | null;
@@ -161,6 +163,11 @@ export function getProductTranslation(product: SeoProduct, locale: Locale) {
 
 export function getLocalizedCategorySlug(category: SeoCategory, locale: Locale) {
   const translation = getCategoryTranslation(category, locale);
+  const explicitSlug = slugify(translation?.slug || "");
+  if (explicitSlug) {
+    return explicitSlug;
+  }
+
   const source = [category.slug, translation?.name ?? "", ...(category.category_translations?.map((item) => item.name ?? "") ?? [])]
     .join(" ")
     .toLowerCase();
@@ -176,7 +183,32 @@ export function getLocalizedCategorySlug(category: SeoCategory, locale: Locale) 
 
 export function getLocalizedProductSlug(product: SeoProduct, locale: Locale) {
   const translation = getProductTranslation(product, locale);
+  const explicitSlug = slugify(translation?.slug || "");
+  if (explicitSlug) {
+    return explicitSlug;
+  }
   return slugify(translation?.name || product.sku || product.slug) || slugify(product.slug || product.sku || "product");
+}
+
+export function getCategorySlugCandidates(category: SeoCategory) {
+  const candidates = new Set<string>();
+
+  candidates.add(slugify(category.slug || "category"));
+
+  for (const locale of ["en", "ru", "lv", "el"] as const) {
+    candidates.add(getLocalizedCategorySlug(category, locale));
+  }
+
+  for (const translation of category.category_translations ?? []) {
+    if (translation.slug) {
+      candidates.add(slugify(translation.slug));
+    }
+    if (translation.name) {
+      candidates.add(slugify(translation.name));
+    }
+  }
+
+  return Array.from(candidates).filter(Boolean);
 }
 
 export function getProductSlugCandidates(product: SeoProduct) {
@@ -193,6 +225,9 @@ export function getProductSlugCandidates(product: SeoProduct) {
   }
 
   for (const translation of product.product_translations ?? []) {
+    if (translation.slug) {
+      candidates.add(slugify(translation.slug));
+    }
     if (translation.name) {
       candidates.add(slugify(translation.name));
     }
@@ -281,7 +316,7 @@ export function buildPageMetadata({
       locale,
       type: "website",
       countryName: "Latvia",
-      emails: ["info@mdbgroup.lv"],
+      emails: ["info@mdblight.com"],
       phoneNumbers: ["+37124443333"],
       images: [{ url: ogImage, width: 1200, height: 630, alt: title }],
     },

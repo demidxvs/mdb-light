@@ -3,6 +3,8 @@ import {
   createStorefrontServiceClient,
   requireAdminUser,
 } from "@/lib/storefront-admin-server";
+import { ensureUniqueBaseSlug, ensureUniqueLocalizedSlugs } from "@/lib/admin-localized-slugs";
+import { normalizeSlugInput } from "@/lib/localized-slugs";
 
 type LocaleKey = "en" | "ru" | "el" | "lv";
 
@@ -15,6 +17,7 @@ type CategoryPayload = {
   translations?: Array<{
     locale: LocaleKey;
     name: string;
+    slug?: string;
     description?: string | null;
   }>;
 };
@@ -32,7 +35,7 @@ export async function GET() {
     const { data, error } = await storefront
       .from("categories")
       .select(
-        "id, slug, sort_order, cover_image_url, is_active, category_translations(locale, name, description)",
+        "id, slug, sort_order, cover_image_url, is_active, category_translations(locale, name, slug, description)",
       )
       .order("sort_order", { ascending: true });
 
@@ -60,12 +63,9 @@ export async function POST(request: Request) {
       body.translations?.map((item) => ({
         locale: item.locale,
         name: normalizeText(item.name),
+        slug: normalizeSlugInput(item.slug),
         description: normalizeText(item.description),
       })) ?? [];
-
-    if (!slug) {
-      return NextResponse.json({ error: "Category slug is required" }, { status: 400 });
-    }
 
     if (translations.length !== 4 || translations.some((item) => !item.name)) {
       return NextResponse.json(
@@ -75,8 +75,31 @@ export async function POST(request: Request) {
     }
 
     const storefront = createStorefrontServiceClient();
+    const localizedSlugs = await ensureUniqueLocalizedSlugs(storefront, {
+      entity: "category",
+      currentId: body.id?.trim() || null,
+      names: {
+        en: translations.find((item) => item.locale === "en")?.name || "",
+        ru: translations.find((item) => item.locale === "ru")?.name || "",
+        el: translations.find((item) => item.locale === "el")?.name || "",
+        lv: translations.find((item) => item.locale === "lv")?.name || "",
+      },
+      slugs: {
+        en: translations.find((item) => item.locale === "en")?.slug || "",
+        ru: translations.find((item) => item.locale === "ru")?.slug || "",
+        el: translations.find((item) => item.locale === "el")?.slug || "",
+        lv: translations.find((item) => item.locale === "lv")?.slug || "",
+      },
+      fallback: slug || translations.find((item) => item.locale === "en")?.name || "category",
+    });
+
+    const legacySlug = await ensureUniqueBaseSlug(storefront, {
+      entity: "category",
+      currentId: body.id?.trim() || null,
+      slug: slug || localizedSlugs.en,
+    });
     const payload = {
-      slug,
+      slug: legacySlug,
       sort_order: Number.isFinite(body.sortOrder) ? body.sortOrder : 0,
       cover_image_url: normalizeText(body.coverImageUrl) || null,
       is_active: body.isActive ?? true,
@@ -117,6 +140,7 @@ export async function POST(request: Request) {
           category_id: categoryId,
           locale: item.locale,
           name: item.name,
+          slug: localizedSlugs[item.locale],
           description: item.description || null,
         })),
         { onConflict: "category_id,locale" },
@@ -128,9 +152,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ ok: true, id: categoryId });
   } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to save category";
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to save category" },
-      { status: 500 },
+      { error: message },
+      { status: message === "Этот slug уже используется" ? 400 : 500 },
     );
   }
 }

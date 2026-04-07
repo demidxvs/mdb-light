@@ -24,6 +24,7 @@ type ProductListRow = {
   product_translations?: Array<{
     locale: LocaleKey;
     name: string | null;
+    slug?: string | null;
     short_description: string | null;
   }>;
   categories?: {
@@ -31,6 +32,7 @@ type ProductListRow = {
     category_translations?: Array<{
       locale: LocaleKey;
       name: string | null;
+      slug?: string | null;
     }>;
   } | null;
 };
@@ -101,15 +103,31 @@ export function HomeFeaturedCatalog() {
         setLoading(true);
       }
 
-      const { data } = await supabase
+      const productsQuery = await supabase
         .from("products")
         .select(
-          "id, slug, category_id, price_cents, currency, primary_image_url, product_translations(locale, name, short_description), categories(slug, category_translations(locale, name))",
+          "id, slug, category_id, price_cents, currency, primary_image_url, sort_order, product_translations(locale, name, slug, short_description), categories(slug, category_translations(locale, name, slug))",
         )
         .eq("is_active", true)
         .eq("is_featured", true)
+        .order("sort_order", { ascending: true })
         .order("created_at", { ascending: false })
         .limit(4);
+      let data: ProductListRow[] | null = (productsQuery.data as ProductListRow[] | null) ?? null;
+      const error = productsQuery.error;
+
+      if (error?.message.includes("slug does not exist") || error?.message.includes("sort_order does not exist")) {
+        const fallback = await supabase
+          .from("products")
+          .select(
+            "id, slug, category_id, price_cents, currency, primary_image_url, product_translations(locale, name, short_description), categories(slug, category_translations(locale, name))",
+          )
+          .eq("is_active", true)
+          .eq("is_featured", true)
+          .order("created_at", { ascending: false })
+          .limit(4);
+        data = (fallback.data as ProductListRow[] | null) ?? null;
+      }
 
       if (!mounted) return;
       const nextProducts = (data as ProductListRow[] | null) ?? [];

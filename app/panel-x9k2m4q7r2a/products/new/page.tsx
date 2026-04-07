@@ -8,11 +8,13 @@ import { AdminShell } from "@/components/ui/admin-shell";
 import { useLocale } from "@/components/ui/locale-provider";
 import { isAdminSupabaseConfigured } from "@/lib/admin-supabase-client";
 import { localizePathname } from "@/i18n/config";
-import { generateProductSku, slugify } from "@/lib/product-utils";
+import { generateProductSku } from "@/lib/product-utils";
+import { slugify } from "@/lib/seo";
 
 type LocaleKey = "en" | "ru" | "el" | "lv";
-type TranslationFields = { name: string };
+type TranslationFields = { name: string; slug: string };
 type FormState = {
+  sortOrder: string;
   translations: Record<LocaleKey, TranslationFields>;
 };
 type ProductRow = {
@@ -156,11 +158,12 @@ const copy = {
 
 function createInitialForm(): FormState {
   return {
+    sortOrder: "0",
     translations: {
-      en: { name: "" },
-      ru: { name: "" },
-      el: { name: "" },
-      lv: { name: "" },
+      en: { name: "", slug: "" },
+      ru: { name: "", slug: "" },
+      el: { name: "", slug: "" },
+      lv: { name: "", slug: "" },
     },
   };
 }
@@ -260,7 +263,11 @@ export default function AdminProductNewPage() {
       ...current,
       translations: {
         ...current.translations,
-        [localeKey]: { name: value },
+        [localeKey]: {
+          ...current.translations[localeKey],
+          name: value,
+          slug: current.translations[localeKey].slug || slugify(value),
+        },
       },
     }));
   };
@@ -277,8 +284,11 @@ export default function AdminProductNewPage() {
     }
 
     const sku = generateProductSku();
-    const baseSlug = slugify(form.translations.en.name) || slugify(form.translations.ru.name) || sku.toLowerCase();
-    const finalSlug = `${baseSlug}-${Date.now().toString(36)}`;
+    const finalSlug =
+      form.translations.en.slug.trim() ||
+      slugify(form.translations.en.name) ||
+      slugify(form.translations.ru.name) ||
+      sku.toLowerCase();
 
     setSubmitting(true);
 
@@ -292,9 +302,11 @@ export default function AdminProductNewPage() {
         body: JSON.stringify({
           sku,
           slug: finalSlug,
+          sortOrder: Number.parseInt(form.sortOrder || "0", 10) || 0,
           translations: locales.map((localeKey) => ({
             locale: localeKey,
             name: form.translations[localeKey].name.trim(),
+            slug: form.translations[localeKey].slug.trim(),
           })),
         }),
       });
@@ -363,16 +375,44 @@ export default function AdminProductNewPage() {
             {success ? <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{success}</div> : null}
 
             <section className="space-y-4">
+              <label className="space-y-2 text-sm font-medium text-[color:var(--headline)]">
+                <span>Position</span>
+                <input
+                  type="number"
+                  value={form.sortOrder}
+                  onChange={(event) => setForm((current) => ({ ...current, sortOrder: event.target.value }))}
+                  className="h-11 w-full rounded-xl border border-[#ece3d9] bg-[#fffcf7] px-4 outline-none transition focus:border-[color:var(--accent)]"
+                />
+              </label>
               <div className="text-sm font-semibold text-[color:var(--headline)]">{t.translations}</div>
               <div className="grid gap-4">
                 {locales.map((localeKey) => (
                   <label key={localeKey} className="space-y-2 text-sm font-medium text-[color:var(--headline)]">
                     <span>{labels[localeKey]}</span>
-                    <input
-                      value={form.translations[localeKey].name}
-                      onChange={(event) => handleTranslationChange(localeKey, event.target.value)}
-                      className="h-11 w-full rounded-xl border border-[#ece3d9] bg-[#fffcf7] px-4 outline-none transition focus:border-[color:var(--accent)]"
-                    />
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <input
+                        value={form.translations[localeKey].name}
+                        onChange={(event) => handleTranslationChange(localeKey, event.target.value)}
+                        className="h-11 w-full rounded-xl border border-[#ece3d9] bg-[#fffcf7] px-4 outline-none transition focus:border-[color:var(--accent)]"
+                      />
+                      <input
+                        value={form.translations[localeKey].slug}
+                        onChange={(event) =>
+                          setForm((current) => ({
+                            ...current,
+                            translations: {
+                              ...current.translations,
+                              [localeKey]: {
+                                ...current.translations[localeKey],
+                                slug: slugify(event.target.value),
+                              },
+                            },
+                          }))
+                        }
+                        placeholder={`Slug (${localeKey.toUpperCase()})`}
+                        className="h-11 w-full rounded-xl border border-[#ece3d9] bg-[#fffcf7] px-4 outline-none transition focus:border-[color:var(--accent)]"
+                      />
+                    </div>
                   </label>
                 ))}
               </div>

@@ -77,72 +77,78 @@ export function HomeCategories({
     let mounted = true;
 
     const load = async () => {
-      const cachedCategories = readCachedCategories(limit);
+      try {
+        const cachedCategories = readCachedCategories(limit);
 
-      if (!mounted) return;
+        if (!mounted) return;
 
-      if (cachedCategories.length > 0) {
-        setCategories(cachedCategories);
-        setLoading(false);
-      } else {
-        setLoading(true);
-      }
+        if (cachedCategories.length > 0) {
+          setCategories(cachedCategories);
+          setLoading(false);
+        } else {
+          setLoading(true);
+        }
 
-      const categoryQuery = await supabase
-        .from("categories")
-        .select(
-          "id, slug, sort_order, cover_image_url, category_translations(locale, name, slug, description)",
-        )
-        .eq("is_active", true)
-        .order("sort_order", { ascending: true })
-        .limit(limit);
-      let categoryData: CategoryRow[] | null = (categoryQuery.data as CategoryRow[] | null) ?? null;
-      const categoryError = categoryQuery.error;
-
-      if (categoryError?.message.includes("slug does not exist")) {
-        const fallback = await supabase
+        const categoryQuery = await supabase
           .from("categories")
           .select(
-            "id, slug, sort_order, cover_image_url, category_translations(locale, name, description)",
+            "id, slug, sort_order, cover_image_url, category_translations(locale, name, slug, description)",
           )
           .eq("is_active", true)
           .order("sort_order", { ascending: true })
           .limit(limit);
-        categoryData = (fallback.data as CategoryRow[] | null) ?? null;
-      }
+        let categoryData: CategoryRow[] | null = (categoryQuery.data as CategoryRow[] | null) ?? null;
+        const categoryError = categoryQuery.error;
 
-      if (!mounted) return;
-
-      const nextCategories = (categoryData as CategoryRow[] | null) ?? [];
-      setCategories(nextCategories);
-      setLoading(false);
-
-      if (typeof window !== "undefined") {
-        try {
-          window.sessionStorage.setItem(
-            CATEGORY_CACHE_KEY,
-            JSON.stringify({ categories: nextCategories }),
-          );
-        } catch {
-          // Ignore cache write failures.
+        if (categoryError?.message.includes("slug does not exist")) {
+          const fallback = await supabase
+            .from("categories")
+            .select(
+              "id, slug, sort_order, cover_image_url, category_translations(locale, name, description)",
+            )
+            .eq("is_active", true)
+            .order("sort_order", { ascending: true })
+            .limit(limit);
+          categoryData = (fallback.data as CategoryRow[] | null) ?? null;
         }
+
+        if (!mounted) return;
+
+        const nextCategories = (categoryData as CategoryRow[] | null) ?? [];
+        setCategories(nextCategories);
+        setLoading(false);
+
+        if (typeof window !== "undefined") {
+          try {
+            window.sessionStorage.setItem(
+              CATEGORY_CACHE_KEY,
+              JSON.stringify({ categories: nextCategories }),
+            );
+          } catch {
+            // Ignore cache write failures.
+          }
+        }
+
+        const { data: productRows } = await supabase
+          .from("products")
+          .select("category_id")
+          .eq("is_active", true);
+
+        if (!mounted) return;
+
+        const nextCounts: Record<string, number> = {};
+        ((productRows as ProductCountRow[] | null) ?? []).forEach((row) => {
+          if (!row.category_id) return;
+          nextCounts[row.category_id] = (nextCounts[row.category_id] || 0) + 1;
+        });
+
+        setCounts(nextCounts);
+        setCountsLoaded(true);
+      } catch {
+        if (!mounted) return;
+        setLoading(false);
+        setCountsLoaded(true);
       }
-
-      const { data: productRows } = await supabase
-        .from("products")
-        .select("category_id")
-        .eq("is_active", true);
-
-      if (!mounted) return;
-
-      const nextCounts: Record<string, number> = {};
-      ((productRows as ProductCountRow[] | null) ?? []).forEach((row) => {
-        if (!row.category_id) return;
-        nextCounts[row.category_id] = (nextCounts[row.category_id] || 0) + 1;
-      });
-
-      setCounts(nextCounts);
-      setCountsLoaded(true);
     };
 
     void load();

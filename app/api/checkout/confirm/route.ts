@@ -24,12 +24,7 @@ export async function POST(request: Request) {
     const supabase = await createSupabaseServerClient();
     const {
       data: { user },
-      error: authError,
     } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
-    }
 
     const stripe = getStripeServerClient();
     const session = await stripe.checkout.sessions.retrieve(sessionId);
@@ -44,7 +39,7 @@ export async function POST(request: Request) {
     }
 
     const customerEmail = session.metadata?.customer_email?.trim();
-    if (customerEmail && user.email && customerEmail !== user.email) {
+    if (customerEmail && user?.email && customerEmail !== user.email) {
       return NextResponse.json(
         { error: "This checkout session does not belong to the current user." },
         { status: 403 },

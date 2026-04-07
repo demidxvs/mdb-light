@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ArrowLeft, ChevronLeft, ChevronRight, ShoppingCart, X } from "lucide-react";
 import { useLocale } from "@/components/ui/locale-provider";
@@ -236,7 +235,6 @@ function getColorSwatchStyle(color: string) {
 }
 
 export default function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
-  const router = useRouter();
   const { locale } = useLocale();
   const t = copy[locale];
   const supabaseReady = useMemo(() => isSupabaseConfigured(), []);
@@ -551,12 +549,6 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
     try {
       const supabase = createSupabaseBrowserClient();
       const userId = await getCurrentUserId(supabase);
-
-      if (!userId) {
-        router.push(`/login?next=${encodeURIComponent(`/products/${product.slug}`)}`);
-        return;
-      }
-
       await addProductToCart(supabase, userId, {
         productId: product.id,
         sku: product.sku,

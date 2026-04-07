@@ -1,18 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useSearchParams } from "next/navigation";
-import { CheckCircle2, LoaderCircle } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 import { useLocale } from "@/components/ui/locale-provider";
 import { localizePathname } from "@/i18n/config";
 import { formatOrderMoney, getBankDetails, getDeliveryCopy } from "@/lib/order-utils";
-
-type OrderSummary = {
-  order_code: string;
-  total_cents: number;
-  currency: string;
-};
 
 const copy = {
   en: { title: "Order created", orderNumber: "Order number", instructions: "Pay the order using the bank details below. Use the order number in the payment reference. We will contact you after the payment is received.", company: "Company", iban: "IBAN", bank: "Bank", swift: "SWIFT", amount: "Amount", reference: "Reference", loading: "Loading order details...", cart: "Back to cart", catalog: "Open catalog" },
@@ -27,35 +21,20 @@ export default function BankTransferPage() {
   const deliveryCopy = getDeliveryCopy(locale);
   const searchParams = useSearchParams();
   const orderCode = useMemo(() => searchParams.get("order"), [searchParams]);
-  const [order, setOrder] = useState<OrderSummary | null>(null);
+  const totalCents = useMemo(() => Number(searchParams.get("total") || 0), [searchParams]);
+  const currency = useMemo(() => searchParams.get("currency") || "EUR", [searchParams]);
   const bankDetails = getBankDetails();
-
-  useEffect(() => {
-    if (!orderCode) return;
-    let cancelled = false;
-
-    const load = async () => {
-      const response = await fetch(`/api/checkout/order?order=${encodeURIComponent(orderCode)}`, { credentials: "include" });
-      const payload = (await response.json().catch(() => ({}))) as { order?: OrderSummary };
-      if (!cancelled) setOrder(payload.order ?? null);
-    };
-
-    void load();
-    return () => {
-      cancelled = true;
-    };
-  }, [orderCode]);
 
   return (
     <main className="mx-auto flex min-h-[70vh] max-w-3xl items-center px-6 py-16">
       <section className="w-full rounded-[32px] border border-[#ece3d9] bg-[#fffaf4] p-8 shadow-[0_30px_80px_rgba(27,42,74,0.08)]">
         <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700"><CheckCircle2 className="h-8 w-8" /></div>
         <h1 className="mt-6 text-4xl font-semibold tracking-[-0.05em] text-[color:var(--headline)]">{t.title}</h1>
-        {!order ? (
-          <p className="mt-4 flex items-center gap-3 text-sm text-[color:var(--muted)]"><LoaderCircle className="h-5 w-5 animate-spin" />{t.loading}</p>
+        {!orderCode ? (
+          <p className="mt-4 text-sm text-[color:var(--muted)]">{t.loading}</p>
         ) : (
           <>
-            <p className="mt-3 text-sm leading-7 text-[color:var(--muted)]">{t.orderNumber}: <span className="font-semibold text-[color:var(--headline)]">{order.order_code}</span></p>
+            <p className="mt-3 text-sm leading-7 text-[color:var(--muted)]">{t.orderNumber}: <span className="font-semibold text-[color:var(--headline)]">{orderCode}</span></p>
             <p className="mt-3 text-sm leading-7 text-[color:var(--muted)]">{t.instructions}</p>
             <div className="mt-6 rounded-[24px] border border-[#ece3d9] bg-white p-6">
               <div className="grid gap-3 text-sm sm:grid-cols-2">
@@ -63,8 +42,8 @@ export default function BankTransferPage() {
                 <div><p className="text-xs uppercase tracking-[0.18em] text-[color:var(--muted)]">{t.iban}</p><p className="mt-2 font-medium text-[color:var(--headline)]">{bankDetails.iban}</p></div>
                 <div><p className="text-xs uppercase tracking-[0.18em] text-[color:var(--muted)]">{t.bank}</p><p className="mt-2 font-medium text-[color:var(--headline)]">{bankDetails.bank}</p></div>
                 <div><p className="text-xs uppercase tracking-[0.18em] text-[color:var(--muted)]">{t.swift}</p><p className="mt-2 font-medium text-[color:var(--headline)]">{bankDetails.swift}</p></div>
-                <div><p className="text-xs uppercase tracking-[0.18em] text-[color:var(--muted)]">{t.amount}</p><p className="mt-2 font-medium text-[color:var(--headline)]">{formatOrderMoney(order.total_cents, order.currency)}</p></div>
-                <div><p className="text-xs uppercase tracking-[0.18em] text-[color:var(--muted)]">{t.reference}</p><p className="mt-2 font-medium text-[color:var(--headline)]">{order.order_code}</p></div>
+                <div><p className="text-xs uppercase tracking-[0.18em] text-[color:var(--muted)]">{t.amount}</p><p className="mt-2 font-medium text-[color:var(--headline)]">{formatOrderMoney(totalCents, currency)}</p></div>
+                <div><p className="text-xs uppercase tracking-[0.18em] text-[color:var(--muted)]">{t.reference}</p><p className="mt-2 font-medium text-[color:var(--headline)]">{orderCode}</p></div>
               </div>
             </div>
             <p className="mt-6 text-sm leading-7 text-[color:var(--muted)]">{deliveryCopy.bankTransfer}</p>

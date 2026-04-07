@@ -17,7 +17,12 @@ import {
   writeCachedAccountProfile,
   type CachedAccountProfile,
 } from "@/lib/account-cache";
-import { CART_UPDATED_EVENT, getActiveCartCount, getCurrentUserId } from "@/lib/cart";
+import {
+  CART_UPDATED_EVENT,
+  getActiveCartCount,
+  getCurrentUserId,
+  getGuestCartCount,
+} from "@/lib/cart";
 
 type ProfileRow = CachedAccountProfile;
 
@@ -63,7 +68,7 @@ export function AccountControls({ compact = false }: { compact?: boolean } = {})
       const userId = await getCurrentUserId(supabase);
       if (!mounted) return;
       if (!userId) {
-        setCartCount(0);
+        setCartCount(getGuestCartCount());
         return;
       }
 
@@ -74,54 +79,61 @@ export function AccountControls({ compact = false }: { compact?: boolean } = {})
         }
       } catch {
         if (mounted) {
-          setCartCount(0);
+          setCartCount(getGuestCartCount());
         }
       }
     };
 
     const hydrateFromSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
 
-      if (!mounted) return;
+        if (!mounted) return;
 
-      const user = session?.user;
-      setIsAuthenticated(Boolean(user));
+        const user = session?.user;
+        setIsAuthenticated(Boolean(user));
 
-      if (!user) {
-        clearCachedAccountProfile();
-        setProfile(null);
-        setCartCount(0);
+        if (!user) {
+          clearCachedAccountProfile();
+          setProfile(null);
+          setCartCount(getGuestCartCount());
+          setLoading(false);
+          return;
+        }
+
+        const meta = user.user_metadata ?? {};
+        const nextProfile = {
+          email: user.email ?? null,
+          first_name: meta.first_name ?? null,
+          last_name: meta.last_name ?? null,
+          full_name: meta.full_name ?? null,
+          phone: meta.phone ?? null,
+        };
+
+        writeCachedAccountProfile(nextProfile);
+        setProfile(nextProfile);
         setLoading(false);
-        return;
-      }
+        void syncCartCount();
 
-      const meta = user.user_metadata ?? {};
-      const nextProfile = {
-        email: user.email ?? null,
-        first_name: meta.first_name ?? null,
-        last_name: meta.last_name ?? null,
-        full_name: meta.full_name ?? null,
-        phone: meta.phone ?? null,
-      };
+        const { data: profileData } = await supabase
+          .from("profiles")
+          .select("first_name, last_name, full_name, phone")
+          .eq("id", user.id)
+          .maybeSingle();
 
-      writeCachedAccountProfile(nextProfile);
-      setProfile(nextProfile);
-      setLoading(false);
-      void syncCartCount();
-
-      const { data: profileData } = await supabase
-        .from("profiles")
-        .select("first_name, last_name, full_name, phone")
-        .eq("id", user.id)
-        .maybeSingle();
-
-      if (!mounted) return;
-      if (profileData) {
-        const mergedProfile = { ...nextProfile, ...profileData };
-        writeCachedAccountProfile(mergedProfile);
-        setProfile(mergedProfile);
+        if (!mounted) return;
+        if (profileData) {
+          const mergedProfile = { ...nextProfile, ...profileData };
+          writeCachedAccountProfile(mergedProfile);
+          setProfile(mergedProfile);
+        }
+      } catch {
+        if (!mounted) return;
+        setIsAuthenticated(false);
+        setCartCount(getGuestCartCount());
+        setLoading(false);
       }
     };
 
@@ -136,7 +148,7 @@ export function AccountControls({ compact = false }: { compact?: boolean } = {})
       if (!user) {
         clearCachedAccountProfile();
         setProfile(null);
-        setCartCount(0);
+        setCartCount(getGuestCartCount());
         setLoading(false);
         return;
       }

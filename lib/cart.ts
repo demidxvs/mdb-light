@@ -8,12 +8,36 @@ import {
 } from "@/lib/attribute-options";
 
 export const CART_UPDATED_EVENT = "mdb-cart-updated";
+const GUEST_CART_STORAGE_KEY = "mdb-light-guest-cart";
 
 type CartRow = {
   id: string;
   user_id: string;
   currency: string;
   discount_cents?: number | null;
+};
+
+export type GuestCartItem = {
+  id: string;
+  product_id: string;
+  quantity: number;
+  unit_price_cents: number;
+  currency: string;
+  selected_color?: string | null;
+  selected_length?: string | null;
+  selected_material?: string | null;
+  selected_options?: SelectedOptionMap | null;
+  variant_key: string;
+  product_snapshot: {
+    sku?: string;
+    slug?: string;
+    name?: string;
+    image_url?: string | null;
+    selected_color?: string | null;
+    selected_length?: string | null;
+    selected_material?: string | null;
+    selected_options?: SelectedOptionMap | null;
+  } | null;
 };
 
 type AddToCartInput = {
@@ -36,6 +60,140 @@ export function emitCartUpdated() {
   if (typeof window !== "undefined") {
     window.dispatchEvent(new CustomEvent(CART_UPDATED_EVENT));
   }
+}
+
+function getGuestCartItemId(
+  productId: string,
+  variantKey: string,
+  selectedColor?: string | null,
+  selectedLength?: string | null,
+  selectedMaterial?: string | null,
+) {
+  return [
+    productId,
+    variantKey,
+    selectedColor?.trim() || "",
+    selectedLength?.trim() || "",
+    selectedMaterial?.trim() || "",
+  ].join("::");
+}
+
+export function readGuestCartItems() {
+  if (typeof window === "undefined") return [] as GuestCartItem[];
+
+  try {
+    const raw = window.localStorage.getItem(GUEST_CART_STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as GuestCartItem[];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeGuestCartItems(items: GuestCartItem[]) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(GUEST_CART_STORAGE_KEY, JSON.stringify(items));
+}
+
+export function clearGuestCart() {
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem(GUEST_CART_STORAGE_KEY);
+  emitCartUpdated();
+}
+
+export function getGuestCartCount() {
+  return readGuestCartItems().reduce((total, item) => total + item.quantity, 0);
+}
+
+export function updateGuestCartItemQuantity(itemId: string, nextQuantity: number) {
+  const currentItems = readGuestCartItems();
+  const nextItems =
+    nextQuantity <= 0
+      ? currentItems.filter((item) => item.id !== itemId)
+      : currentItems.map((item) =>
+          item.id === itemId ? { ...item, quantity: nextQuantity } : item,
+        );
+
+  writeGuestCartItems(nextItems);
+  emitCartUpdated();
+}
+
+function addProductToGuestCart(input: AddToCartInput) {
+  const quantityToAdd = Math.max(1, input.quantity ?? 1);
+  const selectedColor = input.selectedColor?.trim() || null;
+  const selectedLength = input.selectedLength?.trim() || null;
+  const selectedMaterial = input.selectedMaterial?.trim() || null;
+  const selectedOptions = normalizeSelectedOptionsMap(input.selectedOptions);
+  const selectedOptionLabels = normalizeSelectedOptionsMap(input.selectedOptionLabels);
+  const variantKey = createVariantKey(selectedOptions);
+  const itemId = getGuestCartItemId(
+    input.productId,
+    variantKey,
+    selectedColor,
+    selectedLength,
+    selectedMaterial,
+  );
+
+  const items = readGuestCartItems();
+  const existingItem = items.find((item) => item.id === itemId);
+
+  if (existingItem) {
+    writeGuestCartItems(
+      items.map((item) =>
+        item.id === itemId
+          ? {
+              ...item,
+              quantity: item.quantity + quantityToAdd,
+              unit_price_cents: input.unitPriceCents,
+              currency: input.currency,
+              selected_color: selectedColor,
+              selected_length: selectedLength,
+              selected_material: selectedMaterial,
+              selected_options: selectedOptions,
+              product_snapshot: {
+                sku: input.sku,
+                slug: input.slug,
+                name: input.name,
+                image_url: input.imageUrl,
+                selected_color: selectedColor,
+                selected_length: selectedLength,
+                selected_material: selectedMaterial,
+                selected_options: selectedOptionLabels,
+              },
+            }
+          : item,
+      ),
+    );
+  } else {
+    writeGuestCartItems([
+      ...items,
+      {
+        id: itemId,
+        product_id: input.productId,
+        quantity: quantityToAdd,
+        unit_price_cents: input.unitPriceCents,
+        currency: input.currency,
+        selected_color: selectedColor,
+        selected_length: selectedLength,
+        selected_material: selectedMaterial,
+        selected_options: selectedOptions,
+        variant_key: variantKey,
+        product_snapshot: {
+          sku: input.sku,
+          slug: input.slug,
+          name: input.name,
+          image_url: input.imageUrl,
+          selected_color: selectedColor,
+          selected_length: selectedLength,
+          selected_material: selectedMaterial,
+          selected_options: selectedOptionLabels,
+        },
+      },
+    ]);
+  }
+
+  emitCartUpdated();
 }
 
 export async function getCurrentUserId(supabase: SupabaseClient) {
@@ -139,9 +297,14 @@ export async function getActiveCartCount(
 
 export async function addProductToCart(
   supabase: SupabaseClient,
-  userId: string,
+  userId: string | null,
   input: AddToCartInput,
 ) {
+  if (!userId) {
+    addProductToGuestCart(input);
+    return;
+  }
+
   const cart = await getOrCreateActiveCart(supabase, userId, input.currency || "EUR");
   const quantityToAdd = Math.max(1, input.quantity ?? 1);
   const selectedColor = input.selectedColor?.trim() || null;

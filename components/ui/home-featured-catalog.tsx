@@ -93,56 +93,61 @@ export function HomeFeaturedCatalog() {
     let mounted = true;
 
     const load = async () => {
-      const cachedProducts = readCachedProducts();
-      if (cachedProducts.length > 0) {
-        setProducts(cachedProducts);
-        setLoading(false);
-      }
+      try {
+        const cachedProducts = readCachedProducts();
+        if (cachedProducts.length > 0) {
+          setProducts(cachedProducts);
+          setLoading(false);
+        }
 
-      if (cachedProducts.length === 0 && products.length === 0) {
-        setLoading(true);
-      }
+        if (cachedProducts.length === 0 && products.length === 0) {
+          setLoading(true);
+        }
 
-      const productsQuery = await supabase
-        .from("products")
-        .select(
-          "id, slug, category_id, price_cents, currency, primary_image_url, sort_order, product_translations(locale, name, slug, short_description), categories(slug, category_translations(locale, name, slug))",
-        )
-        .eq("is_active", true)
-        .eq("is_featured", true)
-        .order("sort_order", { ascending: true })
-        .order("created_at", { ascending: false })
-        .limit(4);
-      let data: ProductListRow[] | null = (productsQuery.data as ProductListRow[] | null) ?? null;
-      const error = productsQuery.error;
-
-      if (error?.message.includes("slug does not exist") || error?.message.includes("sort_order does not exist")) {
-        const fallback = await supabase
+        const productsQuery = await supabase
           .from("products")
           .select(
-            "id, slug, category_id, price_cents, currency, primary_image_url, product_translations(locale, name, short_description), categories(slug, category_translations(locale, name))",
+            "id, slug, category_id, price_cents, currency, primary_image_url, sort_order, product_translations(locale, name, slug, short_description), categories(slug, category_translations(locale, name, slug))",
           )
           .eq("is_active", true)
           .eq("is_featured", true)
+          .order("sort_order", { ascending: true })
           .order("created_at", { ascending: false })
           .limit(4);
-        data = (fallback.data as ProductListRow[] | null) ?? null;
-      }
+        let data: ProductListRow[] | null = (productsQuery.data as ProductListRow[] | null) ?? null;
+        const error = productsQuery.error;
 
-      if (!mounted) return;
-      const nextProducts = (data as ProductListRow[] | null) ?? [];
-      setProducts(nextProducts);
-      setLoading(false);
-
-      if (typeof window !== "undefined") {
-        try {
-          window.sessionStorage.setItem(
-            FEATURED_CATALOG_CACHE_KEY,
-            JSON.stringify({ products: nextProducts }),
-          );
-        } catch {
-          // Ignore cache write failures.
+        if (error?.message.includes("slug does not exist") || error?.message.includes("sort_order does not exist")) {
+          const fallback = await supabase
+            .from("products")
+            .select(
+              "id, slug, category_id, price_cents, currency, primary_image_url, product_translations(locale, name, short_description), categories(slug, category_translations(locale, name))",
+            )
+            .eq("is_active", true)
+            .eq("is_featured", true)
+            .order("created_at", { ascending: false })
+            .limit(4);
+          data = (fallback.data as ProductListRow[] | null) ?? null;
         }
+
+        if (!mounted) return;
+        const nextProducts = (data as ProductListRow[] | null) ?? [];
+        setProducts(nextProducts);
+        setLoading(false);
+
+        if (typeof window !== "undefined") {
+          try {
+            window.sessionStorage.setItem(
+              FEATURED_CATALOG_CACHE_KEY,
+              JSON.stringify({ products: nextProducts }),
+            );
+          } catch {
+            // Ignore cache write failures.
+          }
+        }
+      } catch {
+        if (!mounted) return;
+        setLoading(false);
       }
     };
 

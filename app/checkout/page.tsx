@@ -5,9 +5,14 @@ import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, CheckCircle2, LoaderCircle } from "lucide-react";
 import { useLocale } from "@/components/ui/locale-provider";
 import { localizePathname } from "@/i18n/config";
-import { createSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase-client";
-import { getCurrentUserId, getOrCreateActiveCart } from "@/lib/cart";
+import {
+  clearGuestCart,
+  getCurrentUserId,
+  getOrCreateActiveCart,
+  readGuestCartItems,
+} from "@/lib/cart";
 import { getDeliveryCopy, type OrderPaymentMethod } from "@/lib/order-utils";
+import { createSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase-client";
 
 type CartItemRow = {
   id: string;
@@ -15,9 +20,14 @@ type CartItemRow = {
   quantity: number;
   unit_price_cents: number;
   currency: string;
+  selected_color?: string | null;
+  selected_length?: string | null;
+  selected_material?: string | null;
+  selected_options?: Record<string, string> | null;
   product_snapshot: {
     name?: string;
     sku?: string;
+    selected_options?: Record<string, string> | null;
   } | null;
 };
 
@@ -26,12 +36,34 @@ type CartRow = {
   discount_cents: number;
 };
 
+type CheckoutFormState = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  note: string;
+  password: string;
+  confirmPassword: string;
+};
+
 const copy = {
   en: {
     title: "Checkout",
-    description: "Choose the payment method and confirm your order.",
+    description: "Enter your contact details, choose the payment method and confirm your order.",
     loading: "Loading checkout...",
     paymentMethod: "Payment method",
+    contactTitle: "Contact details",
+    accountTitle: "Account",
+    guestHint: "You can complete the order as a guest or create an account during checkout.",
+    createAccount: "Create account",
+    createAccountHint: "Use the same email for the order and your future account.",
+    firstName: "First name",
+    lastName: "Last name",
+    email: "Email",
+    phone: "Phone",
+    note: "Order note",
+    password: "Password",
+    confirmPassword: "Confirm password",
     stripe: "Card payment",
     bankTransfer: "Bank transfer",
     placeOrder: "Place order",
@@ -44,12 +76,28 @@ const copy = {
     total: "Total",
     error: "Could not create the order.",
     empty: "Your cart is empty.",
+    required: "Please fill in all required fields.",
+    invalidEmail: "Please enter a valid email address.",
+    passwordShort: "Password must be at least 8 characters.",
+    passwordMismatch: "Passwords do not match.",
   },
   ru: {
     title: "Оформление заказа",
-    description: "Выберите способ оплаты и подтвердите заказ.",
+    description: "Введите контактные данные, выберите способ оплаты и подтвердите заказ.",
     loading: "Загружаем checkout...",
     paymentMethod: "Способ оплаты",
+    contactTitle: "Контактные данные",
+    accountTitle: "Аккаунт",
+    guestHint: "Вы можете оформить заказ как гость или создать аккаунт во время checkout.",
+    createAccount: "Создать аккаунт",
+    createAccountHint: "Для заказа и нового аккаунта будет использоваться один и тот же email.",
+    firstName: "Имя",
+    lastName: "Фамилия",
+    email: "Email",
+    phone: "Телефон",
+    note: "Комментарий к заказу",
+    password: "Пароль",
+    confirmPassword: "Подтверждение пароля",
     stripe: "Оплата картой",
     bankTransfer: "Оплата переводом",
     placeOrder: "Оформить заказ",
@@ -62,12 +110,28 @@ const copy = {
     total: "Итого",
     error: "Не удалось создать заказ.",
     empty: "Корзина пуста.",
+    required: "Заполните все обязательные поля.",
+    invalidEmail: "Введите корректный email.",
+    passwordShort: "Пароль должен содержать минимум 8 символов.",
+    passwordMismatch: "Пароли не совпадают.",
   },
   el: {
     title: "Checkout",
-    description: "Επιλέξτε τρόπο πληρωμής και επιβεβαιώστε την παραγγελία σας.",
+    description: "Συμπληρώστε τα στοιχεία επικοινωνίας, επιλέξτε τρόπο πληρωμής και επιβεβαιώστε την παραγγελία.",
     loading: "Φόρτωση checkout...",
     paymentMethod: "Τρόπος πληρωμής",
+    contactTitle: "Στοιχεία επικοινωνίας",
+    accountTitle: "Λογαριασμός",
+    guestHint: "Μπορείτε να ολοκληρώσετε την παραγγελία ως επισκέπτης ή να δημιουργήσετε λογαριασμό στο checkout.",
+    createAccount: "Δημιουργία λογαριασμού",
+    createAccountHint: "Το ίδιο email θα χρησιμοποιηθεί για την παραγγελία και τον νέο λογαριασμό.",
+    firstName: "Όνομα",
+    lastName: "Επώνυμο",
+    email: "Email",
+    phone: "Τηλέφωνο",
+    note: "Σχόλιο παραγγελίας",
+    password: "Κωδικός πρόσβασης",
+    confirmPassword: "Επιβεβαίωση κωδικού",
     stripe: "Πληρωμή με κάρτα",
     bankTransfer: "Τραπεζική μεταφορά",
     placeOrder: "Καταχώρηση παραγγελίας",
@@ -80,12 +144,28 @@ const copy = {
     total: "Σύνολο",
     error: "Δεν ήταν δυνατή η δημιουργία της παραγγελίας.",
     empty: "Το καλάθι είναι άδειο.",
+    required: "Συμπληρώστε όλα τα υποχρεωτικά πεδία.",
+    invalidEmail: "Συμπληρώστε έγκυρο email.",
+    passwordShort: "Ο κωδικός πρέπει να έχει τουλάχιστον 8 χαρακτήρες.",
+    passwordMismatch: "Οι κωδικοί δεν ταιριάζουν.",
   },
   lv: {
     title: "Checkout",
-    description: "Izvēlieties apmaksas veidu un apstipriniet pasūtījumu.",
+    description: "Ievadiet kontaktinformāciju, izvēlieties apmaksas veidu un apstipriniet pasūtījumu.",
     loading: "Ielādē checkout...",
     paymentMethod: "Apmaksas veids",
+    contactTitle: "Kontaktinformācija",
+    accountTitle: "Konts",
+    guestHint: "Pasūtījumu varat noformēt kā viesis vai izveidot kontu checkout laikā.",
+    createAccount: "Izveidot kontu",
+    createAccountHint: "Pasūtījumam un jaunajam kontam tiks izmantots viens un tas pats email.",
+    firstName: "Vārds",
+    lastName: "Uzvārds",
+    email: "Email",
+    phone: "Tālrunis",
+    note: "Komentārs pasūtījumam",
+    password: "Parole",
+    confirmPassword: "Apstipriniet paroli",
     stripe: "Apmaksa ar karti",
     bankTransfer: "Bankas pārskaitījums",
     placeOrder: "Noformēt pasūtījumu",
@@ -98,8 +178,14 @@ const copy = {
     total: "Kopā",
     error: "Neizdevās izveidot pasūtījumu.",
     empty: "Grozs ir tukšs.",
+    required: "Aizpildiet visus obligātos laukus.",
+    invalidEmail: "Ievadiet korektu email adresi.",
+    passwordShort: "Parolei jābūt vismaz 8 simbolus garai.",
+    passwordMismatch: "Paroles nesakrīt.",
   },
 } as const;
+
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function formatMoney(cents: number, currency: string) {
   return new Intl.NumberFormat("en-US", {
@@ -108,69 +194,154 @@ function formatMoney(cents: number, currency: string) {
   }).format(cents / 100);
 }
 
+function buildInitialFormState(): CheckoutFormState {
+  return {
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    note: "",
+    password: "",
+    confirmPassword: "",
+  };
+}
+
 export default function CheckoutPage() {
   const { locale } = useLocale();
   const t = copy[locale];
   const deliveryCopy = getDeliveryCopy(locale);
   const supabaseReady = useMemo(() => isSupabaseConfigured(), []);
-  const [loading, setLoading] = useState(supabaseReady);
+  const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
   const [cart, setCart] = useState<CartRow | null>(null);
   const [items, setItems] = useState<CartItemRow[]>([]);
   const [paymentMethod, setPaymentMethod] = useState<OrderPaymentMethod>("stripe");
+  const [createAccount, setCreateAccount] = useState(false);
+  const [form, setForm] = useState<CheckoutFormState>(buildInitialFormState);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!supabaseReady) return;
-    const supabase = createSupabaseBrowserClient();
     let mounted = true;
 
     const load = async () => {
+      setLoading(true);
       try {
-        const userId = await getCurrentUserId(supabase);
-        if (!mounted) return;
-
-        if (!userId) {
-          window.location.href = localizePathname("/login", locale);
+        if (!supabaseReady) {
+          const guestItems = readGuestCartItems() as CartItemRow[];
+          if (!mounted) return;
+          setUserId(null);
+          setItems(guestItems);
+          setCart({ currency: guestItems[0]?.currency || "EUR", discount_cents: 0 });
           return;
         }
 
-        const activeCart = await getOrCreateActiveCart(supabase, userId);
-        const { data: itemRows, error: itemError } = await supabase
-          .from("cart_items")
-          .select("id, product_id, quantity, unit_price_cents, currency, product_snapshot")
-          .eq("cart_id", activeCart.id)
-          .order("created_at", { ascending: true });
+        const supabase = createSupabaseBrowserClient();
+        const nextUserId = await getCurrentUserId(supabase);
+        if (!mounted) return;
+
+        setUserId(nextUserId);
+
+        if (!nextUserId) {
+          const guestItems = readGuestCartItems() as CartItemRow[];
+          setItems(guestItems);
+          setCart({ currency: guestItems[0]?.currency || "EUR", discount_cents: 0 });
+          return;
+        }
+
+        const activeCart = await getOrCreateActiveCart(supabase, nextUserId);
+        const [{ data: itemRows, error: itemError }, { data: profileData }, authResult] =
+          await Promise.all([
+            supabase
+              .from("cart_items")
+              .select("id, product_id, quantity, unit_price_cents, currency, selected_color, selected_length, selected_material, selected_options, product_snapshot")
+              .eq("cart_id", activeCart.id)
+              .order("created_at", { ascending: true }),
+            supabase
+              .from("profiles")
+              .select("first_name, last_name, email, phone")
+              .eq("id", nextUserId)
+              .maybeSingle(),
+            supabase.auth.getUser(),
+          ]);
 
         if (itemError) {
           throw itemError;
         }
 
         if (!mounted) return;
+
+        const authUser = authResult.data.user;
         setCart({
           currency: activeCart.currency,
           discount_cents: activeCart.discount_cents ?? 0,
         });
         setItems((itemRows as CartItemRow[] | null) ?? []);
+        setForm((current) => ({
+          ...current,
+          firstName: profileData?.first_name || authUser?.user_metadata?.first_name || "",
+          lastName: profileData?.last_name || authUser?.user_metadata?.last_name || "",
+          email: profileData?.email || authUser?.email || "",
+          phone: profileData?.phone || authUser?.user_metadata?.phone || "",
+        }));
       } catch {
-        if (mounted) setError(t.error);
+        if (!mounted) return;
+        setError(t.error);
       } finally {
         if (mounted) setLoading(false);
       }
     };
 
     void load();
+
     return () => {
       mounted = false;
     };
-  }, [locale, supabaseReady, t.error]);
+  }, [supabaseReady, t.error]);
 
   const subtotal = items.reduce((sum, item) => sum + item.unit_price_cents * item.quantity, 0);
   const discount = Math.min(cart?.discount_cents ?? 0, subtotal);
   const total = Math.max(subtotal - discount, 0);
   const currency = cart?.currency || items[0]?.currency || "EUR";
 
+  const updateField = <K extends keyof CheckoutFormState>(key: K, value: CheckoutFormState[K]) => {
+    setForm((current) => ({ ...current, [key]: value }));
+  };
+
+  const validate = () => {
+    if (
+      !form.firstName.trim() ||
+      !form.lastName.trim() ||
+      !form.email.trim() ||
+      !form.phone.trim()
+    ) {
+      return t.required;
+    }
+
+    if (!emailRegex.test(form.email.trim())) {
+      return t.invalidEmail;
+    }
+
+    if (!userId && createAccount) {
+      if (form.password.length < 8) {
+        return t.passwordShort;
+      }
+
+      if (form.password !== form.confirmPassword) {
+        return t.passwordMismatch;
+      }
+    }
+
+    return "";
+  };
+
   const handleSubmit = async () => {
+    const validationError = validate();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
     setSubmitting(true);
     setError("");
 
@@ -181,16 +352,46 @@ export default function CheckoutPage() {
           "Content-Type": "application/json",
         },
         credentials: "include",
-        body: JSON.stringify({ locale, paymentMethod }),
+        body: JSON.stringify({
+          locale,
+          paymentMethod,
+          createAccount: !userId && createAccount,
+          password: form.password,
+          confirmPassword: form.confirmPassword,
+          customer: {
+            firstName: form.firstName,
+            lastName: form.lastName,
+            email: form.email,
+            phone: form.phone,
+            note: form.note,
+          },
+          items: !userId
+            ? items.map((item) => ({
+                productId: item.product_id,
+                quantity: item.quantity,
+                selectedColor: item.selected_color ?? null,
+                selectedLength: item.selected_length ?? null,
+                selectedMaterial: item.selected_material ?? null,
+                selectedOptions: item.selected_options ?? {},
+                selectedOptionLabels: item.product_snapshot?.selected_options ?? {},
+                productSnapshot: item.product_snapshot,
+              }))
+            : undefined,
+        }),
       });
 
       const payload = (await response.json().catch(() => ({}))) as {
         error?: string;
         url?: string;
+        clearGuestCart?: boolean;
       };
 
       if (!response.ok || !payload.url) {
         throw new Error(payload.error || t.error);
+      }
+
+      if (payload.clearGuestCart) {
+        clearGuestCart();
       }
 
       window.location.href = payload.url;
@@ -236,6 +437,38 @@ export default function CheckoutPage() {
           </Link>
           <h1 className="mt-6 text-4xl font-semibold tracking-[-0.05em] text-[color:var(--headline)]">{t.title}</h1>
           <p className="mt-3 text-sm leading-7 text-[color:var(--muted)]">{t.description}</p>
+
+          <div className="mt-8">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[color:var(--accent)]">{t.contactTitle}</p>
+            {!userId ? <p className="mt-3 text-sm leading-6 text-[color:var(--muted)]">{t.guestHint}</p> : null}
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
+              <input value={form.firstName} onChange={(event) => updateField("firstName", event.target.value)} placeholder={t.firstName} className="h-12 rounded-xl border border-[#ece3d9] bg-white px-4 text-sm text-[color:var(--headline)] outline-none transition focus:border-[color:var(--accent)]" />
+              <input value={form.lastName} onChange={(event) => updateField("lastName", event.target.value)} placeholder={t.lastName} className="h-12 rounded-xl border border-[#ece3d9] bg-white px-4 text-sm text-[color:var(--headline)] outline-none transition focus:border-[color:var(--accent)]" />
+              <input value={form.email} onChange={(event) => updateField("email", event.target.value)} placeholder={t.email} className="h-12 rounded-xl border border-[#ece3d9] bg-white px-4 text-sm text-[color:var(--headline)] outline-none transition focus:border-[color:var(--accent)]" />
+              <input value={form.phone} onChange={(event) => updateField("phone", event.target.value)} placeholder={t.phone} className="h-12 rounded-xl border border-[#ece3d9] bg-white px-4 text-sm text-[color:var(--headline)] outline-none transition focus:border-[color:var(--accent)]" />
+              <textarea value={form.note} onChange={(event) => updateField("note", event.target.value)} placeholder={t.note} className="min-h-[100px] rounded-xl border border-[#ece3d9] bg-white px-4 py-3 text-sm text-[color:var(--headline)] outline-none transition focus:border-[color:var(--accent)] md:col-span-2" />
+            </div>
+          </div>
+
+          {!userId ? (
+            <div className="mt-8 rounded-[24px] border border-[#ece3d9] bg-white p-5">
+              <div className="flex items-start gap-3">
+                <input id="create-account" type="checkbox" checked={createAccount} onChange={(event) => setCreateAccount(event.target.checked)} className="mt-1 h-4 w-4 accent-[color:var(--accent)]" />
+                <label htmlFor="create-account" className="space-y-1">
+                  <p className="text-sm font-semibold text-[color:var(--headline)]">{t.createAccount}</p>
+                  <p className="text-sm leading-6 text-[color:var(--muted)]">{t.createAccountHint}</p>
+                </label>
+              </div>
+
+              {createAccount ? (
+                <div className="mt-4 grid gap-4 md:grid-cols-2">
+                  <input value={form.password} onChange={(event) => updateField("password", event.target.value)} type="password" placeholder={t.password} className="h-12 rounded-xl border border-[#ece3d9] bg-[#fffdf8] px-4 text-sm text-[color:var(--headline)] outline-none transition focus:border-[color:var(--accent)]" />
+                  <input value={form.confirmPassword} onChange={(event) => updateField("confirmPassword", event.target.value)} type="password" placeholder={t.confirmPassword} className="h-12 rounded-xl border border-[#ece3d9] bg-[#fffdf8] px-4 text-sm text-[color:var(--headline)] outline-none transition focus:border-[color:var(--accent)]" />
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+
           <div className="mt-8">
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[color:var(--accent)]">{t.paymentMethod}</p>
             <div className="mt-4 grid gap-4 md:grid-cols-2">
@@ -262,6 +495,7 @@ export default function CheckoutPage() {
               })}
             </div>
           </div>
+
           <p className="mt-8 rounded-2xl border border-[#ece3d9] bg-white px-4 py-4 text-sm leading-6 text-[color:var(--muted)]">
             {deliveryCopy.cartCheckout}
           </p>
@@ -278,6 +512,7 @@ export default function CheckoutPage() {
             {submitting ? t.processing : paymentMethod === "stripe" ? t.payCard : t.placeOrder}
           </button>
         </section>
+
         <aside className="rounded-[32px] border border-[#ece3d9] bg-white p-8 shadow-[0_30px_80px_rgba(27,42,74,0.08)]">
           <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[color:var(--accent)]">{t.summary}</p>
           <div className="mt-6 space-y-4">

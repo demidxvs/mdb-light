@@ -78,68 +78,74 @@ export function ProjectShowcaseSection({
     let mounted = true;
 
     const load = async () => {
-      const cachedItems = readCachedItems(homeOnly, limit);
+      try {
+        const cachedItems = readCachedItems(homeOnly, limit);
 
-      if (!mounted) return;
+        if (!mounted) return;
 
-      if (cachedItems.length > 0) {
-        setItems(cachedItems);
+        if (cachedItems.length > 0) {
+          setItems(cachedItems);
+          setLoading(false);
+        } else {
+          setLoading(true);
+        }
+
+        let query = supabase
+          .from("projects")
+          .select("id, slug, cover_image_url, is_featured_home")
+          .eq("is_active", true)
+          .order("sort_order", { ascending: true })
+          .order("created_at", { ascending: false });
+
+        if (homeOnly) {
+          query = query.eq("is_featured_home", true).limit(limit ?? 4);
+        }
+
+        const { data, error } = await query;
+        if (!mounted) return;
+        if (error || !data || data.length === 0) {
+          setItems(fallbackItems);
+          setLoading(false);
+          return;
+        }
+
+        const mapped = (data as ProjectRow[]).map((item, index) => ({
+            id: item.id,
+            slug: item.slug,
+            imageUrl: item.cover_image_url,
+            featuredOnHome: item.is_featured_home,
+            palette: fallbackPalettes[index % fallbackPalettes.length],
+            title: {
+              en: item.slug,
+              ru: item.slug,
+              el: item.slug,
+              lv: item.slug,
+            },
+            caption: {
+              en: "",
+              ru: "",
+              el: "",
+              lv: "",
+            },
+          } satisfies ProjectShowcaseItem));
+
+        setItems(mapped);
         setLoading(false);
-      } else {
-        setLoading(true);
-      }
 
-      let query = supabase
-        .from("projects")
-        .select("id, slug, cover_image_url, is_featured_home")
-        .eq("is_active", true)
-        .order("sort_order", { ascending: true })
-        .order("created_at", { ascending: false });
-
-      if (homeOnly) {
-        query = query.eq("is_featured_home", true).limit(limit ?? 4);
-      }
-
-      const { data, error } = await query;
-      if (!mounted) return;
-      if (error || !data || data.length === 0) {
+        if (typeof window !== "undefined") {
+          try {
+            window.sessionStorage.setItem(
+              getProjectCacheKey(homeOnly, limit),
+              JSON.stringify({ items: mapped }),
+            );
+          } catch {
+            // Ignore cache write failures.
+          }
+        }
+      } catch {
+        if (!mounted) return;
         setItems(fallbackItems);
         setLoading(false);
-        return;
-      }
-
-      const mapped = (data as ProjectRow[]).map((item, index) => ({
-          id: item.id,
-          slug: item.slug,
-          imageUrl: item.cover_image_url,
-          featuredOnHome: item.is_featured_home,
-          palette: fallbackPalettes[index % fallbackPalettes.length],
-          title: {
-            en: item.slug,
-            ru: item.slug,
-            el: item.slug,
-            lv: item.slug,
-          },
-          caption: {
-            en: "",
-            ru: "",
-            el: "",
-            lv: "",
-          },
-        } satisfies ProjectShowcaseItem));
-
-      setItems(mapped);
-      setLoading(false);
-
-      if (typeof window !== "undefined") {
-        try {
-          window.sessionStorage.setItem(
-            getProjectCacheKey(homeOnly, limit),
-            JSON.stringify({ items: mapped }),
-          );
-        } catch {
-          // Ignore cache write failures.
-        }
       }
     };
 

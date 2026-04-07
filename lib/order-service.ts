@@ -1,5 +1,6 @@
 import type Stripe from "stripe";
 import type { Locale } from "@/i18n/config";
+import { normalizeSelectedOptionsMap, type SelectedOptionMap } from "@/lib/attribute-options";
 import { sendOrderCreatedEmails, sendOrderPaidEmails } from "@/lib/order-mail";
 import {
   createOrderInvoice,
@@ -42,6 +43,56 @@ type CartItemRow = {
     selected_length?: string | null;
     selected_material?: string | null;
     selected_options?: Record<string, string> | null;
+  } | null;
+};
+
+type ProductPriceRow = {
+  id: string;
+  sku: string | null;
+  slug: string;
+  currency: string;
+  price_cents: number;
+  primary_image_url: string | null;
+};
+
+type ProductAttributeValueRow = {
+  product_id: string;
+  price_adjustments?: Record<string, number> | null;
+  attributes?:
+    | {
+        slug: string;
+      }
+    | Array<{
+        slug: string;
+      }>
+    | null;
+};
+
+export type CheckoutCustomerInput = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  note?: string;
+};
+
+export type GuestCheckoutItemInput = {
+  productId: string;
+  quantity: number;
+  selectedColor?: string | null;
+  selectedLength?: string | null;
+  selectedMaterial?: string | null;
+  selectedOptions?: SelectedOptionMap | null;
+  selectedOptionLabels?: SelectedOptionMap | null;
+  productSnapshot?: {
+    name?: string;
+    sku?: string;
+    slug?: string;
+    image_url?: string | null;
+    selected_color?: string | null;
+    selected_length?: string | null;
+    selected_material?: string | null;
+    selected_options?: SelectedOptionMap | null;
   } | null;
 };
 
@@ -149,12 +200,125 @@ async function loadCheckoutContext(userId: string) {
   };
 }
 
-export async function createOrderFromActiveCart(input: {
-  userId: string;
+async function loadGuestCheckoutContext(items: GuestCheckoutItemInput[]) {
+  const storefront = createStorefrontServiceClient();
+  const sanitizedItems = items
+    .filter((item) => item.productId && Number.isFinite(item.quantity) && item.quantity > 0)
+    .map((item) => ({
+      ...item,
+      quantity: Math.max(1, Math.trunc(item.quantity)),
+      selectedColor: item.selectedColor?.trim() || null,
+      selectedLength: item.selectedLength?.trim() || null,
+      selectedMaterial: item.selectedMaterial?.trim() || null,
+      selectedOptions: normalizeSelectedOptionsMap(item.selectedOptions),
+      selectedOptionLabels: normalizeSelectedOptionsMap(item.selectedOptionLabels),
+    }));
+
+  if (sanitizedItems.length === 0) {
+    throw new Error("Cart is empty.");
+  }
+
+  const productIds = Array.from(new Set(sanitizedItems.map((item) => item.productId)));
+  const [{ data: productRows, error: productError }, { data: attributeRows, error: attributeError }] =
+    await Promise.all([
+      storefront
+        .from("products")
+        .select("id, sku, slug, currency, price_cents, primary_image_url")
+        .in("id", productIds)
+        .eq("is_active", true),
+      storefront
+        .from("product_attribute_values")
+        .select("product_id, price_adjustments, attributes(slug)")
+        .in("product_id", productIds),
+    ]);
+
+  if (productError) {
+    throw new Error(productError.message);
+  }
+
+  if (attributeError) {
+    throw new Error(attributeError.message);
+  }
+
+  const productsById = new Map(
+    ((productRows as ProductPriceRow[] | null) ?? []).map((item) => [item.id, item]),
+  );
+  const attributesByProductId = new Map<string, ProductAttributeValueRow[]>();
+
+  ((attributeRows as ProductAttributeValueRow[] | null) ?? []).forEach((item) => {
+    const current = attributesByProductId.get(item.product_id) ?? [];
+    current.push(item);
+    attributesByProductId.set(item.product_id, current);
+  });
+
+  const resolvedItems: CartItemRow[] = sanitizedItems.map((item) => {
+    const product = productsById.get(item.productId);
+    if (!product) {
+      throw new Error("One of the selected products is no longer available.");
+    }
+
+    const unitPriceCents =
+      product.price_cents +
+      (attributesByProductId.get(item.productId) ?? []).reduce((sum, attribute) => {
+        const slug = Array.isArray(attribute.attributes)
+          ? attribute.attributes[0]?.slug
+          : attribute.attributes?.slug;
+        if (!slug) return sum;
+        const selectedValue = item.selectedOptions[slug];
+        if (!selectedValue) return sum;
+        return sum + (attribute.price_adjustments?.[selectedValue] ?? 0);
+      }, 0);
+
+    return {
+      id: `guest-${item.productId}-${Math.random().toString(36).slice(2, 10)}`,
+      product_id: item.productId,
+      quantity: item.quantity,
+      unit_price_cents: unitPriceCents,
+      currency: product.currency || "EUR",
+      selected_color: item.selectedColor,
+      selected_length: item.selectedLength,
+      selected_material: item.selectedMaterial,
+      selected_options: item.selectedOptions,
+      product_snapshot: {
+        name: item.productSnapshot?.name || product.sku || product.slug,
+        sku: item.productSnapshot?.sku || product.sku || undefined,
+        selected_color: item.selectedColor,
+        selected_length: item.selectedLength,
+        selected_material: item.selectedMaterial,
+        selected_options: item.selectedOptionLabels,
+      },
+    };
+  });
+
+  return {
+    storefront,
+    cart: {
+      id: "",
+      currency: resolvedItems[0]?.currency || "EUR",
+      discount_cents: 0,
+    } satisfies CartRow,
+    profile: null,
+    items: resolvedItems,
+  };
+}
+
+function buildCustomerName(customer: CheckoutCustomerInput, fallbackProfile?: ProfileRow | null) {
+  const fromInput = `${customer.firstName.trim()} ${customer.lastName.trim()}`.trim();
+  if (fromInput) return fromInput;
+  return fallbackProfile?.full_name?.trim() || null;
+}
+
+async function createOrderFromCheckout(input: {
+  userId: string | null;
   locale: Locale;
   paymentMethod: OrderPaymentMethod;
+  customer: CheckoutCustomerInput;
+  guestItems?: GuestCheckoutItemInput[];
 }) {
-  const { storefront, cart, profile, items } = await loadCheckoutContext(input.userId);
+  const context = input.userId
+    ? await loadCheckoutContext(input.userId)
+    : await loadGuestCheckoutContext(input.guestItems ?? []);
+  const { storefront, cart, profile, items } = context;
 
   const subtotalCents = items.reduce(
     (sum, item) => sum + item.unit_price_cents * item.quantity,
@@ -167,7 +331,7 @@ export async function createOrderFromActiveCart(input: {
     .from("orders")
     .insert({
       user_id: input.userId,
-      cart_id: cart.id,
+      cart_id: cart.id || null,
       payment_method: input.paymentMethod,
       status: "pending",
       payment_status: "unpaid",
@@ -178,11 +342,12 @@ export async function createOrderFromActiveCart(input: {
       shipping_cents: 0,
       tax_cents: 0,
       total_cents: totalCents,
-      customer_email: profile?.email ?? null,
-      customer_name: profile?.full_name ?? null,
-      customer_phone: profile?.phone ?? null,
+      customer_email: input.customer.email.trim() || profile?.email || null,
+      customer_name: buildCustomerName(input.customer, profile),
+      customer_phone: input.customer.phone.trim() || profile?.phone || null,
       shipping_address: {},
       billing_address: {},
+      notes: input.customer.note?.trim() || null,
       placed_at: new Date().toISOString(),
     })
     .select("id, order_number, created_at, currency, total_cents, subtotal_cents, discount_cents, customer_email, customer_name, customer_phone")
@@ -228,13 +393,15 @@ export async function createOrderFromActiveCart(input: {
     throw new Error(orderItemsError.message);
   }
 
-  const { error: cartUpdateError } = await storefront
-    .from("carts")
-    .update({ status: "converted" })
-    .eq("id", cart.id);
+  if (cart.id) {
+    const { error: cartUpdateError } = await storefront
+      .from("carts")
+      .update({ status: "converted" })
+      .eq("id", cart.id);
 
-  if (cartUpdateError) {
-    throw new Error(cartUpdateError.message);
+    if (cartUpdateError) {
+      throw new Error(cartUpdateError.message);
+    }
   }
 
   const summary: OrderSummary = {
@@ -304,6 +471,31 @@ export async function createOrderFromActiveCart(input: {
   }
 
   return summary;
+}
+
+export async function createOrderFromActiveCart(input: {
+  userId: string;
+  locale: Locale;
+  paymentMethod: OrderPaymentMethod;
+  customer: CheckoutCustomerInput;
+}) {
+  return createOrderFromCheckout(input);
+}
+
+export async function createOrderFromGuestCheckout(input: {
+  locale: Locale;
+  paymentMethod: OrderPaymentMethod;
+  customer: CheckoutCustomerInput;
+  userId?: string | null;
+  items: GuestCheckoutItemInput[];
+}) {
+  return createOrderFromCheckout({
+    userId: input.userId ?? null,
+    locale: input.locale,
+    paymentMethod: input.paymentMethod,
+    customer: input.customer,
+    guestItems: input.items,
+  });
 }
 
 export async function getOrderByCodeForUser(orderCode: string, userId: string) {

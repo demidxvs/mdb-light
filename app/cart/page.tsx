@@ -8,7 +8,14 @@ import { AuthShell } from "@/components/ui/auth-shell";
 import { useLocale } from "@/components/ui/locale-provider";
 import { localizePathname } from "@/i18n/config";
 import { createSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase-client";
-import { CART_UPDATED_EVENT, emitCartUpdated, getCurrentUserId, getOrCreateActiveCart } from "@/lib/cart";
+import {
+  CART_UPDATED_EVENT,
+  emitCartUpdated,
+  getCurrentUserId,
+  getOrCreateActiveCart,
+  readGuestCartItems,
+  updateGuestCartItemQuantity,
+} from "@/lib/cart";
 import { getDeliveryCopy } from "@/lib/order-utils";
 
 type CartItemRow = {
@@ -50,7 +57,6 @@ const copy = {
     empty: "Your cart is empty.",
     action: "Open catalog",
     loading: "Loading cart...",
-    signInNeeded: "Sign in to save products in your cart.",
     price: "Price",
     quantity: "Quantity",
     subtotal: "Subtotal",
@@ -73,7 +79,6 @@ const copy = {
     empty: "Корзина пуста.",
     action: "Открыть каталог",
     loading: "Загружаю корзину...",
-    signInNeeded: "Войдите, чтобы сохранять товары в корзине.",
     price: "Цена",
     quantity: "Количество",
     subtotal: "Сумма",
@@ -96,7 +101,6 @@ const copy = {
     empty: "Το καλάθι είναι άδειο.",
     action: "Άνοιγμα καταλόγου",
     loading: "Φόρτωση καλαθιού...",
-    signInNeeded: "Συνδεθείτε για να αποθηκεύετε προϊόντα στο καλάθι.",
     price: "Τιμή",
     quantity: "Ποσότητα",
     subtotal: "Υποσύνολο",
@@ -119,7 +123,6 @@ const copy = {
     empty: "Grozs ir tukšs.",
     action: "Atvērt katalogu",
     loading: "Ielādē grozu...",
-    signInNeeded: "Pieslēdzieties, lai saglabātu produktus grozā.",
     price: "Cena",
     quantity: "Daudzums",
     subtotal: "Starpsumma",
@@ -170,8 +173,8 @@ export default function CartPage() {
         setUserId(nextUserId);
 
         if (!nextUserId) {
-          setItems([]);
-          setCart(null);
+          setItems(readGuestCartItems() as CartItemRow[]);
+          setCart({ id: "guest-cart", currency: "EUR", discount_cents: 0 });
           return;
         }
 
@@ -218,6 +221,12 @@ export default function CartPage() {
 
   const updateQuantity = async (item: CartItemRow, nextQuantity: number) => {
     if (!cart) return;
+
+    if (!userId) {
+      updateGuestCartItemQuantity(item.id, nextQuantity);
+      return;
+    }
+
     const supabase = createSupabaseBrowserClient();
 
     if (nextQuantity <= 0) {
@@ -254,20 +263,6 @@ export default function CartPage() {
         </div>
       ) : loadError ? (
         <div className="rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-700">{loadError}</div>
-      ) : !userId ? (
-        <div className="rounded-2xl border border-[#ece3d9] bg-[#fffaf4] p-5 text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[color:var(--accent)]/15 text-[color:var(--headline)]">
-            <ShoppingCart className="h-6 w-6" />
-          </div>
-          <p className="mt-4 text-sm text-[color:var(--muted)]">{t.signInNeeded}</p>
-          <Link
-            href="/login?next=%2Fcart"
-            className="mt-5 inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[color:var(--accent)] px-5 text-sm font-medium text-[#203153] shadow-[0_14px_30px_rgba(244,198,79,0.28)] transition hover:bg-[#efbf3e]"
-          >
-            {t.login}
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
       ) : items.length === 0 ? (
         <div className="rounded-2xl border border-[#ece3d9] bg-[#fffaf4] p-5 text-center">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[color:var(--accent)]/15 text-[color:var(--headline)]">

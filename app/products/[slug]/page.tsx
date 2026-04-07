@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ArrowLeft, ChevronLeft, ChevronRight, ShoppingCart, X } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, Minus, Plus, ShoppingCart, X } from "lucide-react";
 import { useLocale } from "@/components/ui/locale-provider";
 import { CatalogProductCard } from "@/components/ui/catalog-product-card";
 import { SiteFooter } from "@/components/ui/site-footer";
@@ -94,10 +94,10 @@ function getAttributeName(attribute: NonNullable<ProductAttributeRow["attributes
 }
 
 const copy = {
-  en: { top: "Multilingual LED marketplace", loading: "Loading product...", backCatalog: "Back to catalog", addToCart: "Add to cart", addingToCart: "Adding...", sku: "SKU", category: "Category", attributes: "Attributes", colors: "Available colors", selectedColor: "Selected color", lengths: "Available lengths", selectedLength: "Selected length", materials: "Available materials", selectedMaterial: "Selected material", imagePlaceholder: "Add product photo in admin", stockLow: "Low stock left", outOfStock: "Out of stock", included: "Included", notIncluded: "Not included", addError: "Could not add product to cart.", relatedTitle: "Similar products", relatedText: "A few more products from the same category." },
-  ru: { top: "Мультиязычный LED marketplace", loading: "Загружаю товар...", backCatalog: "Назад в каталог", addToCart: "В корзину", addingToCart: "Добавляю...", sku: "SKU", category: "Категория", attributes: "Характеристики", colors: "Доступные цвета", selectedColor: "Выбранный цвет", lengths: "Доступная длина", selectedLength: "Выбранная длина", materials: "Доступные материалы", selectedMaterial: "Выбранный материал", imagePlaceholder: "Добавьте фото товара в админке", stockLow: "Осталось мало", outOfStock: "Нету в наличии", included: "Идет в комплект", notIncluded: "Не идет в комплект", addError: "Не удалось добавить товар в корзину.", relatedTitle: "Похожие товары", relatedText: "Ещё несколько товаров из этой же категории." },
-  el: { top: "Πολυγλωσσικό LED marketplace", loading: "Φόρτωση προϊόντος...", backCatalog: "Πίσω στον κατάλογο", addToCart: "Προσθήκη στο καλάθι", addingToCart: "Προσθήκη...", sku: "SKU", category: "Κατηγορία", attributes: "Χαρακτηριστικά", colors: "Διαθέσιμα χρώματα", selectedColor: "Επιλεγμένο χρώμα", lengths: "Διαθέσιμα μήκη", selectedLength: "Επιλεγμένο μήκος", materials: "Διαθέσιμα υλικά", selectedMaterial: "Επιλεγμένο υλικό", imagePlaceholder: "Προσθέστε φωτογραφία προϊόντος στο admin", stockLow: "Μένουν λίγα", outOfStock: "Εξαντλημένο", included: "Περιλαμβάνεται", notIncluded: "Δεν περιλαμβάνεται", addError: "Δεν ήταν δυνατή η προσθήκη στο καλάθι.", relatedTitle: "Παρόμοια προϊόντα", relatedText: "Μερικά ακόμη προϊόντα από την ίδια κατηγορία." },
-  lv: { top: "Daudzvalodu LED marketplace", loading: "Ielādē produktu...", backCatalog: "Atpakaļ uz katalogu", addToCart: "Pievienot grozam", addingToCart: "Pievieno...", sku: "SKU", category: "Kategorija", attributes: "Raksturlielumi", colors: "Pieejamās krāsas", selectedColor: "Izvēlētā krāsa", lengths: "Pieejamie garumi", selectedLength: "Izvēlētais garums", materials: "Pieejamie materiāli", selectedMaterial: "Izvēlētais materiāls", imagePlaceholder: "Pievienojiet produkta foto admin panelī", stockLow: "Atlicis maz", outOfStock: "Nav noliktavā", included: "Iekļauts komplektā", notIncluded: "Nav iekļauts", addError: "Neizdevās pievienot produktu grozam.", relatedTitle: "Līdzīgi produkti", relatedText: "Vēl daži produkti no šīs pašas kategorijas." },
+  en: { top: "Multilingual LED marketplace", loading: "Loading product...", backCatalog: "Back to catalog", addToCart: "Add to cart", addingToCart: "Adding...", quantity: "Quantity", maxStock: "You cannot add more than the available stock.", sku: "SKU", category: "Category", attributes: "Attributes", colors: "Available colors", selectedColor: "Selected color", lengths: "Available lengths", selectedLength: "Selected length", materials: "Available materials", selectedMaterial: "Selected material", imagePlaceholder: "Add product photo in admin", stockLow: "Low stock left", outOfStock: "Out of stock", included: "Included", notIncluded: "Not included", addError: "Could not add product to cart.", relatedTitle: "Similar products", relatedText: "A few more products from the same category." },
+  ru: { top: "Мультиязычный LED marketplace", loading: "Загружаю товар...", backCatalog: "Назад в каталог", addToCart: "В корзину", addingToCart: "Добавляю...", quantity: "Количество", maxStock: "Нельзя добавить больше доступного остатка.", sku: "SKU", category: "Категория", attributes: "Характеристики", colors: "Доступные цвета", selectedColor: "Выбранный цвет", lengths: "Доступная длина", selectedLength: "Выбранная длина", materials: "Доступные материалы", selectedMaterial: "Выбранный материал", imagePlaceholder: "Добавьте фото товара в админке", stockLow: "Осталось мало", outOfStock: "Нету в наличии", included: "Идет в комплект", notIncluded: "Не идет в комплект", addError: "Не удалось добавить товар в корзину.", relatedTitle: "Похожие товары", relatedText: "Ещё несколько товаров из этой же категории." },
+  el: { top: "Πολυγλωσσικό LED marketplace", loading: "Φόρτωση προϊόντος...", backCatalog: "Πίσω στον κατάλογο", addToCart: "Προσθήκη στο καλάθι", addingToCart: "Προσθήκη...", quantity: "Ποσότητα", maxStock: "Δεν μπορείτε να προσθέσετε ποσότητα μεγαλύτερη από το διαθέσιμο απόθεμα.", sku: "SKU", category: "Κατηγορία", attributes: "Χαρακτηριστικά", colors: "Διαθέσιμα χρώματα", selectedColor: "Επιλεγμένο χρώμα", lengths: "Διαθέσιμα μήκη", selectedLength: "Επιλεγμένο μήκος", materials: "Διαθέσιμα υλικά", selectedMaterial: "Επιλεγμένο υλικό", imagePlaceholder: "Προσθέστε φωτογραφία προϊόντος στο admin", stockLow: "Μένουν λίγα", outOfStock: "Εξαντλημένο", included: "Περιλαμβάνεται", notIncluded: "Δεν περιλαμβάνεται", addError: "Δεν ήταν δυνατή η προσθήκη στο καλάθι.", relatedTitle: "Παρόμοια προϊόντα", relatedText: "Μερικά ακόμη προϊόντα από την ίδια κατηγορία." },
+  lv: { top: "Daudzvalodu LED marketplace", loading: "Ielādē produktu...", backCatalog: "Atpakaļ uz katalogu", addToCart: "Pievienot grozam", addingToCart: "Pievieno...", quantity: "Daudzums", maxStock: "Nevar pievienot vairāk par pieejamo atlikumu.", sku: "SKU", category: "Kategorija", attributes: "Raksturlielumi", colors: "Pieejamās krāsas", selectedColor: "Izvēlētā krāsa", lengths: "Pieejamie garumi", selectedLength: "Izvēlētais garums", materials: "Pieejamie materiāli", selectedMaterial: "Izvēlētais materiāls", imagePlaceholder: "Pievienojiet produkta foto admin panelī", stockLow: "Atlicis maz", outOfStock: "Nav noliktavā", included: "Iekļauts komplektā", notIncluded: "Nav iekļauts", addError: "Neizdevās pievienot produktu grozam.", relatedTitle: "Līdzīgi produkti", relatedText: "Vēl daži produkti no šīs pašas kategorijas." },
 } as const;
 
 function getAttributeValue(
@@ -251,6 +251,7 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
   const [selectedLength, setSelectedLength] = useState("");
   const [selectedMaterial, setSelectedMaterial] = useState("");
   const [selectedDynamicOptions, setSelectedDynamicOptions] = useState<SelectedOptionMap>({});
+  const [selectedQuantity, setSelectedQuantity] = useState(1);
   const [relatedProducts, setRelatedProducts] = useState<RelatedProductRow[]>([]);
 
   useEffect(() => {
@@ -300,6 +301,10 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
 
       const typedProduct = productData as ProductRow;
       setProduct(typedProduct);
+      setSelectedQuantity((current) => {
+        const maxQuantity = typedProduct.stock_quantity > 0 ? typedProduct.stock_quantity : 1;
+        return Math.min(Math.max(current, 1), maxQuantity);
+      });
       const gallery =
         (typedProduct.image_urls ?? []).filter(Boolean).length > 0
           ? (typedProduct.image_urls ?? []).filter(Boolean)
@@ -497,6 +502,7 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
   const selectedImageIndex = galleryImages.findIndex(
     (imageUrl) => imageUrl === (zoomedImage || selectedImage),
   );
+  const maxQuantity = Math.max(product?.stock_quantity ?? 1, 1);
 
   const showPreviousImage = useCallback(() => {
     if (galleryImages.length <= 1) return;
@@ -542,6 +548,10 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
       setCartError(t.addError);
       return;
     }
+    if (selectedQuantity > product.stock_quantity) {
+      setCartError(t.maxStock);
+      return;
+    }
 
     setCartError("");
     setAddingToCart(true);
@@ -562,6 +572,7 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
         selectedOptionLabels,
         unitPriceCents: adjustedPriceCents,
         currency: product.currency || "EUR",
+        quantity: selectedQuantity,
       });
     } catch {
       setCartError(t.addError);
@@ -626,6 +637,45 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
                   <p className="font-display text-3xl font-semibold tracking-[-0.05em] text-[color:var(--headline)] sm:text-4xl">{new Intl.NumberFormat("en-US", { style: "currency", currency: product.currency || "EUR" }).format(adjustedPriceCents / 100)}</p>
                   {stockStatus ? <p className={`mt-3 text-sm font-medium ${product.stock_quantity === 0 ? "text-red-600" : "text-amber-600"}`}>{stockStatus}</p> : null}
                 </div>
+                <label className="flex flex-col gap-2">
+                  <span className="text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--accent)]">{t.quantity}</span>
+                  <span className="inline-flex h-14 items-center overflow-hidden rounded-xl border border-[#ece3d9] bg-[#fffcf7]">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedQuantity((current) => Math.max(1, current - 1))}
+                      disabled={selectedQuantity <= 1}
+                      className="inline-flex h-full w-12 items-center justify-center text-[color:var(--headline)] transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-40"
+                      aria-label={`${t.quantity} -`}
+                    >
+                      <Minus className="h-4 w-4" />
+                    </button>
+                    <input
+                      type="number"
+                      min={1}
+                      max={maxQuantity}
+                      value={selectedQuantity}
+                      onChange={(event) => {
+                        const nextValue = Number.parseInt(event.target.value, 10);
+                        if (Number.isNaN(nextValue)) {
+                          setSelectedQuantity(1);
+                          return;
+                        }
+                        setSelectedQuantity(Math.min(Math.max(nextValue, 1), maxQuantity));
+                      }}
+                      className="h-full w-16 border-x border-[#ece3d9] bg-transparent text-center text-base font-semibold text-[color:var(--headline)] outline-none"
+                      inputMode="numeric"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setSelectedQuantity((current) => Math.min(maxQuantity, current + 1))}
+                      disabled={selectedQuantity >= maxQuantity}
+                      className="inline-flex h-full w-12 items-center justify-center text-[color:var(--headline)] transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-40"
+                      aria-label={`${t.quantity} +`}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </button>
+                  </span>
+                </label>
                 <button type="button" onClick={() => void handleAddToCart()} disabled={product.stock_quantity === 0 || addingToCart} className="inline-flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-[color:var(--accent)] px-6 text-sm font-semibold text-[#203153] shadow-[0_14px_30px_rgba(244,198,79,0.28)] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"><ShoppingCart className="h-4 w-4" />{addingToCart ? t.addingToCart : t.addToCart}</button>
               </div>
               {cartError ? <p className="mt-3 text-sm font-medium text-red-600">{cartError}</p> : null}

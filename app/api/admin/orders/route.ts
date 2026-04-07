@@ -136,14 +136,29 @@ export async function PATCH(request: Request) {
     }
 
     const storefront = createStorefrontServiceClient();
+    const locale = isLocale(body.locale) ? body.locale : "en";
+
     if (normalizeText(body.action) === "mark_paid") {
       const order = await markOrderPaid({
         orderId: id,
-        locale: isLocale(body.locale) ? body.locale : "en",
+        locale,
         paymentId: null,
       });
 
       return NextResponse.json({ ok: true, order });
+    }
+
+    const { data: existingOrder, error: existingOrderError } = await storefront
+      .from("orders")
+      .select("id, payment_status")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (existingOrderError || !existingOrder) {
+      return NextResponse.json(
+        { error: existingOrderError?.message || "Order not found" },
+        { status: 404 },
+      );
     }
 
     const payload = {
@@ -151,6 +166,20 @@ export async function PATCH(request: Request) {
       payment_status: normalizeText(body.paymentStatus) || undefined,
       fulfillment_status: normalizeText(body.fulfillmentStatus) || undefined,
     };
+
+    const marksAsPaid =
+      payload.status === "paid" ||
+      payload.payment_status === "paid";
+
+    if (marksAsPaid && existingOrder.payment_status !== "paid") {
+      const order = await markOrderPaid({
+        orderId: id,
+        locale,
+        paymentId: null,
+      });
+
+      return NextResponse.json({ ok: true, order });
+    }
 
     const { error } = await storefront
       .from("orders")

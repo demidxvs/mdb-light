@@ -33,6 +33,8 @@ type SendOrderEmailsPayload = {
   } | null;
 };
 
+type EmailMode = "created_bank_transfer" | "paid";
+
 function escapeHtml(value: string) {
   return value
     .replaceAll("&", "&amp;")
@@ -72,82 +74,94 @@ function buildItemsHtml(items: OrderEmailItem[]) {
 function getCopy(locale: Locale) {
   if (locale === "ru") {
     return {
-      createdSubject: "Заказ создан",
-      createdTitle: "Спасибо за заказ",
-      createdIntro: "Мы получили ваш заказ и начали его обработку.",
+      createdSubject: "Инструкции по оплате заказа",
+      createdTitle: "Заказ ожидает банковский перевод",
+      createdIntro: "Мы получили ваш заказ. Он будет обработан после подтверждения поступления оплаты.",
       paidSubject: "Оплата получена",
       paidTitle: "Оплата получена",
-      paidIntro: "Мы получили ваш платёж и начали обработку заказа.",
+      paidIntro: "Мы получили ваш платёж. В ближайшее время с вами свяжутся для уточнения деталей заказа.",
       total: "Сумма заказа",
       orderNumber: "Номер заказа",
       phone: "Телефон",
       paymentMethod: "Способ оплаты",
-      ownerCreated: "Новый заказ",
+      ownerCreated: "Новый заказ с оплатой банковским переводом",
       ownerPaid: "Оплата получена по заказу",
       bankDetails: "Реквизиты для оплаты",
       reference: "Назначение платежа",
+      processingAfterPayment: "Заказ будет обработан после подтверждения оплаты.",
+      paymentPending: "Статус оплаты: ожидает банковский перевод",
+      paymentPaid: "Статус оплаты: оплачено",
     };
   }
 
   if (locale === "el") {
     return {
-      createdSubject: "Η παραγγελία δημιουργήθηκε",
-      createdTitle: "Ευχαριστούμε για την παραγγελία σας",
-      createdIntro: "Λάβαμε την παραγγελία σας και ξεκινήσαμε την επεξεργασία της.",
+      createdSubject: "Οδηγίες τραπεζικής πληρωμής",
+      createdTitle: "Η παραγγελία αναμένει τραπεζική μεταφορά",
+      createdIntro: "Λάβαμε την παραγγελία σας. Θα επεξεργαστεί μετά την επιβεβαίωση της πληρωμής.",
       paidSubject: "Η πληρωμή λήφθηκε",
       paidTitle: "Η πληρωμή λήφθηκε",
-      paidIntro: "Λάβαμε την πληρωμή σας και ξεκινήσαμε την επεξεργασία της παραγγελίας.",
+      paidIntro: "Λάβαμε την πληρωμή σας. Σύντομα θα επικοινωνήσουμε μαζί σας για τις λεπτομέρειες της παραγγελίας.",
       total: "Σύνολο παραγγελίας",
       orderNumber: "Αριθμός παραγγελίας",
       phone: "Τηλέφωνο",
       paymentMethod: "Τρόπος πληρωμής",
-      ownerCreated: "Νέα παραγγελία",
+      ownerCreated: "Νέα παραγγελία με τραπεζική μεταφορά",
       ownerPaid: "Η πληρωμή λήφθηκε για την παραγγελία",
       bankDetails: "Στοιχεία τραπεζικής πληρωμής",
       reference: "Αιτιολογία πληρωμής",
+      processingAfterPayment: "Η παραγγελία θα επεξεργαστεί μετά την επιβεβαίωση της πληρωμής.",
+      paymentPending: "Κατάσταση πληρωμής: εκκρεμεί τραπεζική μεταφορά",
+      paymentPaid: "Κατάσταση πληρωμής: πληρωμένο",
     };
   }
 
   if (locale === "lv") {
     return {
-      createdSubject: "Pasūtījums izveidots",
-      createdTitle: "Paldies par pasūtījumu",
-      createdIntro: "Mēs saņēmām jūsu pasūtījumu un sākām tā apstrādi.",
+      createdSubject: "Bankas pārskaitījuma instrukcija",
+      createdTitle: "Pasūtījums gaida bankas pārskaitījumu",
+      createdIntro: "Mēs saņēmām jūsu pasūtījumu. Tas tiks apstrādāts pēc maksājuma saņemšanas apstiprinājuma.",
       paidSubject: "Maksājums saņemts",
       paidTitle: "Maksājums saņemts",
-      paidIntro: "Mēs saņēmām jūsu maksājumu un sākām pasūtījuma apstrādi.",
+      paidIntro: "Mēs saņēmām jūsu maksājumu. Drīzumā ar jums sazināsimies, lai precizētu pasūtījuma detaļas.",
       total: "Pasūtījuma summa",
       orderNumber: "Pasūtījuma numurs",
       phone: "Tālrunis",
       paymentMethod: "Apmaksas veids",
-      ownerCreated: "Jauns pasūtījums",
+      ownerCreated: "Jauns pasūtījums ar bankas pārskaitījumu",
       ownerPaid: "Saņemts maksājums par pasūtījumu",
       bankDetails: "Bankas rekvizīti",
       reference: "Maksājuma mērķis",
+      processingAfterPayment: "Pasūtījums tiks apstrādāts pēc maksājuma apstiprināšanas.",
+      paymentPending: "Maksājuma statuss: gaida bankas pārskaitījumu",
+      paymentPaid: "Maksājuma statuss: apmaksāts",
     };
   }
 
   return {
-    createdSubject: "Order created",
-    createdTitle: "Thank you for your order",
-    createdIntro: "We received your order and started processing it.",
+    createdSubject: "Bank transfer instructions",
+    createdTitle: "Order awaiting bank transfer",
+    createdIntro: "We received your order. It will be processed after payment confirmation.",
     paidSubject: "Payment received",
     paidTitle: "Payment received",
-    paidIntro: "We received your payment and started processing the order.",
+    paidIntro: "We received your payment. We will contact you shortly to confirm the order details.",
     total: "Order total",
     orderNumber: "Order number",
     phone: "Phone",
     paymentMethod: "Payment method",
-    ownerCreated: "New order",
+    ownerCreated: "New bank transfer order",
     ownerPaid: "Payment received for order",
     bankDetails: "Bank details",
     reference: "Reference",
+    processingAfterPayment: "The order will be processed after payment confirmation.",
+    paymentPending: "Payment status: bank transfer pending",
+    paymentPaid: "Payment status: paid",
   };
 }
 
 async function sendEmails(
   payload: SendOrderEmailsPayload,
-  mode: "created" | "paid",
+  mode: EmailMode,
 ) {
   const from = getMailSender();
   const ownerEmail =
@@ -172,8 +186,9 @@ async function sendEmails(
   const buyerTitle = mode === "paid" ? copy.paidTitle : copy.createdTitle;
   const buyerIntro = mode === "paid" ? copy.paidIntro : copy.createdIntro;
   const ownerTitle = mode === "paid" ? copy.ownerPaid : copy.ownerCreated;
+  const deliveryNote = mode === "paid" ? deliveryCopy.email : copy.processingAfterPayment;
   const bankTransferText =
-    payload.paymentMethod === "bank_transfer"
+    mode === "created_bank_transfer" && payload.paymentMethod === "bank_transfer"
       ? [
           "",
           `${copy.bankDetails}:`,
@@ -182,10 +197,12 @@ async function sendEmails(
           `Bank: ${bankDetails.bank}`,
           `SWIFT: ${bankDetails.swift}`,
           `${copy.reference}: ${payload.orderCode}`,
+          "",
+          copy.processingAfterPayment,
         ].join("\n")
       : "";
   const bankTransferHtml =
-    payload.paymentMethod === "bank_transfer"
+    mode === "created_bank_transfer" && payload.paymentMethod === "bank_transfer"
       ? `
         <div style="margin-top:18px;padding:18px;border:1px solid #ece3d9;border-radius:18px;background:#fff7e8;">
           <div style="font-weight:700;color:#203153;margin-bottom:8px;">${escapeHtml(copy.bankDetails)}</div>
@@ -212,6 +229,7 @@ async function sendEmails(
         `Email: ${payload.customerEmail || "—"}`,
         `${copy.phone}: ${payload.customerPhone || "—"}`,
         `${copy.paymentMethod}: ${paymentMethodLabel}`,
+        mode === "created_bank_transfer" ? copy.paymentPending : copy.paymentPaid,
         `Total: ${totalFormatted}`,
       ].join("\n"),
       html: `
@@ -222,6 +240,7 @@ async function sendEmails(
           <p style="margin:0 0 20px;"><strong>Email:</strong> ${escapeHtml(payload.customerEmail || "—")}</p>
           <p style="margin:0 0 20px;"><strong>${escapeHtml(copy.phone)}:</strong> ${escapedCustomerPhone}</p>
           <p style="margin:0 0 20px;"><strong>${escapeHtml(copy.paymentMethod)}:</strong> ${escapeHtml(paymentMethodLabel)}</p>
+          <p style="margin:0 0 20px;"><strong>${escapeHtml(mode === "created_bank_transfer" ? copy.paymentPending : copy.paymentPaid)}</strong></p>
           <p style="margin:0 0 20px;"><strong>Total:</strong> ${escapeHtml(totalFormatted)}</p>
           <div style="padding:18px;border:1px solid #ece3d9;border-radius:18px;background:#fffcf7;">
             ${itemsHtml}
@@ -247,7 +266,7 @@ async function sendEmails(
           `${copy.paymentMethod}: ${paymentMethodLabel}`,
           `${copy.total}: ${totalFormatted}`,
           "",
-          deliveryCopy.email,
+          deliveryNote,
           bankTransferText,
         ].join("\n"),
         html: `
@@ -262,7 +281,7 @@ async function sendEmails(
               ${itemsHtml}
             </div>
             ${bankTransferHtml}
-            <p style="margin:18px 0 0;">${escapeHtml(deliveryCopy.email)}</p>
+            <p style="margin:18px 0 0;">${escapeHtml(deliveryNote)}</p>
           </div>
         `,
         attachments: payload.invoiceAttachment ? [payload.invoiceAttachment] : undefined,
@@ -274,7 +293,7 @@ async function sendEmails(
 }
 
 export async function sendOrderCreatedEmails(payload: SendOrderEmailsPayload) {
-  await sendEmails(payload, "created");
+  await sendEmails(payload, "created_bank_transfer");
 }
 
 export async function sendOrderPaidEmails(payload: SendOrderEmailsPayload) {

@@ -453,21 +453,23 @@ async function createOrderFromCheckout(input: {
     })),
   });
 
-  try {
-    await sendOrderCreatedEmails({
-      locale: input.locale,
-      orderCode,
-      customerEmail: summary.customerEmail,
-      customerName: summary.customerName,
-      customerPhone: summary.customerPhone,
-      totalCents,
-      currency: summary.currency,
-      paymentMethod: input.paymentMethod,
-      items: summary.items,
-      invoiceAttachment: invoice.attachment,
-    });
-  } catch (emailError) {
-    console.error("Order creation email send failed", emailError);
+  if (input.paymentMethod === "bank_transfer") {
+    try {
+      await sendOrderCreatedEmails({
+        locale: input.locale,
+        orderCode,
+        customerEmail: summary.customerEmail,
+        customerName: summary.customerName,
+        customerPhone: summary.customerPhone,
+        totalCents,
+        currency: summary.currency,
+        paymentMethod: input.paymentMethod,
+        items: summary.items,
+        invoiceAttachment: invoice.attachment,
+      });
+    } catch (emailError) {
+      console.error("Order creation email send failed", emailError);
+    }
   }
 
   return summary;

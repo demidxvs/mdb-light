@@ -46,36 +46,6 @@ const GREEK_MAP: Record<string, string> = {
   χ: "ch", ψ: "ps", ω: "o",
 };
 
-const CATEGORY_OVERRIDES = [
-  {
-    signatures: ["magnetic", "track", "trek", "magnit", "sliede", "magnitika"],
-    slugs: {
-      en: "magnetic-track-systems",
-      ru: "magnitnye-trekovye-sistemy",
-      lv: "magnetiskas-sistemas",
-      el: "magnitika-systimata",
-    },
-  },
-  {
-    signatures: ["lighting", "light", "svet", "apgaismo", "fotism"],
-    slugs: {
-      en: "lighting",
-      ru: "svetilniki",
-      lv: "apgaismojums",
-      el: "fotismos",
-    },
-  },
-  {
-    signatures: ["led-panel", "panel", "panely", "paneli"],
-    slugs: {
-      en: "led-panels",
-      ru: "led-paneli",
-      lv: "led-paneli",
-      el: "led-panels",
-    },
-  },
-] as const;
-
 const GEO_KEYWORDS = {
   en: ["LED lighting Riga", "lighting Riga", "LED lighting Latvia", "lighting Cyprus", "track lights Riga"],
   ru: ["освещение в Риге", "LED lighting Latvia", "освещение Латвия", "lighting Cyprus", "трековое освещение Рига"],
@@ -166,16 +136,6 @@ export function getLocalizedCategorySlug(category: SeoCategory, locale: Locale) 
   const explicitSlug = slugify(translation?.slug || "");
   if (explicitSlug) {
     return explicitSlug;
-  }
-
-  const source = [category.slug, translation?.name ?? "", ...(category.category_translations?.map((item) => item.name ?? "") ?? [])]
-    .join(" ")
-    .toLowerCase();
-
-  for (const override of CATEGORY_OVERRIDES) {
-    if (override.signatures.some((signature) => source.includes(signature))) {
-      return override.slugs[locale];
-    }
   }
 
   return slugify(translation?.name || category.slug);

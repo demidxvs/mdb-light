@@ -361,6 +361,7 @@ export default function AdminOrdersPage() {
         credentials: "include",
         body: JSON.stringify({
           id: orderId,
+          locale,
           status: next.status,
           paymentStatus: next.payment_status,
           fulfillmentStatus: next.fulfillment_status,

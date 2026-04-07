@@ -15,10 +15,15 @@ export const metadata: Metadata = {
   description: "MDB Light (MDB) is a multilingual LED lighting marketplace for Riga, Latvia and Cyprus with track systems, lighting installation and commercial product supply.",
   keywords: ["MDB", "MDB Light", "lighting Riga", "освещение в Риге", "LED lighting Latvia", "lighting Cyprus"],
   icons: {
-    icon: "/logo/logo-notext.svg",
-    shortcut: "/logo/logo-notext.svg",
-    apple: "/logo/logo-notext.svg",
+    icon: [
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-48x48.png", sizes: "48x48", type: "image/png" },
+    ],
+    shortcut: "/favicon-32x32.png",
+    apple: "/apple-icon.png",
   },
+  manifest: "/site.webmanifest",
   openGraph: {
     siteName: "MDB Light",
     type: "website",

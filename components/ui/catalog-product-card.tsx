@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowUpRight, ImageIcon } from "lucide-react";
 import { useLocale } from "@/components/ui/locale-provider";
 
@@ -42,13 +43,12 @@ export function CatalogProductCard({
       <article className="group overflow-hidden rounded-[1.5rem] border border-[#ece3d9] bg-white shadow-[0_16px_36px_rgba(27,42,74,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_22px_44px_rgba(27,42,74,0.1)]">
         <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden bg-[linear-gradient(180deg,#fffdfa_0%,#f7f1e7_100%)]">
           {imageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <Image
               src={imageUrl}
               alt={name}
-              loading={imageLoading}
-              fetchPriority={imageFetchPriority}
-              decoding="async"
+              fill
+              sizes="(max-width: 767px) 100vw, (max-width: 1279px) 50vw, 25vw"
+              priority={imageLoading === "eager"}
               className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
             />
           ) : (

@@ -37,6 +37,12 @@ type ProductListRow = {
   } | null;
 };
 
+export type HomeFeaturedProductRow = ProductListRow;
+
+type HomeFeaturedCatalogProps = {
+  initialProducts?: ProductListRow[];
+};
+
 const copy = {
   en: {
     eyebrow: "Recommended products",
@@ -80,12 +86,12 @@ function readCachedProducts() {
   }
 }
 
-export function HomeFeaturedCatalog() {
+export function HomeFeaturedCatalog({ initialProducts = [] }: HomeFeaturedCatalogProps) {
   const { locale } = useLocale();
   const t = copy[locale];
   const supabaseReady = useMemo(() => isSupabaseConfigured(), []);
-  const [products, setProducts] = useState<ProductListRow[]>([]);
-  const [loading, setLoading] = useState(supabaseReady);
+  const [products, setProducts] = useState<ProductListRow[]>(initialProducts);
+  const [loading, setLoading] = useState(supabaseReady && initialProducts.length === 0);
 
   useEffect(() => {
     if (!supabaseReady) return;
@@ -100,7 +106,7 @@ export function HomeFeaturedCatalog() {
           setLoading(false);
         }
 
-        if (cachedProducts.length === 0 && products.length === 0) {
+        if (cachedProducts.length === 0 && initialProducts.length === 0) {
           setLoading(true);
         }
 
@@ -155,7 +161,7 @@ export function HomeFeaturedCatalog() {
     return () => {
       mounted = false;
     };
-  }, [products.length, supabaseReady]);
+  }, [initialProducts.length, supabaseReady]);
 
   const displayProducts =
     products.length > 0

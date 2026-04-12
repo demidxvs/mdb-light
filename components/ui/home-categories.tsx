@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import {
   createSupabaseBrowserClient,
@@ -11,7 +12,7 @@ import { buildCategoryPath } from "@/lib/seo";
 
 type LocaleKey = "en" | "ru" | "el" | "lv";
 
-type CategoryRow = {
+export type HomeCategoryRow = {
   id: string;
   slug: string;
   sort_order: number;
@@ -33,6 +34,8 @@ type HomeCategoriesProps = {
   title: string;
   fallbackCards: ReadonlyArray<{ title: string; description: string }>;
   limit?: number;
+  initialCategories?: HomeCategoryRow[];
+  initialCounts?: Record<string, number>;
 };
 
 const itemWord = {
@@ -51,7 +54,7 @@ function readCachedCategories(limit: number) {
     const cached = window.sessionStorage.getItem(CATEGORY_CACHE_KEY);
     if (!cached) return [];
 
-    const parsed = JSON.parse(cached) as { categories?: CategoryRow[] };
+    const parsed = JSON.parse(cached) as { categories?: HomeCategoryRow[] };
     return parsed.categories?.slice(0, limit) ?? [];
   } catch {
     return [];
@@ -63,13 +66,17 @@ export function HomeCategories({
   title,
   fallbackCards,
   limit = 4,
+  initialCategories = [],
+  initialCounts = {},
 }: HomeCategoriesProps) {
   const { locale } = useLocale();
   const supabaseReady = useMemo(() => isSupabaseConfigured(), []);
-  const [categories, setCategories] = useState<CategoryRow[]>([]);
-  const [counts, setCounts] = useState<Record<string, number>>({});
-  const [countsLoaded, setCountsLoaded] = useState(false);
-  const [loading, setLoading] = useState(supabaseReady);
+  const [categories, setCategories] = useState<HomeCategoryRow[]>(initialCategories);
+  const [counts, setCounts] = useState<Record<string, number>>(initialCounts);
+  const [countsLoaded, setCountsLoaded] = useState(
+    Object.keys(initialCounts).length > 0 || initialCategories.length > 0,
+  );
+  const [loading, setLoading] = useState(supabaseReady && initialCategories.length === 0);
 
   useEffect(() => {
     if (!supabaseReady) return;
@@ -85,7 +92,7 @@ export function HomeCategories({
         if (cachedCategories.length > 0) {
           setCategories(cachedCategories);
           setLoading(false);
-        } else {
+        } else if (initialCategories.length === 0) {
           setLoading(true);
         }
 
@@ -97,7 +104,7 @@ export function HomeCategories({
           .eq("is_active", true)
           .order("sort_order", { ascending: true })
           .limit(limit);
-        let categoryData: CategoryRow[] | null = (categoryQuery.data as CategoryRow[] | null) ?? null;
+        let categoryData: HomeCategoryRow[] | null = (categoryQuery.data as HomeCategoryRow[] | null) ?? null;
         const categoryError = categoryQuery.error;
 
         if (categoryError?.message.includes("slug does not exist")) {
@@ -109,12 +116,12 @@ export function HomeCategories({
             .eq("is_active", true)
             .order("sort_order", { ascending: true })
             .limit(limit);
-          categoryData = (fallback.data as CategoryRow[] | null) ?? null;
+          categoryData = (fallback.data as HomeCategoryRow[] | null) ?? null;
         }
 
         if (!mounted) return;
 
-        const nextCategories = (categoryData as CategoryRow[] | null) ?? [];
+        const nextCategories = (categoryData as HomeCategoryRow[] | null) ?? [];
         setCategories(nextCategories);
         setLoading(false);
 
@@ -156,7 +163,7 @@ export function HomeCategories({
     return () => {
       mounted = false;
     };
-  }, [limit, supabaseReady]);
+  }, [initialCategories.length, limit, supabaseReady]);
 
   const displayCards =
     categories.length > 0
@@ -222,13 +229,12 @@ export function HomeCategories({
                   <article className="group overflow-hidden rounded-[1.45rem] border border-[#e9e0d3] bg-[#111111] shadow-[0_18px_40px_rgba(27,42,74,0.12)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_48px_rgba(27,42,74,0.18)]">
                     <div className="relative aspect-[1.18/1] overflow-hidden bg-[linear-gradient(180deg,#d8d1c7_0%,#f4efe7_100%)]">
                       {card.imageUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
+                        <Image
                           src={card.imageUrl}
                           alt={card.title}
-                          loading={index < 4 ? "eager" : "lazy"}
-                          fetchPriority={index < 4 ? "high" : undefined}
-                          decoding="async"
+                          fill
+                          sizes="(max-width: 767px) 100vw, (max-width: 1279px) 50vw, 25vw"
+                          priority={index < 4}
                           className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
                         />
                       ) : (

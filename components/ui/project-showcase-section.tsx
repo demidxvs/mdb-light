@@ -19,6 +19,8 @@ type ProjectRow = {
   is_featured_home: boolean;
 };
 
+export type HomeProjectRow = ProjectRow;
+
 type ProjectShowcaseSectionProps = {
   eyebrow: string;
   title: string;
@@ -28,6 +30,7 @@ type ProjectShowcaseSectionProps = {
   sectionId?: string;
   limit?: number;
   homeOnly?: boolean;
+  initialItems?: ProjectShowcaseItem[];
 };
 
 const fallbackPalettes = [
@@ -64,13 +67,14 @@ export function ProjectShowcaseSection({
   sectionId,
   limit,
   homeOnly = false,
+  initialItems = [],
 }: ProjectShowcaseSectionProps) {
   const supabaseReady = useMemo(() => isSupabaseConfigured(), []);
   const fallbackItems = homeOnly ? featuredMockProjectShowcase : mockProjectShowcase;
   const [items, setItems] = useState<ProjectShowcaseItem[]>(
-    supabaseReady ? [] : fallbackItems,
+    initialItems.length > 0 ? initialItems : supabaseReady ? [] : fallbackItems,
   );
-  const [loading, setLoading] = useState(supabaseReady);
+  const [loading, setLoading] = useState(supabaseReady && initialItems.length === 0);
 
   useEffect(() => {
     if (!supabaseReady) return;
@@ -86,7 +90,7 @@ export function ProjectShowcaseSection({
         if (cachedItems.length > 0) {
           setItems(cachedItems);
           setLoading(false);
-        } else {
+        } else if (initialItems.length === 0) {
           setLoading(true);
         }
 
@@ -153,7 +157,7 @@ export function ProjectShowcaseSection({
     return () => {
       mounted = false;
     };
-  }, [fallbackItems, homeOnly, limit, supabaseReady]);
+  }, [fallbackItems, homeOnly, initialItems.length, limit, supabaseReady]);
 
   return (
     <ProjectShowcaseGrid

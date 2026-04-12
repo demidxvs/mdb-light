@@ -17,8 +17,8 @@ import {
   Wrench,
 } from "lucide-react";
 import { useLocale } from "@/components/ui/locale-provider";
-import { HomeFeaturedCatalog } from "@/components/ui/home-featured-catalog";
-import { HomeCategories } from "@/components/ui/home-categories";
+import { HomeFeaturedCatalog, type HomeFeaturedProductRow } from "@/components/ui/home-featured-catalog";
+import { HomeCategories, type HomeCategoryRow } from "@/components/ui/home-categories";
 import { ProjectShowcaseSection } from "@/components/ui/project-showcase-section";
 import { SiteFooter } from "@/components/ui/site-footer";
 import { SiteHeader } from "@/components/ui/site-header";
@@ -30,7 +30,29 @@ const ContactFormCard = dynamic(
   { ssr: false },
 );
 
-export default function Home() {
+type HomeProps = {
+  initialCategories?: HomeCategoryRow[];
+  initialCategoryCounts?: Record<string, number>;
+  initialFeaturedProducts?: HomeFeaturedProductRow[];
+  initialProjects?: HomeProjectItem[];
+};
+
+type HomeProjectItem = {
+  id: string;
+  slug: string;
+  imageUrl: string | null;
+  featuredOnHome: boolean;
+  palette: string;
+  title: { en: string; ru: string; el: string; lv: string };
+  caption: { en: string; ru: string; el: string; lv: string };
+};
+
+export default function Home({
+  initialCategories = [],
+  initialCategoryCounts = {},
+  initialFeaturedProducts = [],
+  initialProjects = [],
+}: HomeProps) {
   const { locale } = useLocale();
   const t = useTranslations("home");
   const [authNotice, setAuthNotice] = useState<string | null>(null);
@@ -290,8 +312,15 @@ export default function Home() {
         </div>
       </section>
 
-      <HomeCategories eyebrow={t("categories")} title={t("categoriesTitle")} fallbackCards={catalogCards} limit={32} />
-      <HomeFeaturedCatalog />
+      <HomeCategories
+        eyebrow={t("categories")}
+        title={t("categoriesTitle")}
+        fallbackCards={catalogCards}
+        limit={32}
+        initialCategories={initialCategories}
+        initialCounts={initialCategoryCounts}
+      />
+      <HomeFeaturedCatalog initialProducts={initialFeaturedProducts} />
       <ProjectShowcaseSection
         sectionId="projects"
         eyebrow={t("projectShowcase.eyebrow")}
@@ -301,6 +330,7 @@ export default function Home() {
         ctaHref={localizePathname("/projects", locale)}
         limit={4}
         homeOnly
+        initialItems={initialProjects}
       />
 
       <section id="about" className="mx-auto max-w-7xl px-6 py-2 pb-16 sm:px-10 lg:px-12">

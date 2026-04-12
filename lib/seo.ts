@@ -397,7 +397,7 @@ export function getCommonStructuredData(locale: Locale) {
       name: SITE_NAME,
       alternateName: [SITE_ALT_NAME, "MDB Light"],
       url: getSiteUrl(),
-      logo: absoluteUrl("/logo/logo-notext.svg"),
+      logo: absoluteUrl("/brand-icon.png"),
       areaServed: ["Latvia", "Cyprus"],
       knowsAbout: ["LED lighting", "track systems", "lighting installation"],
       contactPoint: {

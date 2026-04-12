@@ -25,6 +25,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
   const siteUrl = getSiteUrl();
 
+  const rootEntry = {
+    url: siteUrl,
+    lastModified: now,
+    changeFrequency: "daily" as const,
+    priority: 1,
+    alternates: {
+      languages: {
+        en: `${siteUrl}/en`,
+        ru: `${siteUrl}/ru`,
+        lv: `${siteUrl}/lv`,
+        el: `${siteUrl}/el`,
+        "x-default": `${siteUrl}/en`,
+      },
+    },
+  };
+
   const homeEntries = locales.map((locale) => ({
     url: `${siteUrl}/${locale}`,
     lastModified: now,
@@ -100,6 +116,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   );
 
   return [
+    rootEntry,
     ...homeEntries,
     ...categoryEntries,
     ...productEntries,

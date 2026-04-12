@@ -16,10 +16,9 @@ export const metadata: Metadata = {
   keywords: ["MDB", "MDB Light", "lighting Riga", "освещение в Риге", "LED lighting Latvia", "lighting Cyprus"],
   icons: {
     icon: [
-      { url: "/icon.png", sizes: "512x512", type: "image/png" },
-      { url: "/logo.png", type: "image/png" },
+      { url: "/brand-icon.png", sizes: "512x512", type: "image/png" },
     ],
-    shortcut: "/icon.png",
+    shortcut: "/brand-icon.png",
     apple: "/apple-icon.png",
   },
   manifest: "/site.webmanifest",

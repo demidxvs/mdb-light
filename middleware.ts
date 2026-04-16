@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { defaultLocale, getLocaleFromPathname, isLocale, localizePathname, stripLocalePrefix } from "@/i18n/config";
 
-const PUBLIC_FILE = /\.(.*)$/;
+const PUBLIC_FILE = /\.(?:avif|css|eot|gif|ico|jpeg|jpg|js|json|map|pdf|png|svg|ttf|txt|webp|woff|woff2|xml)$/i;
 const LOCALE_HEADER = "x-mdb-locale";
 const REWRITTEN_PREFIXES = new Set([
   "account",

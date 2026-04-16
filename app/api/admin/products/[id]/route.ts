@@ -254,6 +254,16 @@ export async function DELETE(
   try {
     const { id } = await context.params;
     const storefront = createStorefrontServiceClient();
+
+    const { error: cartItemsError } = await storefront
+      .from("cart_items")
+      .delete()
+      .eq("product_id", id);
+
+    if (cartItemsError) {
+      return NextResponse.json({ error: cartItemsError.message }, { status: 500 });
+    }
+
     const { error } = await storefront.from("products").delete().eq("id", id);
 
     if (error) {

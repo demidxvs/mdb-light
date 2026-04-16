@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
+  ClipboardCopy,
   Download,
   FileText,
   LoaderCircle,
@@ -102,6 +103,10 @@ const copy = {
     deletingPdf: "Deleting PDF...",
     pdfSaved: "PDF saved.",
     pdfDeleted: "PDF deleted.",
+    copyCartLink: "Copy cart link",
+    copyingCartLink: "Preparing cart link...",
+    cartLinkCopied: "Cart link copied.",
+    cartLinkError: "Could not create cart link.",
   },
   ru: {
     top: "Защищенная зона создания счетов",
@@ -158,6 +163,10 @@ const copy = {
     deletingPdf: "Удаляю PDF...",
     pdfSaved: "PDF сохранен.",
     pdfDeleted: "PDF удален.",
+    copyCartLink: "Скопировать ссылку на корзину",
+    copyingCartLink: "Готовлю ссылку на корзину...",
+    cartLinkCopied: "Ссылка на корзину скопирована.",
+    cartLinkError: "Не удалось создать ссылку на корзину.",
   },
   el: {
     top: "Protected invoice builder area",
@@ -214,6 +223,10 @@ const copy = {
     deletingPdf: "Deleting PDF...",
     pdfSaved: "PDF saved.",
     pdfDeleted: "PDF deleted.",
+    copyCartLink: "Copy cart link",
+    copyingCartLink: "Preparing cart link...",
+    cartLinkCopied: "Cart link copied.",
+    cartLinkError: "Could not create cart link.",
   },
   lv: {
     top: "Aizsargāta rēķinu veidošanas zona",
@@ -270,6 +283,10 @@ const copy = {
     deletingPdf: "Dzēš PDF...",
     pdfSaved: "PDF saglabāts.",
     pdfDeleted: "PDF izdzēsts.",
+    copyCartLink: "Kopēt groza saiti",
+    copyingCartLink: "Sagatavo groza saiti...",
+    cartLinkCopied: "Groza saite nokopēta.",
+    cartLinkError: "Neizdevās izveidot groza saiti.",
   },
 } as const;
 
@@ -323,6 +340,7 @@ export default function AdminInvoicesPage() {
   const [saving, setSaving] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [deletingPdfId, setDeletingPdfId] = useState<string | null>(null);
+  const [copyingCartLinkId, setCopyingCartLinkId] = useState<string | null>(null);
   const [recentQuery, setRecentQuery] = useState("");
 
   const loadBuilderData = useCallback(async () => {
@@ -621,6 +639,42 @@ export default function AdminInvoicesPage() {
     }
   };
 
+  const handleCopyCartLink = async (invoiceId?: string | null) => {
+    setError("");
+    setSuccess("");
+    setCopyingCartLinkId(invoiceId || currentInvoiceId || "draft");
+
+    try {
+      const nextInvoiceId = invoiceId || (await persistInvoice());
+      const response = await fetch("/api/admin/invoices/cart-link", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          invoiceId: nextInvoiceId,
+          locale,
+        }),
+      });
+      const payload = (await response.json().catch(() => ({}))) as {
+        error?: string;
+        cartUrl?: string;
+      };
+
+      if (!response.ok || !payload.cartUrl) {
+        throw new Error(payload.error || t.cartLinkError);
+      }
+
+      await navigator.clipboard.writeText(payload.cartUrl);
+      setSuccess(t.cartLinkCopied);
+    } catch (copyError) {
+      setError(copyError instanceof Error ? copyError.message : t.cartLinkError);
+    } finally {
+      setCopyingCartLinkId(null);
+    }
+  };
+
   return (
     <AdminShell topLabel={t.top} title={t.title} description={t.description}>
       {loading ? (
@@ -823,6 +877,15 @@ export default function AdminInvoicesPage() {
                   <button type="button" onClick={() => void handleGeneratePdf()} disabled={saving || generating} className="inline-flex h-12 w-full items-center justify-center rounded-xl bg-[color:var(--accent)] px-5 text-sm font-semibold text-[#203153] shadow-[0_12px_28px_rgba(244,198,79,0.28)] disabled:cursor-not-allowed disabled:opacity-70">
                     {generating ? t.generating : t.generate}
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => void handleCopyCartLink()}
+                    disabled={saving || generating || copyingCartLinkId !== null}
+                    className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-[#ece3d9] bg-[#fffcf7] px-5 text-sm font-medium text-[color:var(--headline)] disabled:cursor-not-allowed disabled:opacity-70"
+                  >
+                    <ClipboardCopy className="h-4 w-4" />
+                    {copyingCartLinkId ? t.copyingCartLink : t.copyCartLink}
+                  </button>
                   {currentInvoice?.pdf_path ? (
                     <div className="grid gap-3 sm:grid-cols-2">
                       <button type="button" onClick={() => void handleOpenPdf(currentInvoice)} className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-[#ece3d9] bg-white px-5 text-sm font-medium text-[color:var(--headline)]">
@@ -858,18 +921,29 @@ export default function AdminInvoicesPage() {
                         <div className="min-w-0">
                           <p className="text-sm font-semibold text-[color:var(--headline)]">{invoice.invoice_number}</p>
                           <p className="mt-1 truncate text-xs text-[color:var(--muted)]">{invoice.client_name}</p>
-                          {invoice.pdf_path ? <p className="mt-2 text-[11px] font-medium uppercase tracking-[0.18em] text-emerald-600">{t.pdfReady}</p> : null}
+                        {invoice.pdf_path ? <p className="mt-2 text-[11px] font-medium uppercase tracking-[0.18em] text-emerald-600">{t.pdfReady}</p> : null}
+                      </div>
+                        <div className="flex shrink-0 items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => void handleCopyCartLink(invoice.id)}
+                            disabled={copyingCartLinkId === invoice.id}
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-[#ece3d9] bg-white text-[color:var(--headline)] disabled:cursor-not-allowed disabled:opacity-70"
+                            title={t.copyCartLink}
+                          >
+                            <ClipboardCopy className="h-4 w-4" />
+                          </button>
+                          {invoice.pdf_path ? (
+                            <>
+                              <button type="button" onClick={() => void handleOpenPdf(invoice)} className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-[#ece3d9] bg-white text-[color:var(--headline)]">
+                                <Download className="h-4 w-4" />
+                              </button>
+                              <button type="button" onClick={() => void handleDeletePdf(invoice)} disabled={deletingPdfId === invoice.id} className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-red-200 bg-red-50 text-red-700 disabled:cursor-not-allowed disabled:opacity-70">
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </>
+                          ) : null}
                         </div>
-                        {invoice.pdf_path ? (
-                          <div className="flex shrink-0 items-center gap-2">
-                            <button type="button" onClick={() => void handleOpenPdf(invoice)} className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-[#ece3d9] bg-white text-[color:var(--headline)]">
-                              <Download className="h-4 w-4" />
-                            </button>
-                            <button type="button" onClick={() => void handleDeletePdf(invoice)} disabled={deletingPdfId === invoice.id} className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-red-200 bg-red-50 text-red-700 disabled:cursor-not-allowed disabled:opacity-70">
-                              <Trash2 className="h-4 w-4" />
-                            </button>
-                          </div>
-                        ) : null}
                       </div>
                     </div>
                   ))}

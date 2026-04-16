@@ -96,6 +96,11 @@ function writeGuestCartItems(items: GuestCartItem[]) {
   window.localStorage.setItem(GUEST_CART_STORAGE_KEY, JSON.stringify(items));
 }
 
+export function replaceGuestCartItems(items: GuestCartItem[]) {
+  writeGuestCartItems(items);
+  emitCartUpdated();
+}
+
 export function clearGuestCart() {
   if (typeof window === "undefined") return;
   window.localStorage.removeItem(GUEST_CART_STORAGE_KEY);

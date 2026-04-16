@@ -1,471 +1,346 @@
 # MDB Light
 
-`MDB Light` is a marketplace for LED lighting equipment and related light solutions.
+`MDB Light` is a production-oriented multilingual ecommerce project for LED lighting products, category-driven catalog browsing, project showcase pages, and online order processing.
 
-The project is focused on selling different types of lighting products: home lighting, architectural lighting, commercial lighting, decorative fixtures, track systems, linear lights, spotlights, power supplies, accessories, and related equipment.
+The platform combines a public storefront, a protected admin area, payment flows, order handling, multilingual SEO pages, and business-oriented content for Riga, Latvia, and Cyprus.
 
-This README defines the intended product direction so future tasks stay aligned with the real business goal.
+## Portfolio Summary
 
-## Product Idea
+MDB Light is a custom-built lighting marketplace designed as a real business website rather than a UI concept. The project includes:
 
-The main product is an online marketplace for lighting equipment with:
+- multilingual storefront
+- category and product pages
+- localized SEO routing
+- shopping cart and checkout
+- guest checkout and account creation during checkout
+- Stripe payments
+- bank transfer checkout flow
+- order emails for customer and admin
+- protected admin panel
+- product/category/project management
+- manual product sorting inside categories
+- legal pages and cookie consent
 
-- public storefront
-- product catalog
-- product cards with full descriptions
-- shopping cart
-- checkout and online payment
-- order management
-- hidden admin panel
+The site is tailored for a premium lighting brand with commercial and residential use cases.
 
-The storefront should look modern, clean, premium, and easy to navigate.
+## Tech Stack
 
-## Main Goals
-
-- Sell LED lighting equipment online
-- Support multilingual product content
-- Provide convenient product management through admin tools
-- Store orders and customer data in a structured backend
-- Process payments through Stripe
-- Use Supabase as the main backend/database platform
-
-## Core Functional Areas
-
-### 1. Storefront
-
-Public part of the site should include:
-
-- landing page
-- catalog page
-- category pages
-- product detail page
-- cart
-- checkout
-- order success page
-
-Potential catalog filters:
-
-- category
-- price
-- brand
-- wattage
-- color temperature
-- voltage
-- mounting type
-- availability
-
-### 2. Product Model
-
-Each product should eventually contain:
-
-- title
-- slug
-- SKU / internal code
-- short description
-- full description
-- price
-- old price / discount
-- stock quantity
-- category
-- brand
-- product attributes
-- images
-- active / inactive status
-
-Possible product attributes for lighting:
-
-- power
-- luminous flux
-- color temperature
-- beam angle
-- IP protection
-- voltage
-- dimensions
-- material
-- color
-- warranty
-
-### 3. Multilingual Content
-
-Admin should be able to manage product content in 4 languages.
-
-At minimum, the following fields should support translations:
-
-- product title
-- short description
-- full description
-- category name
-- product characteristics labels if needed
-
-Recommended approach for the first production-ready version:
-
-- store translations explicitly in the database
-- keep one base language
-- allow manual editing for each language
-- optionally add auto-translation as a helper tool for admin, not as the only source
-
-Important note:
-
-Automatic translation can speed up content entry, but it should not fully replace manual review. For product sales, attribute accuracy and wording matter. The safer approach is:
-
-1. admin enters base content
-2. system generates translations
-3. admin reviews and saves them
-
-## Admin Panel
-
-The project requires a hidden admin panel with a non-obvious URL, for example a custom route similar to:
-
-`/gldpf[gkfd0ij5430i53`
-
-Admin panel should not be linked from the public navigation.
-
-Important:
-
-- hidden URL alone is not security
-- admin area must require authentication
-- admin access must be restricted by role
-- all admin routes must be protected on the server side
-
-Admin panel features should include:
-
-- login for admin
-- create product
-- edit product
-- delete product
-- upload product images
-- edit multilingual descriptions
-- manage stock
-- manage prices and discounts
-- view cart-related data if we decide to persist carts
-- view orders
-- update order status
-
-Recommended order statuses:
-
-- pending
-- paid
-- processing
-- shipped
-- completed
-- canceled
-
-## Cart And Orders
-
-Planned behavior:
-
-- guest user can add products to cart
-- cart can work in local state at first
-- later cart can optionally be synced to Supabase
-- checkout creates an order record
-- successful Stripe payment updates order status
-
-Admin should be able to see:
-
-- all orders
-- customer data required for fulfillment
-- ordered products
-- payment status
-- order totals
-- order timeline/status
-
-About cart visibility in admin:
-
-- viewing active carts is possible
-- but it is not required for MVP
-- for MVP, orders are more important than live cart monitoring
-
-## Payments
-
-Stripe is the planned payment provider.
-
-Recommended Stripe flow:
-
-- create order draft on backend
-- create Stripe Checkout Session
-- redirect user to Stripe Checkout
-- receive Stripe webhook after payment
-- verify event on backend
-- mark order as paid in database
-
-This is safer than trusting only client-side success redirects.
-
-## Backend And Database
-
-Supabase is the planned backend platform.
-
-Supabase responsibilities:
-
-- PostgreSQL database
-- authentication
-- storage for images if we choose Supabase Storage
-- row-level security where appropriate
-
-Main entities that will likely be needed:
-
-- admins / users
-- products
-- product_translations
-- categories
-- category_translations
-- product_images
-- orders
-- order_items
-- carts
-- cart_items
-
-## Security Principles
-
-Admin panel should be protected by several layers:
-
-- hidden custom route
-- Supabase authentication
-- admin role check
-- protected server-side actions / route handlers
-- secure environment variables
-- Stripe webhook signature validation
-
-Hidden URL is acceptable as an extra obscurity layer, but not as the main protection mechanism.
-
-## Current Technical Direction
-
-Planned stack:
-
-- Next.js
-- React
-- TypeScript
-- Tailwind CSS
-- Supabase
-- Stripe
-
-## Portfolio Section
-
-### Short Project Description
-
-`MDB Light` is a multilingual marketplace concept for LED lighting products. The project is designed as a modern ecommerce platform with a public storefront, structured product catalog, protected admin area, and future integration with payments, order management, and multilingual content workflows.
-
-This case demonstrates how a product-focused frontend can be prepared for a real business domain: catalog browsing, product presentation, user flows, operational admin tools, and backend-ready architecture.
-
-### Portfolio Description (EN)
-
-MDB Light is a commercial web application concept for the LED lighting industry. I built it as a scalable marketplace interface with multilingual UX, category-based product discovery, and a clean premium visual system. The project is structured to grow from a marketing-driven storefront into a full ecommerce product with catalog management, admin workflows, order processing, and payment integration.
-
-### Portfolio Description (RU)
-
-MDB Light это концепт коммерческого веб-приложения для ниши LED-освещения. Проект собран как масштабируемый marketplace-интерфейс с мультиязычным UX, каталогом по категориям и аккуратной премиальной визуальной подачей. Архитектура и UI уже подготовлены к развитию в полноценный ecommerce-продукт: с управлением товарами, административной частью, заказами, оплатой и мультиязычным контентом.
-
-### Stack
+### Frontend
 
 - Next.js 16
 - React 19
 - TypeScript
 - Tailwind CSS 4
-- Framer Motion
-- Lucide React
-- Supabase (planned backend)
-- Stripe (planned payments)
+- next-intl for i18n
+- Lucide React icons
 
-### What This Project Shows
+### Backend / Infrastructure
 
-- building multilingual ecommerce storefronts
-- designing category-driven marketplaces
-- creating product-focused landing pages with premium UI
-- preparing admin panels for product, order, and content management
-- planning integrations with backend services and payment systems
+- Supabase
+- PostgreSQL
+- Supabase Auth
+- Supabase Storage
+- Resend for transactional email delivery
+- Stripe Checkout + webhooks
+- Vercel deployment
 
-### Types Of Applications I Build
+### Supporting Libraries
 
-Based on this project, the portfolio positioning is strongest around:
+- `@supabase/ssr`
+- `@supabase/supabase-js`
+- `stripe`
+- `pdf-lib`
+- `nodemailer`
+- `framer-motion`
 
-- ecommerce websites and marketplaces
-- multilingual business websites
-- product catalogs and showcase platforms
-- admin panels and internal management tools
-- customer-facing web apps with payment and order flows
-- niche commercial platforms for retail, interiors, lighting, furniture, and similar product businesses
+## Main Functional Areas
 
-Current repository status:
+## 1. Public Storefront
 
-- project foundation exists
-- UI is being built step by step
-- architecture should now move toward marketplace implementation
+The public website includes:
 
-## Recommended MVP Scope
+- landing page
+- multilingual homepage variants
+- category pages
+- product pages
+- project showcase section
+- blog section
+- service landing pages
+- location landing pages
+- cart
+- checkout
+- success / cancel / bank transfer order states
+- legal pages
 
-To avoid overbuilding too early, the MVP should focus on:
+The interface is built in a premium marketplace style with a strong commercial presentation and responsive layout for desktop and mobile.
 
-1. landing page
-2. catalog with categories
-3. product detail page
-4. cart
-5. Stripe checkout
-6. Supabase product storage
-7. hidden admin login
-8. product CRUD in admin
-9. order list in admin
-10. multilingual content management
+## 2. Multilingual Content
 
-## Recommended Build Sequence
+The project supports 4 languages:
 
-Suggested implementation order:
+- English
+- Russian
+- Latvian
+- Greek
 
-1. finalize public landing page direction
-2. design product and category data model
-3. integrate Supabase
-4. build catalog and product pages with mock data, then real data
-5. build cart
-6. integrate Stripe Checkout
-7. build admin authentication and route protection
-8. build admin product management
-9. build order management
-10. add translation workflow
+Implemented multilingual behavior includes:
 
-## Product Decisions Fixed For Now
+- localized page paths
+- localized product and category content
+- localized legal pages
+- localized homepage SEO content
+- localized UI copy
+- localized order and email copy
+- localized cookie banner
 
-These assumptions should be treated as the default until changed:
-
-- project type: LED lighting marketplace
-- payment system: Stripe
-- database/backend: Supabase
-- admin panel: hidden custom URL plus real authentication
-- multilingual support: 4 languages
-- admin can manage products, descriptions, orders, and pricing
-
-## Open Decisions To Confirm Later
-
-These points are not fully fixed yet and can be refined in future tasks:
-
-- exact 4 supported languages
-- whether carts should be stored permanently in database
-- whether translations are fully manual or manual + auto-translate assist
-- whether admin panel should live inside the same Next.js app or as a separate app section
-- whether image storage should use Supabase Storage or another provider
-
-## Working Rule
-
-When future tasks are implemented, this README should be updated if the business logic or architecture changes.
-#   m d b - l i g h t  
- ## Admin UX Direction
-
-The admin area should evolve into a visual site-builder style workspace instead of a plain database dashboard.
-
-### Desired Admin Experience
-
-Admin should see the site in a storefront-like presentation and switch into a management mode where interface controls appear directly on the same page.
+Products and categories support separate slug values per language, so URLs are language-specific instead of using a single global slug.
 
 Examples:
 
-- on the catalog page admin sees `Add product`, `Edit`, `Delete`
-- on product cards admin sees quick actions without leaving the visual layout
-- on banners and homepage sections admin can edit content in context
-- management controls should appear only for admin users
-- regular users should never see these controls
+- `/en/magnetic-track-systems`
+- `/ru/magnitnye-trekovye-sistemy`
+- `/lv/magnetiskas-sistemas`
+- `/el/magnitika-systimata`
 
-This means the long-term admin concept is:
+## 3. Catalog And Product System
 
-- public site and admin editing experience live in the same Next.js app
-- admin can browse the real pages as they look to customers
-- when admin mode is active, inline action buttons appear
-- complex management screens still exist as separate admin pages when needed
+The catalog supports:
 
-### Admin Structure
-
-The admin system should be split into two layers:
-
-1. Visual admin mode on normal pages
-
-Used for:
-
-- add product from catalog view
-- edit product from product card or product page
-- hide / unhide products
-- change homepage sections
-- reorder visual blocks later
-
-2. Dedicated admin pages
-
-Used for:
-
-- product creation forms
-- bulk product editing
-- order management
-- cart monitoring
-- user management
-- category management
-- image management
-
-### Current Hidden Admin Route
-
-Current hidden route:
-
-`/panel-x9k2m4q7r2a`
-
-This route is the first protected admin area and should stay hidden from public navigation.
-
-### Admin Pages Planned
-
-The admin panel should eventually contain:
-
-- dashboard overview
-- products
-- product create/edit page
 - categories
-- orders
+- products
+- localized titles and descriptions
+- cover images
+- product images
+- pricing
+- stock quantity
+- SKU
+- attributes / option metadata
+- category-based navigation
+- featured products on homepage
+
+Implemented product experience includes:
+
+- product detail page
+- image gallery
+- quantity selector before add-to-cart
+- related products
+- localized product URLs
+- cart quantity controls
+- dynamic total recalculation
+
+## 4. Cart And Checkout
+
+The ecommerce flow supports:
+
+- add to cart
+- quantity updates in cart
+- cart persistence
+- guest checkout
+- authenticated checkout
+- optional account creation during checkout
+- customer details capture
+- order note
+- Stripe card payment
+- bank transfer payment
+
+Guest checkout behavior:
+
+- customer can place an order without login
+- order stores contact information directly on the order
+- `userId` is optional for guest orders
+
+Checkout with account creation behavior:
+
+- customer can enable “create account”
+- password fields appear conditionally
+- account is created after successful order submission
+- order can be linked to the new user
+
+## 5. Payments
+
+Stripe is integrated for online card payments.
+
+Implemented Stripe flow:
+
+1. create order on backend
+2. create Stripe Checkout Session
+3. redirect customer to Stripe Checkout
+4. receive live webhook
+5. verify webhook signature
+6. mark order as paid
+7. trigger order email flow
+
+Webhook events handled:
+
+- `checkout.session.completed`
+- `checkout.session.async_payment_succeeded`
+
+The project also supports bank transfer checkout with a separate post-order flow.
+
+## 6. Email Notifications
+
+The project includes transactional email flows for both admin and customer.
+
+Implemented cases:
+
+- new bank transfer order email
+- payment instructions email for bank transfer
+- Stripe paid confirmation email
+- bank transfer paid confirmation email after manual admin confirmation
+- admin order notifications
+- contact form email delivery
+
+Emails are sent through Resend and use centralized mail helpers.
+
+## 7. Admin Panel
+
+The site has a protected hidden admin area with role-based access control.
+
+Admin capabilities include:
+
+- admin login
+- protected routes
+- product management
+- category management
+- project management
+- user management
+- order management
+- invoice tools
+- media uploads
+- multilingual content editing
+- slug editing per language
+- product ordering inside category
+
+Implemented admin-specific functionality:
+
+- manual product sort order
+- category → products management screen
+- separate language slug fields
+- explicit order status updates
+- payment confirmation handling for bank transfer orders
+
+## 8. SEO
+
+The project is built with multilingual SEO in mind.
+
+Implemented SEO work includes:
+
+- metadata per locale
+- canonical URLs
+- hreflang alternates
+- sitemap
+- robots file
+- structured data
+- localized slugs for products and categories
+- legal page metadata
+- homepage geo-targeted content
+- brand favicon / app icon setup
+
+SEO content is targeted around:
+
+- MDB / MDB Light brand search
+- lighting in Riga
+- LED lighting in Latvia
+- lighting and installation in Cyprus
+
+## 9. Legal / Compliance
+
+The project includes:
+
+- Privacy Policy
+- Cookies Policy
+- Delivery / Returns
+- Terms of Use
+- company info in footer
+- cookie consent banner with consent options
+
+Cookie logic follows the expected EU-style behavior:
+
+- accept
+- reject
+- manage
+- block optional cookies before consent
+
+## 10. Security And Architecture
+
+Key architecture and security decisions:
+
+- server-side protected admin actions
+- Supabase service role used only on server
+- Stripe webhook signature verification
+- hidden admin route is not treated as the only protection layer
+- guest and authenticated order flows are both supported
+- production deployment through Vercel
+
+The project uses separate storefront/admin Supabase configuration for operational boundaries.
+
+## Database / Domain Model
+
+Core entities used by the project include:
+
+- products
+- product_translations
+- categories
+- category_translations
+- projects
+- project_translations
 - carts
-- users
-- settings
+- cart_items
+- orders
+- order_items
+- invoices
+- invoice_items
+- profiles
+- attributes
+- product_attribute_values
 
-### Users Section
+This allows the project to support multilingual ecommerce content, admin workflows, and order processing in a structured way.
 
-A separate admin page for users is required.
+## Portfolio Positioning
 
-Admin should be able to see:
+This project demonstrates:
 
-- full name
-- email
-- preferred language
-- account status
-- registration date
-- order count later
-- cart state later
+- full-stack ecommerce implementation
+- multilingual architecture
+- admin tooling for real content operations
+- payment integration with webhook handling
+- transactional email flows
+- SEO-aware routing and metadata
+- practical product-oriented UX
 
-Possible future admin actions for users:
+It is suitable for portfolio presentation as a real commercial web product for a niche retail business.
 
-- deactivate account
-- promote to admin
-- review orders
-- review cart
-- inspect profile details
+## Short Portfolio Description
 
-### Product Management Requirements
+MDB Light is a multilingual ecommerce platform for LED lighting products, built with Next.js, Supabase, Stripe, and Resend. The project includes a public storefront, category and product pages, guest and authenticated checkout, online payments, bank transfer order flow, admin management tools, multilingual SEO routing, transactional email flows, and localized legal/compliance pages.
 
-Product management should support both quick inline actions and full form editing.
+## Stack For Portfolio
 
-Inline actions:
+- Next.js 16
+- React 19
+- TypeScript
+- Tailwind CSS 4
+- Supabase
+- PostgreSQL
+- Supabase Auth
+- Supabase Storage
+- Stripe
+- Resend
+- Vercel
+- next-intl
 
-- add product
-- edit product
-- delete product
-- feature / unfeature product
-- activate / deactivate product
+## Features For Portfolio
 
-Full edit form:
-
-- sku
-- slug
-- brand
-- category
-- price
-- compare price
-- stock
-- image
-- active status
-- featured status
-- translations for `en`, `ru`, `el`, `lv`
-
-### Working Rule For Future Tasks
-
-When admin functionality is expanded, future work should follow this rule:
-
-- if an action is simple and visual, prefer inline admin controls on the real page
-- if an action is operational or data-heavy, use a dedicated admin page
+- multilingual storefront in 4 languages
+- localized category and product slugs
+- category and product management
+- manual product ordering inside categories
+- cart with quantity controls
+- guest checkout
+- optional account creation in checkout
+- Stripe payment flow with webhook confirmation
+- bank transfer payment flow
+- customer/admin order emails
+- protected admin panel
+- legal pages and cookie consent
+- sitemap, hreflang, canonical metadata, structured data

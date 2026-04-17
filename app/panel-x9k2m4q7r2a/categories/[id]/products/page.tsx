@@ -201,7 +201,9 @@ export default function AdminCategoryProductsPage() {
     if (targetIndex < 0 || targetIndex >= products.length) return;
 
     const current = products[index];
-    const target = products[targetIndex];
+    const nextProducts = [...products];
+    const [movedProduct] = nextProducts.splice(index, 1);
+    nextProducts.splice(targetIndex, 0, movedProduct);
     setMovingId(current.id);
     setError("");
 
@@ -213,10 +215,7 @@ export default function AdminCategoryProductsPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          firstId: current.id,
-          firstSortOrder: target.sort_order,
-          secondId: target.id,
-          secondSortOrder: current.sort_order,
+          orderedIds: nextProducts.map((product) => product.id),
         }),
       });
       const payload = (await response.json().catch(() => ({}))) as { error?: string };

@@ -7,10 +7,7 @@ import {
 type LocaleKey = "en" | "ru" | "el" | "lv";
 
 type ReorderPayload = {
-  firstId?: string;
-  firstSortOrder?: number;
-  secondId?: string;
-  secondSortOrder?: number;
+  orderedIds?: string[];
 };
 
 export async function GET(
@@ -93,28 +90,51 @@ export async function PATCH(
   if (response) return response;
 
   try {
-    await context.params;
+    const { id: categoryId } = await context.params;
     const body = (await request.json()) as ReorderPayload;
 
-    if (!body.firstId || !body.secondId) {
-      return NextResponse.json({ error: "Product ids are required" }, { status: 400 });
+    const orderedIds = Array.isArray(body.orderedIds)
+      ? body.orderedIds.filter((item): item is string => typeof item === "string" && item.trim().length > 0)
+      : [];
+
+    if (orderedIds.length === 0) {
+      return NextResponse.json({ error: "Ordered product ids are required" }, { status: 400 });
     }
 
     const storefront = createStorefrontServiceClient();
-    const [first, second] = await Promise.all([
-      storefront
-        .from("products")
-        .update({ sort_order: body.firstSortOrder ?? 0 })
-        .eq("id", body.firstId),
-      storefront
-        .from("products")
-        .update({ sort_order: body.secondSortOrder ?? 0 })
-        .eq("id", body.secondId),
-    ]);
 
-    if (first.error || second.error) {
+    const { data: existingProducts, error: existingProductsError } = await storefront
+      .from("products")
+      .select("id")
+      .eq("category_id", categoryId);
+
+    if (existingProductsError) {
       return NextResponse.json(
-        { error: first.error?.message || second.error?.message || "Failed to reorder products" },
+        { error: existingProductsError.message || "Failed to load category products" },
+        { status: 500 },
+      );
+    }
+
+    const existingIds = ((existingProducts as Array<{ id: string }> | null) ?? []).map((product) => product.id);
+
+    if (existingIds.length !== orderedIds.length || existingIds.some((id) => !orderedIds.includes(id))) {
+      return NextResponse.json({ error: "Provided product order is invalid" }, { status: 400 });
+    }
+
+    const updates = orderedIds.map((productId, index) =>
+      storefront
+        .from("products")
+        .update({ sort_order: index })
+        .eq("id", productId)
+        .eq("category_id", categoryId),
+    );
+
+    const results = await Promise.all(updates);
+    const failed = results.find((result) => result.error);
+
+    if (failed?.error) {
+      return NextResponse.json(
+        { error: failed.error.message || "Failed to reorder products" },
         { status: 500 },
       );
     }

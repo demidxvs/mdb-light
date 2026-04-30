@@ -18,7 +18,7 @@ export function SiteHeader({ topLabel }: SiteHeaderProps) {
   return (
     <>
       <div className="border-b border-[color:var(--line)] bg-white/85 backdrop-blur-sm">
-        <div className="flex w-full items-center justify-between gap-4 px-6 py-3 text-xs text-[color:var(--muted)] sm:px-10 lg:px-12">
+        <div className="flex w-full items-center justify-between gap-4 px-5 py-2 text-xs text-[color:var(--muted)] sm:px-10 sm:py-3 lg:px-12">
           <ContactInlineLinks className="hidden md:block" />
           <div className="w-full text-right md:ml-auto md:w-auto">{resolvedTopLabel}</div>
         </div>
@@ -47,7 +47,7 @@ export function SiteHeader({ topLabel }: SiteHeaderProps) {
           </div>
 
           <div className="lg:hidden">
-            <div className="border-t border-[color:var(--line)] px-5 py-4">
+            <div className="border-t border-[color:var(--line)] px-5 py-2.5">
               <Link href="/" className="flex items-center justify-center">
                 <Image
                   src="/logo/mdb-light-logo.svg"
@@ -55,13 +55,13 @@ export function SiteHeader({ topLabel }: SiteHeaderProps) {
                   width={1080}
                   height={182}
                   priority
-                  className="h-12 w-auto object-contain"
+                  className="h-9 w-auto object-contain"
                 />
               </Link>
             </div>
 
-            <div className="border-t border-[color:var(--line)] px-3 py-3">
-              <div className="mx-auto flex max-w-7xl flex-col gap-3">
+            <div className="border-t border-[color:var(--line)] px-3 py-2">
+              <div className="mx-auto flex max-w-7xl flex-col gap-2">
                 <div className="flex items-stretch gap-2">
                   <SiteNavigation compact className="w-[13rem] min-w-0" />
                   <LanguageSwitcher compact className="w-[9.25rem] justify-center" />

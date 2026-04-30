@@ -29,10 +29,10 @@ export function SiteNavigation({
   return (
     <nav
       className={cn(
-        "rounded-[1.6rem] border border-[#ece3d9] bg-white/82 shadow-none",
+        "border border-[#ece3d9] bg-white/82 shadow-none",
         compact
-          ? "grid w-full grid-cols-2 gap-0.5 p-0.5"
-          : "inline-flex w-full items-center justify-start gap-1 py-1 pl-0.5 pr-1",
+          ? "grid w-full grid-cols-2 gap-0.5 rounded-full p-0.5"
+          : "inline-flex w-full items-center justify-start gap-1 rounded-[1.6rem] py-1 pl-0.5 pr-1",
         className,
       )}
     >
@@ -43,11 +43,15 @@ export function SiteNavigation({
           <Link
             key={link.href}
             href={localizePathname(link.href, locale)}
-            className={`inline-flex items-center justify-center rounded-xl text-center text-sm font-medium leading-5 whitespace-nowrap transition ${
+            className={cn(
+              "inline-flex items-center justify-center text-center text-sm font-medium leading-5 whitespace-nowrap transition",
+              compact
+                ? "min-h-10 w-full rounded-full px-2 py-1 text-[12px] sm:min-h-10 sm:px-4 sm:py-2 sm:text-sm"
+                : "min-h-9 rounded-xl px-4 py-2",
               isActive
                 ? "bg-[#7f91b7] text-white shadow-[0_10px_24px_rgba(127,145,183,0.24)]"
-                : "text-[color:var(--muted)] hover:bg-[#fff7ef] hover:text-[color:var(--headline)]"
-            } ${compact ? "min-h-[3.45rem] w-full px-2 py-1 text-[12px] whitespace-nowrap sm:min-h-10 sm:px-4 sm:py-2 sm:text-sm" : "min-h-9 px-4 py-2"}`}
+                : "text-[color:var(--muted)] hover:bg-[#fff7ef] hover:text-[color:var(--headline)]",
+            )}
           >
             {link.label}
           </Link>

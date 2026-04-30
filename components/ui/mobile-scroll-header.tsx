@@ -7,7 +7,6 @@ type MobileScrollHeaderProps = {
 };
 
 export function MobileScrollHeader({ children }: MobileScrollHeaderProps) {
-  const stopTimerRef = useRef<number | null>(null);
   const lastScrollYRef = useRef(0);
   const [isVisible, setIsVisible] = useState(true);
 
@@ -25,23 +24,12 @@ export function MobileScrollHeader({ children }: MobileScrollHeaderProps) {
       }
 
       lastScrollYRef.current = currentScrollY;
-
-      if (stopTimerRef.current) {
-        window.clearTimeout(stopTimerRef.current);
-      }
-
-      stopTimerRef.current = window.setTimeout(() => {
-        setIsVisible(true);
-      }, 140);
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
 
     return () => {
       window.removeEventListener("scroll", handleScroll);
-      if (stopTimerRef.current) {
-        window.clearTimeout(stopTimerRef.current);
-      }
     };
   }, []);
 

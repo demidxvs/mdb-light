@@ -36,7 +36,7 @@ export function LanguageSwitcher({
           onClick={() => setLocale(item.code)}
           className={cn(
             compact
-              ? "relative rounded-[1rem] px-2 py-1 text-[11px] font-semibold tracking-[0.14em] transition-all duration-200 sm:px-3 sm:py-2 sm:text-xs"
+              ? "relative flex h-[2.15rem] min-w-[2.15rem] items-center justify-center rounded-full px-1.5 text-[11px] font-semibold tracking-[0.14em] transition-all duration-200 sm:h-10 sm:min-w-10 sm:px-3 sm:text-xs"
               : "relative rounded-xl px-2.5 py-2 text-[11px] font-semibold tracking-[0.14em] transition-all duration-200 sm:px-3 sm:text-xs",
             locale === item.code
               ? "bg-[color:var(--accent)] text-white shadow-[0_10px_24px_rgba(244,198,79,0.22)]"

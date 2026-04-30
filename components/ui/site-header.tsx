@@ -66,7 +66,7 @@ export function SiteHeader({ topLabel }: SiteHeaderProps) {
                   <SiteNavigation compact className="w-[13rem] min-w-0" />
                   <LanguageSwitcher compact className="w-[9.25rem] justify-center" />
                 </div>
-                <div className="overflow-x-auto">
+                <div className="-my-2 overflow-x-auto py-2">
                   <AccountControls compact />
                 </div>
               </div>

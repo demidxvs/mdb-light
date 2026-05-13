@@ -19,6 +19,7 @@ function toRemotePattern(value: string | undefined) {
 
 const nextConfig: NextConfig = {
   images: {
+    unoptimized: true,
     remotePatterns: [
       toRemotePattern(process.env.NEXT_PUBLIC_SUPABASE_URL),
       toRemotePattern(process.env.NEXT_PUBLIC_ADMIN_SUPABASE_URL),

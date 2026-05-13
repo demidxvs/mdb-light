@@ -234,6 +234,21 @@ function getColorSwatchStyle(color: string) {
   return { backgroundColor: palette[normalized] ?? color };
 }
 
+function buildProductGallery(product: ProductRow | null) {
+  if (!product) return [];
+
+  return Array.from(
+    new Set(
+      [
+        product.primary_image_url,
+        ...(product.image_urls ?? []),
+      ]
+        .map((imageUrl) => imageUrl?.trim())
+        .filter((imageUrl): imageUrl is string => Boolean(imageUrl)),
+    ),
+  );
+}
+
 export default function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const { locale } = useLocale();
   const t = copy[locale];
@@ -253,6 +268,7 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
   const [selectedDynamicOptions, setSelectedDynamicOptions] = useState<SelectedOptionMap>({});
   const [selectedQuantity, setSelectedQuantity] = useState(1);
   const [relatedProducts, setRelatedProducts] = useState<RelatedProductRow[]>([]);
+  const [failedImageUrls, setFailedImageUrls] = useState<string[]>([]);
 
   useEffect(() => {
     let mounted = true;
@@ -301,16 +317,12 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
 
       const typedProduct = productData as ProductRow;
       setProduct(typedProduct);
+      setFailedImageUrls([]);
       setSelectedQuantity((current) => {
         const maxQuantity = typedProduct.stock_quantity > 0 ? typedProduct.stock_quantity : 1;
         return Math.min(Math.max(current, 1), maxQuantity);
       });
-      const gallery =
-        (typedProduct.image_urls ?? []).filter(Boolean).length > 0
-          ? (typedProduct.image_urls ?? []).filter(Boolean)
-          : typedProduct.primary_image_url
-            ? [typedProduct.primary_image_url]
-            : [];
+      const gallery = buildProductGallery(typedProduct);
       setSelectedImage(gallery[0] || "");
 
       const { data: attributeData } = await supabase
@@ -492,17 +504,27 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
     [product?.price_cents, selectedOptions, selectorGroups],
   );
   const galleryImages = useMemo(() => {
-    const imageUrls = (product?.image_urls ?? []).filter(Boolean);
-    if (imageUrls.length) {
-      return imageUrls;
-    }
-
-    return product?.primary_image_url ? [product.primary_image_url] : [];
-  }, [product?.image_urls, product?.primary_image_url]);
+    const failedImages = new Set(failedImageUrls);
+    return buildProductGallery(product).filter((imageUrl) => !failedImages.has(imageUrl));
+  }, [failedImageUrls, product]);
   const selectedImageIndex = galleryImages.findIndex(
     (imageUrl) => imageUrl === (zoomedImage || selectedImage),
   );
   const maxQuantity = Math.max(product?.stock_quantity ?? 1, 1);
+  const displayImage = selectedImage && galleryImages.includes(selectedImage)
+    ? selectedImage
+    : galleryImages[0] || "";
+
+  useEffect(() => {
+    if (!selectedImage || galleryImages.includes(selectedImage)) return;
+    setSelectedImage(galleryImages[0] || "");
+  }, [galleryImages, selectedImage]);
+
+  const markImageFailed = useCallback((imageUrl: string) => {
+    setFailedImageUrls((current) =>
+      current.includes(imageUrl) ? current : [...current, imageUrl],
+    );
+  }, []);
 
   const showPreviousImage = useCallback(() => {
     if (galleryImages.length <= 1) return;
@@ -591,14 +613,15 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
           <div className="grid gap-6 lg:grid-cols-[1.02fr_0.98fr]">
             <div className="overflow-hidden rounded-[2rem] border border-[#e5e8ee] bg-white shadow-[0_20px_60px_rgba(27,42,74,0.06)]">
               <div className="relative aspect-[1.04/1] bg-[linear-gradient(180deg,#fffdfa_0%,#f7f1e7_100%)]">
-                {selectedImage || product.primary_image_url ? (
-                  <button type="button" onClick={() => setZoomedImage(selectedImage || product.primary_image_url || "")} className="relative h-full w-full">
+                {displayImage ? (
+                  <button type="button" onClick={() => setZoomedImage(displayImage)} className="relative h-full w-full">
                     <Image
-                      src={selectedImage || product.primary_image_url || ""}
+                      src={displayImage}
                       alt={translation?.name || product.slug}
                       fill
                       sizes="(min-width: 1024px) 50vw, 100vw"
                       className="object-cover"
+                      onError={() => markImageFailed(displayImage)}
                     />
                   </button>
                 ) : (
@@ -620,6 +643,7 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
                         width={320}
                         height={80}
                         className="h-20 w-full object-cover"
+                        onError={() => markImageFailed(imageUrl)}
                       />
                     </button>
                   ))}
@@ -887,6 +911,10 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
             height={1600}
             className="max-h-[88vh] max-w-[92vw] rounded-2xl object-contain"
             onClick={(event) => event.stopPropagation()}
+            onError={() => {
+              markImageFailed(zoomedImage);
+              setZoomedImage("");
+            }}
           />
           {galleryImages.length > 1 ? (
             <button

@@ -426,13 +426,16 @@ export default function AdminLoginPage() {
       });
 
       if (error) {
-        setAuthError(error.message || t.authErrorFallback);
+        setAuthError(translateAuthError(error.message, locale) || t.authErrorFallback);
         return;
       }
 
       await prepareMfaStep();
-    } catch {
-      setAuthError(t.authErrorFallback);
+    } catch (error) {
+      setAuthError(
+        translateAuthError(error instanceof Error ? error.message : "", locale) ||
+          t.authErrorFallback,
+      );
     } finally {
       setSubmitting(false);
     }

@@ -1,7 +1,13 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { defaultLocale, getLocaleFromPathname, isLocale, localizePathname, stripLocalePrefix } from "@/i18n/config";
 
-const PUBLIC_FILE = /\.(?:avif|css|eot|gif|ico|jpeg|jpg|js|json|map|pdf|png|svg|ttf|txt|webp|woff|woff2|xml)$/i;
+const PUBLIC_FILE = /\.(?:avif|css|eot|gif|ico|jpeg|jpg|js|json|map|pdf|png|svg|ttf|txt|webmanifest|webp|woff|woff2|xml)$/i;
+const LOCALIZED_PUBLIC_FILES = new Set([
+  "/apple-icon.png",
+  "/brand-icon.png",
+  "/icon.png",
+  "/site.webmanifest",
+]);
 const LOCALE_HEADER = "x-mdb-locale";
 const REWRITTEN_PREFIXES = new Set([
   "account",
@@ -26,19 +32,33 @@ const REWRITTEN_PREFIXES = new Set([
   "terms",
 ]);
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
 
   if (
     pathname.startsWith("/api") ||
     pathname.startsWith("/_next") ||
-    pathname.startsWith("/favicon.ico") ||
-    PUBLIC_FILE.test(pathname)
+    pathname.startsWith("/favicon.ico")
   ) {
     return NextResponse.next();
   }
 
   const localeFromPath = getLocaleFromPathname(pathname);
+  const strippedPathname = localeFromPath ? stripLocalePrefix(pathname) : pathname;
+
+  if (
+    localeFromPath &&
+    (LOCALIZED_PUBLIC_FILES.has(strippedPathname) || strippedPathname.startsWith("/icons/"))
+  ) {
+    const rewriteUrl = request.nextUrl.clone();
+    rewriteUrl.pathname = strippedPathname;
+    rewriteUrl.search = search;
+    return NextResponse.rewrite(rewriteUrl);
+  }
+
+  if (PUBLIC_FILE.test(pathname)) {
+    return NextResponse.next();
+  }
 
   if (!localeFromPath) {
     const cookieLocale = request.cookies.get("mdb-light-locale")?.value;
@@ -52,7 +72,6 @@ export function middleware(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set(LOCALE_HEADER, localeFromPath);
 
-  const strippedPathname = stripLocalePrefix(pathname);
   const firstSegment = strippedPathname.split("/").filter(Boolean)[0] || "";
   const shouldRewrite = REWRITTEN_PREFIXES.has(firstSegment);
 

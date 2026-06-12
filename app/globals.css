@@ -55,12 +55,26 @@ body::selection {
 
 a,
 button {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
   transition:
     color 180ms ease,
     background-color 180ms ease,
     border-color 180ms ease,
-    transform 180ms ease,
+    box-shadow 180ms ease,
     opacity 180ms ease;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  a,
+  button {
+    transition-duration: 140ms;
+  }
+
+  a:hover,
+  button:hover {
+    transform: none !important;
+  }
 }
 
 .grain {

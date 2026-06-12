@@ -8,6 +8,7 @@ type MobileScrollHeaderProps = {
 
 export function MobileScrollHeader({ children }: MobileScrollHeaderProps) {
   const lastScrollYRef = useRef(0);
+  const keepVisibleUntilRef = useRef(0);
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
@@ -16,6 +17,13 @@ export function MobileScrollHeader({ children }: MobileScrollHeaderProps) {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
       const delta = currentScrollY - lastScrollYRef.current;
+      const shouldKeepVisible = window.performance.now() < keepVisibleUntilRef.current;
+
+      if (shouldKeepVisible) {
+        setIsVisible(true);
+        lastScrollYRef.current = currentScrollY;
+        return;
+      }
 
       if (currentScrollY <= 24 || delta < -4) {
         setIsVisible(true);
@@ -35,6 +43,10 @@ export function MobileScrollHeader({ children }: MobileScrollHeaderProps) {
 
   return (
     <div
+      onPointerDownCapture={() => {
+        keepVisibleUntilRef.current = window.performance.now() + 700;
+        setIsVisible(true);
+      }}
       className={`sticky z-50 transform transition-transform duration-300 ease-out will-change-transform ${
         isVisible ? "translate-y-0" : "-translate-y-[calc(100%+0.75rem)]"
       }`}

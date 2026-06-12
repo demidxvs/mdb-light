@@ -6,8 +6,10 @@ import { defaultLocale, isLocale } from "@/i18n/config";
 import { getMessages } from "@/i18n/messages";
 import "./globals.css";
 
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.mdblight.com").replace(/\/+$/, "");
+
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://www.mdblight.com"),
+  metadataBase: new URL(siteUrl),
   title: {
     default: "MDB Light (MDB) - LED Lighting in Riga, Latvia & Cyprus",
     template: "%s | MDB Light",

@@ -26,7 +26,7 @@ export function SiteHeader({ topLabel }: SiteHeaderProps) {
 
       <MobileScrollHeader>
         <header className="border-b border-[color:var(--line)] bg-white/92 backdrop-blur-xl">
-          <div className="mx-auto hidden max-w-[1180px] items-center justify-between gap-8 px-6 py-4 lg:flex lg:px-10 xl:px-12">
+          <div className="mx-auto hidden max-w-[1180px] items-center justify-between gap-4 px-5 py-3 min-[920px]:flex lg:gap-8 lg:px-10 lg:py-4 xl:px-12">
             <Link href="/" className="flex shrink-0 items-center">
               <Image
                 src="/logo/mdb-light-logo.svg"
@@ -34,7 +34,7 @@ export function SiteHeader({ topLabel }: SiteHeaderProps) {
                 width={1080}
                 height={182}
                 priority
-                className="h-16 w-auto object-contain xl:h-[4.5rem]"
+                className="h-11 w-auto object-contain lg:h-16 xl:h-[4.5rem]"
               />
             </Link>
             <div className="ml-auto">
@@ -46,7 +46,7 @@ export function SiteHeader({ topLabel }: SiteHeaderProps) {
             </div>
           </div>
 
-          <div className="lg:hidden">
+          <div className="min-[920px]:hidden">
             <div className="border-t border-[color:var(--line)] px-5 py-2.5">
               <Link href="/" className="flex items-center justify-center">
                 <Image

@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { ArrowLeft, ChevronLeft, ChevronRight, Minus, Plus, ShoppingCart, X } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ArrowLeft, Check, ChevronLeft, ChevronRight, Minus, Plus, ShoppingCart, X } from "lucide-react";
 import { useLocale } from "@/components/ui/locale-provider";
 import { CatalogProductCard } from "@/components/ui/catalog-product-card";
 import { SiteFooter } from "@/components/ui/site-footer";
@@ -94,10 +94,10 @@ function getAttributeName(attribute: NonNullable<ProductAttributeRow["attributes
 }
 
 const copy = {
-  en: { top: "Multilingual LED marketplace", loading: "Loading product...", backCatalog: "Back to catalog", addToCart: "Add to cart", addingToCart: "Adding...", quantity: "Quantity", maxStock: "You cannot add more than the available stock.", sku: "SKU", category: "Category", attributes: "Attributes", colors: "Available colors", selectedColor: "Selected color", lengths: "Available lengths", selectedLength: "Selected length", materials: "Available materials", selectedMaterial: "Selected material", imagePlaceholder: "Add product photo in admin", stockLow: "Low stock left", outOfStock: "Out of stock", included: "Included", notIncluded: "Not included", addError: "Could not add product to cart.", relatedTitle: "Similar products", relatedText: "A few more products from the same category." },
-  ru: { top: "Мультиязычный LED marketplace", loading: "Загружаю товар...", backCatalog: "Назад в каталог", addToCart: "В корзину", addingToCart: "Добавляю...", quantity: "Количество", maxStock: "Нельзя добавить больше доступного остатка.", sku: "SKU", category: "Категория", attributes: "Характеристики", colors: "Доступные цвета", selectedColor: "Выбранный цвет", lengths: "Доступная длина", selectedLength: "Выбранная длина", materials: "Доступные материалы", selectedMaterial: "Выбранный материал", imagePlaceholder: "Добавьте фото товара в админке", stockLow: "Осталось мало", outOfStock: "Нету в наличии", included: "Идет в комплект", notIncluded: "Не идет в комплект", addError: "Не удалось добавить товар в корзину.", relatedTitle: "Похожие товары", relatedText: "Ещё несколько товаров из этой же категории." },
-  el: { top: "Πολυγλωσσικό LED marketplace", loading: "Φόρτωση προϊόντος...", backCatalog: "Πίσω στον κατάλογο", addToCart: "Προσθήκη στο καλάθι", addingToCart: "Προσθήκη...", quantity: "Ποσότητα", maxStock: "Δεν μπορείτε να προσθέσετε ποσότητα μεγαλύτερη από το διαθέσιμο απόθεμα.", sku: "SKU", category: "Κατηγορία", attributes: "Χαρακτηριστικά", colors: "Διαθέσιμα χρώματα", selectedColor: "Επιλεγμένο χρώμα", lengths: "Διαθέσιμα μήκη", selectedLength: "Επιλεγμένο μήκος", materials: "Διαθέσιμα υλικά", selectedMaterial: "Επιλεγμένο υλικό", imagePlaceholder: "Προσθέστε φωτογραφία προϊόντος στο admin", stockLow: "Μένουν λίγα", outOfStock: "Εξαντλημένο", included: "Περιλαμβάνεται", notIncluded: "Δεν περιλαμβάνεται", addError: "Δεν ήταν δυνατή η προσθήκη στο καλάθι.", relatedTitle: "Παρόμοια προϊόντα", relatedText: "Μερικά ακόμη προϊόντα από την ίδια κατηγορία." },
-  lv: { top: "Daudzvalodu LED marketplace", loading: "Ielādē produktu...", backCatalog: "Atpakaļ uz katalogu", addToCart: "Pievienot grozam", addingToCart: "Pievieno...", quantity: "Daudzums", maxStock: "Nevar pievienot vairāk par pieejamo atlikumu.", sku: "SKU", category: "Kategorija", attributes: "Raksturlielumi", colors: "Pieejamās krāsas", selectedColor: "Izvēlētā krāsa", lengths: "Pieejamie garumi", selectedLength: "Izvēlētais garums", materials: "Pieejamie materiāli", selectedMaterial: "Izvēlētais materiāls", imagePlaceholder: "Pievienojiet produkta foto admin panelī", stockLow: "Atlicis maz", outOfStock: "Nav noliktavā", included: "Iekļauts komplektā", notIncluded: "Nav iekļauts", addError: "Neizdevās pievienot produktu grozam.", relatedTitle: "Līdzīgi produkti", relatedText: "Vēl daži produkti no šīs pašas kategorijas." },
+  en: { top: "Multilingual LED marketplace", loading: "Loading product...", backCatalog: "Back to catalog", addToCart: "Add to cart", addedToCart: "Added", quantity: "Quantity", maxStock: "You cannot add more than the available stock.", sku: "SKU", category: "Category", attributes: "Attributes", colors: "Available colors", selectedColor: "Selected color", lengths: "Available lengths", selectedLength: "Selected length", materials: "Available materials", selectedMaterial: "Selected material", imagePlaceholder: "Add product photo in admin", stockLow: "Low stock left", outOfStock: "Out of stock", included: "Included", notIncluded: "Not included", addError: "Could not add product to cart.", relatedTitle: "Similar products", relatedText: "A few more products from the same category." },
+  ru: { top: "Мультиязычный LED marketplace", loading: "Загружаю товар...", backCatalog: "Назад в каталог", addToCart: "В корзину", addedToCart: "Добавлено", quantity: "Количество", maxStock: "Нельзя добавить больше доступного остатка.", sku: "SKU", category: "Категория", attributes: "Характеристики", colors: "Доступные цвета", selectedColor: "Выбранный цвет", lengths: "Доступная длина", selectedLength: "Выбранная длина", materials: "Доступные материалы", selectedMaterial: "Выбранный материал", imagePlaceholder: "Добавьте фото товара в админке", stockLow: "Осталось мало", outOfStock: "Нету в наличии", included: "Идет в комплект", notIncluded: "Не идет в комплект", addError: "Не удалось добавить товар в корзину.", relatedTitle: "Похожие товары", relatedText: "Ещё несколько товаров из этой же категории." },
+  el: { top: "Πολυγλωσσικό LED marketplace", loading: "Φόρτωση προϊόντος...", backCatalog: "Πίσω στον κατάλογο", addToCart: "Προσθήκη στο καλάθι", addedToCart: "Προστέθηκε", quantity: "Ποσότητα", maxStock: "Δεν μπορείτε να προσθέσετε ποσότητα μεγαλύτερη από το διαθέσιμο απόθεμα.", sku: "SKU", category: "Κατηγορία", attributes: "Χαρακτηριστικά", colors: "Διαθέσιμα χρώματα", selectedColor: "Επιλεγμένο χρώμα", lengths: "Διαθέσιμα μήκη", selectedLength: "Επιλεγμένο μήκος", materials: "Διαθέσιμα υλικά", selectedMaterial: "Επιλεγμένο υλικό", imagePlaceholder: "Προσθέστε φωτογραφία προϊόντος στο admin", stockLow: "Μένουν λίγα", outOfStock: "Εξαντλημένο", included: "Περιλαμβάνεται", notIncluded: "Δεν περιλαμβάνεται", addError: "Δεν ήταν δυνατή η προσθήκη στο καλάθι.", relatedTitle: "Παρόμοια προϊόντα", relatedText: "Μερικά ακόμη προϊόντα από την ίδια κατηγορία." },
+  lv: { top: "Daudzvalodu LED marketplace", loading: "Ielādē produktu...", backCatalog: "Atpakaļ uz katalogu", addToCart: "Pievienot grozam", addedToCart: "Pievienots", quantity: "Daudzums", maxStock: "Nevar pievienot vairāk par pieejamo atlikumu.", sku: "SKU", category: "Kategorija", attributes: "Raksturlielumi", colors: "Pieejamās krāsas", selectedColor: "Izvēlētā krāsa", lengths: "Pieejamie garumi", selectedLength: "Izvēlētais garums", materials: "Pieejamie materiāli", selectedMaterial: "Izvēlētais materiāls", imagePlaceholder: "Pievienojiet produkta foto admin panelī", stockLow: "Atlicis maz", outOfStock: "Nav noliktavā", included: "Iekļauts komplektā", notIncluded: "Nav iekļauts", addError: "Neizdevās pievienot produktu grozam.", relatedTitle: "Līdzīgi produkti", relatedText: "Vēl daži produkti no šīs pašas kategorijas." },
 } as const;
 
 function getAttributeValue(
@@ -259,6 +259,7 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
   const [category, setCategory] = useState<CategoryRow | null>(null);
   const [attributes, setAttributes] = useState<ProductAttributeRow[]>([]);
   const [addingToCart, setAddingToCart] = useState(false);
+  const [cartButtonState, setCartButtonState] = useState<"idle" | "added">("idle");
   const [cartError, setCartError] = useState("");
   const [selectedImage, setSelectedImage] = useState("");
   const [zoomedImage, setZoomedImage] = useState("");
@@ -269,6 +270,7 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
   const [selectedQuantity, setSelectedQuantity] = useState(1);
   const [relatedProducts, setRelatedProducts] = useState<RelatedProductRow[]>([]);
   const [failedImageUrls, setFailedImageUrls] = useState<string[]>([]);
+  const cartStateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -280,6 +282,14 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
       mounted = false;
     };
   }, [params]);
+
+  useEffect(() => {
+    return () => {
+      if (cartStateTimeoutRef.current) {
+        clearTimeout(cartStateTimeoutRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (!supabaseReady || !slug) return;
@@ -576,6 +586,7 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
     }
 
     setCartError("");
+    setCartButtonState("idle");
     setAddingToCart(true);
 
     try {
@@ -596,8 +607,17 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
         currency: product.currency || "EUR",
         quantity: selectedQuantity,
       });
+      setCartButtonState("added");
+      if (cartStateTimeoutRef.current) {
+        clearTimeout(cartStateTimeoutRef.current);
+      }
+      cartStateTimeoutRef.current = setTimeout(() => {
+        setCartButtonState("idle");
+        cartStateTimeoutRef.current = null;
+      }, 1200);
     } catch {
       setCartError(t.addError);
+      setCartButtonState("idle");
     } finally {
       setAddingToCart(false);
     }
@@ -610,7 +630,7 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
         {loading || !product ? (
           <div className="rounded-[2rem] border border-[#e5e8ee] bg-white px-6 py-12 text-sm text-[color:var(--muted)] shadow-[0_20px_60px_rgba(27,42,74,0.06)]">{t.loading}</div>
         ) : (
-          <div className="grid gap-6 lg:grid-cols-[1.02fr_0.98fr]">
+          <div className="grid gap-6 min-[920px]:grid-cols-[1.02fr_0.98fr]">
             <div className="overflow-hidden rounded-[2rem] border border-[#e5e8ee] bg-white shadow-[0_20px_60px_rgba(27,42,74,0.06)]">
               <div className="relative aspect-[1.04/1] bg-[linear-gradient(180deg,#fffdfa_0%,#f7f1e7_100%)]">
                 {displayImage ? (
@@ -656,19 +676,19 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
                 <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[color:var(--accent)]">{categoryName || t.category}</p>
                 <h1 className="mt-3 font-display text-3xl font-semibold tracking-[-0.05em] text-[color:var(--headline)] sm:text-4xl">{translation?.name || product.slug}</h1>
               </div>
-              <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end">
-                <div className="min-w-0">
+              <div className="mt-8 grid gap-4 md:grid-cols-[minmax(160px,1fr)_auto] md:items-end xl:grid-cols-[minmax(160px,1fr)_auto_minmax(180px,auto)]">
+                <div className="min-w-0 md:col-span-2 xl:col-span-1">
                   <p className="font-display text-3xl font-semibold tracking-[-0.05em] text-[color:var(--headline)] sm:text-4xl">{new Intl.NumberFormat("en-US", { style: "currency", currency: product.currency || "EUR" }).format(adjustedPriceCents / 100)}</p>
                   {stockStatus ? <p className={`mt-3 text-sm font-medium ${product.stock_quantity === 0 ? "text-red-600" : "text-amber-600"}`}>{stockStatus}</p> : null}
                 </div>
-                <label className="flex flex-col gap-2">
+                <label className="flex min-w-[176px] flex-col gap-2">
                   <span className="text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--accent)]">{t.quantity}</span>
-                  <span className="inline-flex h-14 items-center overflow-hidden rounded-xl border border-[#ece3d9] bg-[#fffcf7]">
+                  <span className="grid h-14 grid-cols-[3.25rem_minmax(4rem,1fr)_3.25rem] overflow-hidden rounded-xl border border-[#ece3d9] bg-[#fffcf7]">
                     <button
                       type="button"
                       onClick={() => setSelectedQuantity((current) => Math.max(1, current - 1))}
                       disabled={selectedQuantity <= 1}
-                      className="inline-flex h-full w-12 items-center justify-center text-[color:var(--headline)] transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-40"
+                      className="inline-flex h-full w-full items-center justify-center text-[color:var(--headline)] transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-40"
                       aria-label={`${t.quantity} -`}
                     >
                       <Minus className="h-4 w-4" />
@@ -686,21 +706,32 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
                         }
                         setSelectedQuantity(Math.min(Math.max(nextValue, 1), maxQuantity));
                       }}
-                      className="h-full w-16 border-x border-[#ece3d9] bg-transparent text-center text-base font-semibold text-[color:var(--headline)] outline-none"
+                      className="h-full w-full min-w-0 border-x border-[#ece3d9] bg-transparent text-center text-base font-semibold text-[color:var(--headline)] outline-none"
                       inputMode="numeric"
                     />
                     <button
                       type="button"
                       onClick={() => setSelectedQuantity((current) => Math.min(maxQuantity, current + 1))}
                       disabled={selectedQuantity >= maxQuantity}
-                      className="inline-flex h-full w-12 items-center justify-center text-[color:var(--headline)] transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-40"
+                      className="inline-flex h-full w-full items-center justify-center text-[color:var(--headline)] transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-40"
                       aria-label={`${t.quantity} +`}
                     >
                       <Plus className="h-4 w-4" />
                     </button>
                   </span>
                 </label>
-                <button type="button" onClick={() => void handleAddToCart()} disabled={product.stock_quantity === 0 || addingToCart} className="inline-flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-[color:var(--accent)] px-6 text-sm font-semibold text-[#203153] shadow-[0_14px_30px_rgba(244,198,79,0.28)] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"><ShoppingCart className="h-4 w-4" />{addingToCart ? t.addingToCart : t.addToCart}</button>
+                <button
+                  type="button"
+                  onClick={() => void handleAddToCart()}
+                  disabled={product.stock_quantity === 0 || addingToCart}
+                  aria-busy={addingToCart}
+                  className="inline-flex h-14 w-full min-w-[180px] items-center justify-center gap-2 rounded-xl bg-[color:var(--accent)] px-6 text-sm font-semibold text-[#203153] shadow-[0_14px_30px_rgba(244,198,79,0.28)] disabled:cursor-not-allowed disabled:opacity-70 md:w-auto"
+                >
+                  {cartButtonState === "added" ? <Check className="h-4 w-4" /> : <ShoppingCart className="h-4 w-4" />}
+                  <span className="min-w-[7.5rem] text-center">
+                    {cartButtonState === "added" ? t.addedToCart : t.addToCart}
+                  </span>
+                </button>
               </div>
               {cartError ? <p className="mt-3 text-sm font-medium text-red-600">{cartError}</p> : null}
               <div className="mt-8 grid gap-3 rounded-[1.5rem] border border-[#ece3d9] bg-[#fffcf7] p-5 text-sm text-[color:var(--headline)]">

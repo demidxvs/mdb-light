@@ -99,6 +99,9 @@ const copy = {
     error: "Could not create the order.",
     empty: "Your cart is empty.",
     required: "Please fill in all required fields.",
+    acceptDeliveryTerms: "I have read and agree to the delivery and returns terms.",
+    deliveryTermsLink: "Open delivery and returns terms",
+    deliveryTermsRequired: "Please accept the delivery and returns terms.",
     invalidEmail: "Please enter a valid email address.",
     passwordShort: "Password must be at least 8 characters.",
     passwordMismatch: "Passwords do not match.",
@@ -142,6 +145,9 @@ const copy = {
     error: "Не удалось создать заказ.",
     empty: "Корзина пуста.",
     required: "Заполните все обязательные поля.",
+    acceptDeliveryTerms: "Я прочитал(а) и принимаю условия доставки и возврата.",
+    deliveryTermsLink: "Открыть условия доставки и возврата",
+    deliveryTermsRequired: "Подтвердите согласие с условиями доставки и возврата.",
     invalidEmail: "Введите корректный email.",
     passwordShort: "Пароль должен содержать минимум 8 символов.",
     passwordMismatch: "Пароли не совпадают.",
@@ -185,6 +191,9 @@ const copy = {
     error: "Δεν ήταν δυνατή η δημιουργία της παραγγελίας.",
     empty: "Το καλάθι είναι άδειο.",
     required: "Συμπληρώστε όλα τα υποχρεωτικά πεδία.",
+    acceptDeliveryTerms: "Έχω διαβάσει και αποδέχομαι τους όρους παράδοσης και επιστροφών.",
+    deliveryTermsLink: "Άνοιγμα όρων παράδοσης και επιστροφών",
+    deliveryTermsRequired: "Αποδεχθείτε τους όρους παράδοσης και επιστροφών.",
     invalidEmail: "Συμπληρώστε έγκυρο email.",
     passwordShort: "Ο κωδικός πρέπει να έχει τουλάχιστον 8 χαρακτήρες.",
     passwordMismatch: "Οι κωδικοί δεν ταιριάζουν.",
@@ -228,6 +237,9 @@ const copy = {
     error: "Neizdevās izveidot pasūtījumu.",
     empty: "Grozs ir tukšs.",
     required: "Aizpildiet visus obligātos laukus.",
+    acceptDeliveryTerms: "Esmu izlasījis un piekrītu piegādes un atgriešanas nosacījumiem.",
+    deliveryTermsLink: "Atvērt piegādes un atgriešanas nosacījumus",
+    deliveryTermsRequired: "Apstipriniet piegādes un atgriešanas nosacījumus.",
     invalidEmail: "Ievadiet korektu email adresi.",
     passwordShort: "Parolei jābūt vismaz 8 simbolus garai.",
     passwordMismatch: "Paroles nesakrīt.",
@@ -267,6 +279,7 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState<OrderPaymentMethod>("stripe");
   const [createAccount, setCreateAccount] = useState(false);
   const [form, setForm] = useState<CheckoutFormState>(buildInitialFormState);
+  const [acceptedDeliveryTerms, setAcceptedDeliveryTerms] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [promoInput, setPromoInput] = useState("");
@@ -428,6 +441,10 @@ export default function CheckoutPage() {
 
     if (!emailRegex.test(form.email.trim())) {
       return t.invalidEmail;
+    }
+
+    if (!acceptedDeliveryTerms) {
+      return t.deliveryTermsRequired;
     }
 
     if (!userId && createAccount) {
@@ -608,13 +625,39 @@ export default function CheckoutPage() {
           <p className="mt-8 rounded-2xl border border-[#ece3d9] bg-white px-4 py-4 text-sm leading-6 text-[color:var(--muted)]">
             {deliveryCopy.cartCheckout}
           </p>
+          <div className="mt-4 rounded-2xl border border-[#ece3d9] bg-white px-4 py-4">
+            <label className="flex items-start gap-3 text-sm leading-6 text-[color:var(--headline)]">
+              <input
+                type="checkbox"
+                checked={acceptedDeliveryTerms}
+                onChange={(event) => {
+                  setAcceptedDeliveryTerms(event.target.checked);
+                  if (event.target.checked && error === t.deliveryTermsRequired) {
+                    setError("");
+                  }
+                }}
+                className="mt-1 h-4 w-4 shrink-0 accent-[color:var(--accent)]"
+              />
+              <span>
+                {t.acceptDeliveryTerms}{" "}
+                <Link
+                  href={localizePathname("/delivery", locale)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-[color:var(--headline)] underline decoration-[#d7c8b5] underline-offset-4"
+                >
+                  {t.deliveryTermsLink}
+                </Link>
+              </span>
+            </label>
+          </div>
           {error ? (
             <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
           ) : null}
           <button
             type="button"
             onClick={() => void handleSubmit()}
-            disabled={submitting}
+            disabled={submitting || !acceptedDeliveryTerms}
             className="mt-8 inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[color:var(--accent)] px-6 text-sm font-medium text-[#203153] shadow-[0_14px_30px_rgba(244,198,79,0.28)] transition hover:bg-[#efbf3e] disabled:cursor-not-allowed disabled:opacity-70"
           >
             {submitting ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}

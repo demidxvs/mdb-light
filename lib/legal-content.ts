@@ -38,7 +38,7 @@ export const legalPageLabels: Record<Locale, Record<LegalPageKey, string>> = {
   lv: {
     privacy: "Privatuma politika",
     cookies: "Sikdatnu politika",
-    delivery: "Piegade / atgriesana",
+    delivery: "Piegāde / atgriešana",
     terms: "Lietošanas noteikumi",
   },
   el: {
@@ -130,27 +130,38 @@ const content: Record<Locale, Record<LegalPageKey, LegalPageContent>> = {
       title: "Delivery / Returns",
       description: "Delivery coverage, timelines, returns and refund conditions for MDB Light orders.",
       updatedLabel: "Last updated",
-      updatedAt: "April 2026",
+      updatedAt: "June 2026",
       sections: [
         {
-          title: "Delivery",
+          title: "Delivery time and methods",
           body: [
-            "Delivery availability depends on stock, order volume, destination and product category. Project quotations may include separate lead times for supply and installation.",
-            "We confirm estimated dispatch and delivery windows after order review or quotation approval.",
+            "Standard delivery is estimated at 3 to 14 calendar days after payment confirmation or order confirmation, depending on stock, order volume, destination and product category.",
+            "Parcel locker delivery is available for eligible goods. Home delivery applies to larger or higher-risk products and to mixed carts where at least one item requires home delivery.",
+            "If a different delivery period applies to a project order, custom supply, installation service or out-of-stock product, we confirm it before processing the order.",
           ],
         },
         {
-          title: "Returns",
+          title: "14-day withdrawal for distance purchases",
           body: [
-            "Customers should contact MDB Light before returning goods. Unused standard products may be eligible for return according to applicable consumer law and product condition.",
-            "Custom-made, project-specific, installed or damaged goods may not be returnable unless required by law.",
+            "For online distance purchases, consumers may withdraw from the contract within 14 days from the day the goods are received, without giving a reason.",
+            "To start a return, contact MDB Light at info@mdblight.com before sending the goods back. The returned product must be complete, safely packed and without damage, scratches, installation marks or use beyond what is necessary to inspect the product.",
+            "If the product value is reduced because it was handled more than necessary for inspection, we may deduct the loss in value from the refund where allowed by law.",
           ],
         },
         {
-          title: "Refunds",
+          title: "Return costs and refunds",
           body: [
-            "Approved refunds are processed to the original payment method after returned goods are inspected.",
-            "Shipping, handling or installation costs may be non-refundable where permitted by law and clearly agreed in advance.",
+            "For withdrawal returns, the customer pays the return shipping cost unless MDB Light has agreed to cover it. Original standard delivery costs are refunded where required by applicable consumer law.",
+            "Refunds are made to the original payment method within the legal deadline after we receive the withdrawal notice, but we may wait until the goods are returned or proof of return is provided.",
+            "Goods made to the customer's specifications, clearly personalised goods, installed goods and project-specific supply may be excluded from the 14-day withdrawal right unless the product is defective.",
+          ],
+        },
+        {
+          title: "Defective or damaged goods",
+          body: [
+            "If goods arrive damaged, incomplete or defective, contact us as soon as possible and keep photos, packaging and the order confirmation.",
+            "Defective goods are handled under the EU and Latvian legal guarantee rules. Depending on the situation, the remedy may be repair, replacement, price reduction or refund.",
+            "The return cost for defective goods is covered by the trader where required by law.",
           ],
         },
       ],
@@ -173,6 +184,13 @@ const content: Record<Locale, Record<LegalPageKey, LegalPageContent>> = {
           body: [
             "We aim to keep pricing, availability and specifications current, but project pricing and installation terms may require separate confirmation.",
             "Images, descriptions and translations are provided for convenience and may be updated without notice.",
+          ],
+        },
+        {
+          title: "Delivery, returns and legal guarantee",
+          body: [
+            "By placing an order, you accept the delivery and returns terms published on the Delivery / Returns page.",
+            "These terms do not limit mandatory consumer rights under Latvian or EU consumer protection law.",
           ],
         },
         {
@@ -255,27 +273,38 @@ const content: Record<Locale, Record<LegalPageKey, LegalPageContent>> = {
       title: "Доставка и возврат",
       description: "Условия доставки, возврата и возврата средств для заказов MDB Light.",
       updatedLabel: "Последнее обновление",
-      updatedAt: "Апрель 2026",
+      updatedAt: "Июнь 2026",
       sections: [
         {
-          title: "Доставка",
+          title: "Сроки и способы доставки",
           body: [
-            "Возможность и сроки доставки зависят от наличия товара, объёма заказа, региона и категории продукции. Для проектных поставок сроки могут подтверждаться отдельно.",
-            "Ориентировочные сроки отгрузки и доставки подтверждаются после проверки заказа или согласования предложения.",
+            "Стандартный ориентировочный срок доставки составляет от 3 до 14 календарных дней после подтверждения оплаты или подтверждения заказа. Срок зависит от наличия товара, объёма заказа, адреса доставки и категории продукции.",
+            "Доставка в пакомат доступна для подходящих товаров. Доставка на дом применяется для более крупных или чувствительных товаров, а также для смешанной корзины, если хотя бы один товар требует доставки на дом.",
+            "Если для проектного заказа, индивидуальной поставки, монтажа или отсутствующего на складе товара нужен другой срок, мы подтверждаем его до обработки заказа.",
           ],
         },
         {
-          title: "Возврат",
+          title: "14-дневное право отказа при онлайн-покупке",
           body: [
-            "Перед возвратом товара необходимо связаться с MDB Light. Неиспользованные стандартные товары могут подпадать под возврат в рамках закона о защите прав потребителей и состояния товара.",
-            "Индивидуальные, проектные, смонтированные или повреждённые товары могут не подлежать возврату, если иное не требуется законом.",
+            "При дистанционной онлайн-покупке потребитель может отказаться от договора в течение 14 дней со дня получения товара без указания причины.",
+            "Для начала возврата свяжитесь с MDB Light по адресу info@mdblight.com до отправки товара. Товар должен быть полным, безопасно упакованным, без повреждений, царапин, следов монтажа или использования сверх проверки товара.",
+            "Если стоимость товара снижена из-за обращения с ним сверх необходимой проверки, мы можем удержать соответствующее уменьшение стоимости в пределах, разрешённых законом.",
           ],
         },
         {
-          title: "Возврат средств",
+          title: "Стоимость возврата и возврат средств",
           body: [
-            "После одобрения и проверки возвращённого товара возврат средств производится на исходный способ оплаты.",
-            "Стоимость доставки, обработки и монтажа может не возвращаться в пределах, допускаемых законом и заранее согласованных условий.",
+            "При возврате по праву отказа клиент оплачивает обратную доставку, если MDB Light отдельно не согласовал оплатить её. Стоимость стандартной первоначальной доставки возвращается в случаях, предусмотренных законом о защите прав потребителей.",
+            "Возврат средств производится на исходный способ оплаты в установленный законом срок после получения заявления об отказе, однако мы можем ожидать возврата товара или подтверждения его отправки.",
+            "Товары, изготовленные по индивидуальным параметрам клиента, явно персонализированные товары, смонтированные товары и проектные поставки могут быть исключены из 14-дневного права отказа, если товар не является дефектным.",
+          ],
+        },
+        {
+          title: "Брак или повреждение товара",
+          body: [
+            "Если товар получен повреждённым, неполным или с дефектом, свяжитесь с нами как можно быстрее и сохраните фотографии, упаковку и подтверждение заказа.",
+            "Дефектные товары рассматриваются по правилам законной гарантии ЕС и Латвии. В зависимости от ситуации возможны ремонт, замена, уменьшение цены или возврат средств.",
+            "Расходы на возврат дефектного товара покрывает продавец в случаях, предусмотренных законом.",
           ],
         },
       ],
@@ -301,6 +330,13 @@ const content: Record<Locale, Record<LegalPageKey, LegalPageContent>> = {
           ],
         },
         {
+          title: "Доставка, возврат и законная гарантия",
+          body: [
+            "Оформляя заказ, вы принимаете условия доставки и возврата, опубликованные на странице Доставка и возврат.",
+            "Эти условия не ограничивают обязательные права потребителя по законодательству Латвии и ЕС.",
+          ],
+        },
+        {
           title: "Аккаунты и коммуникация",
           body: [
             "Вы отвечаете за сохранность своих данных входа и действия, выполняемые через ваш аккаунт.",
@@ -313,9 +349,9 @@ const content: Record<Locale, Record<LegalPageKey, LegalPageContent>> = {
   lv: {
     privacy: {
       title: "Privatuma politika",
-      description: "Mes cienam jusu privatumu un apnemamies aizsargat jusu personas datus.",
-      updatedLabel: "Pedejais atjauninajums",
-      updatedAt: "06.04.2026",
+      description: "Kā MDB Light apkopo, glabā un izmanto personas datus ES.",
+      updatedLabel: "Pēdējoreiz atjaunināts",
+      updatedAt: "Aprīlis 2026",
       sections: [
         {
           title: "1. Kadu informaciju mes vacam",
@@ -398,49 +434,41 @@ const content: Record<Locale, Record<LegalPageKey, LegalPageContent>> = {
       ],
     },
     delivery: {
-      title: "Piegade un atgriesana",
-      description: "Informacija par piegadi, apmaksu un atgriesanu.",
-      updatedLabel: "Pedejais atjauninajums",
-      updatedAt: "06.04.2026",
+      title: "Piegāde un atgriešana",
+      description: "MDB Light pasūtījumu piegādes termiņi, atgriešana un atmaksas nosacījumi.",
+      updatedLabel: "Pēdējoreiz atjaunināts",
+      updatedAt: "Jūnijs 2026",
       sections: [
         {
-          title: "1. Piegade",
+          title: "Piegādes termiņi un veidi",
           body: [
-            "Mes piegadam pasutijumus Latvija un citas ES valstis.",
-            "Piegades laiks:",
-            "Latvija: 2-5 darba dienas",
-            "ES: 5-10 darba dienas",
-            "Pec pasutijuma veiksanas ar jums sazinasies musu menedzeris, lai precizetu piegades detalas.",
+            "Standarta piegādes aptuvenais termiņš ir no 3 līdz 14 kalendārajām dienām pēc maksājuma vai pasūtījuma apstiprināšanas. Termiņš ir atkarīgs no preces pieejamības, pasūtījuma apjoma, piegādes adreses un preces kategorijas.",
+            "Piegāde uz pakomātu ir pieejama piemērotām precēm. Piegāde uz mājām tiek piemērota lielākiem vai jutīgākiem produktiem, kā arī jauktam grozam, ja vismaz vienai precei nepieciešama piegāde uz mājām.",
+            "Ja projekta pasūtījumam, individuālai piegādei, uzstādīšanai vai noliktavā neesošai precei piemērojams cits termiņš, mēs to apstiprinām pirms pasūtījuma apstrādes.",
           ],
         },
         {
-          title: "2. Piegades izmaksas",
+          title: "14 dienu atteikuma tiesības distances pirkumiem",
           body: [
-            "Piegades izmaksas tiek aprekintas individuali atkariba no pasutijuma.",
+            "Distances pirkumiem internetā patērētājs var atteikties no līguma 14 dienu laikā no preces saņemšanas dienas, nenorādot iemeslu.",
+            "Lai sāktu atgriešanu, pirms preces nosūtīšanas sazinieties ar MDB Light: info@mdblight.com. Precei jābūt pilnā komplektācijā, droši iepakotai, bez bojājumiem, skrāpējumiem, uzstādīšanas pēdām vai lietošanas, kas pārsniedz preces pārbaudi.",
+            "Ja preces vērtība ir samazinājusies tādas rīcības dēļ, kas pārsniedz nepieciešamo pārbaudi, mēs varam ieturēt attiecīgo vērtības samazinājumu, ciktāl to atļauj likums.",
           ],
         },
         {
-          title: "3. Apmaksa",
+          title: "Atgriešanas izmaksas un atmaksa",
           body: [
-            "Apmaksa iespejama:",
-            "Ar bankas parskaitijumu",
-            "Ar karti (Stripe)",
+            "Izmantojot atteikuma tiesības, klients sedz atpakaļnosūtīšanas izmaksas, ja MDB Light nav atsevišķi piekritis tās segt. Sākotnējās standarta piegādes izmaksas tiek atmaksātas gadījumos, ko paredz patērētāju tiesību aizsardzības noteikumi.",
+            "Atmaksa tiek veikta uz sākotnējo maksājuma veidu likumā noteiktajā termiņā pēc atteikuma paziņojuma saņemšanas, tomēr mēs varam sagaidīt preces atgriešanu vai pierādījumu par tās nosūtīšanu.",
+            "Pēc klienta specifikācijas izgatavotas preces, skaidri personalizētas preces, uzstādītas preces un projekta piegādes var nebūt pakļautas 14 dienu atteikuma tiesībām, ja vien prece nav neatbilstoša vai bojāta.",
           ],
         },
         {
-          title: "4. Atgriesana",
+          title: "Neatbilstoša vai bojāta prece",
           body: [
-            "Jums ir tiesibas atgriezt preci 14 dienu laika no sanemsanas dienas.",
-            "Nosacijumi:",
-            "Precei jabut nelietotai",
-            "Originalaja iepakojuma",
-          ],
-        },
-        {
-          title: "5. Bojata prece",
-          body: [
-            "Ja prece ir bojata, ludzu sazinieties ar mums nekavejoties.",
-            `Email: ${companyInfo.email}`,
+            "Ja prece saņemta bojāta, nepilnā komplektācijā vai ar defektu, sazinieties ar mums pēc iespējas ātrāk un saglabājiet fotogrāfijas, iepakojumu un pasūtījuma apstiprinājumu.",
+            "Neatbilstošas preces tiek izskatītas saskaņā ar ES un Latvijas likumiskās garantijas noteikumiem. Atkarībā no situācijas risinājums var būt remonts, apmaiņa, cenas samazinājums vai naudas atmaksa.",
+            "Neatbilstošas preces atgriešanas izmaksas sedz tirgotājs gadījumos, ko paredz likums.",
           ],
         },
       ],
@@ -470,7 +498,14 @@ const content: Record<Locale, Record<LegalPageKey, LegalPageContent>> = {
           ],
         },
         {
-          title: "4. Atbildiba",
+          title: "4. Piegāde, atgriešana un likumiskā garantija",
+          body: [
+            "Veicot pasūtījumu, jūs piekrītat piegādes un atgriešanas nosacījumiem, kas publicēti lapā Piegāde un atgriešana.",
+            "Šie nosacījumi neierobežo patērētāja obligātās tiesības saskaņā ar Latvijas un ES patērētāju tiesību aizsardzības noteikumiem.",
+          ],
+        },
+        {
+          title: "5. Atbildiba",
           body: [
             "Mes neuznemamies atbildibu par:",
             "Nepareizi ievaditiem datiem",
@@ -478,13 +513,13 @@ const content: Record<Locale, Record<LegalPageKey, LegalPageContent>> = {
           ],
         },
         {
-          title: "5. Intelektualais ipasums",
+          title: "6. Intelektualais ipasums",
           body: [
             "Visa vietnes informacija pieder MDBLIGHT.",
           ],
         },
         {
-          title: "6. Izmainas",
+          title: "7. Izmainas",
           body: [
             "Mes varam mainit noteikumus jebkura laika.",
           ],
@@ -562,27 +597,38 @@ const content: Record<Locale, Record<LegalPageKey, LegalPageContent>> = {
       title: "Παράδοση / Επιστροφές",
       description: "Χρόνοι παράδοσης, κανόνες επιστροφής και όροι επιστροφής χρημάτων για παραγγελίες MDB Light.",
       updatedLabel: "Τελευταία ενημέρωση",
-      updatedAt: "April 2026",
+      updatedAt: "June 2026",
       sections: [
         {
-          title: "Παράδοση",
+          title: "Χρόνος και τρόποι παράδοσης",
           body: [
-            "Η παράδοση εξαρτάται από το απόθεμα, τον όγκο της παραγγελίας, τον προορισμό και την κατηγορία προϊόντος. Οι προσφορές έργων μπορεί να περιλαμβάνουν ξεχωριστούς χρόνους για προμήθεια και εγκατάσταση.",
-            "Οι εκτιμώμενοι χρόνοι αποστολής και παράδοσης επιβεβαιώνονται μετά τον έλεγχο της παραγγελίας ή την έγκριση της προσφοράς.",
+            "Ο τυπικός εκτιμώμενος χρόνος παράδοσης είναι από 3 έως 14 ημερολογιακές ημέρες μετά την επιβεβαίωση πληρωμής ή παραγγελίας, ανάλογα με το απόθεμα, τον όγκο της παραγγελίας, τον προορισμό και την κατηγορία προϊόντος.",
+            "Η παράδοση σε parcel locker είναι διαθέσιμη για κατάλληλα προϊόντα. Η παράδοση στο σπίτι εφαρμόζεται σε μεγαλύτερα ή πιο ευαίσθητα προϊόντα, καθώς και σε μικτά καλάθια όπου τουλάχιστον ένα προϊόν απαιτεί παράδοση στο σπίτι.",
+            "Εάν ισχύει διαφορετικός χρόνος για έργο, ειδική προμήθεια, εγκατάσταση ή προϊόν εκτός αποθέματος, τον επιβεβαιώνουμε πριν την επεξεργασία της παραγγελίας.",
           ],
         },
         {
-          title: "Επιστροφές",
+          title: "Δικαίωμα υπαναχώρησης 14 ημερών για εξ αποστάσεως αγορές",
           body: [
-            "Παρακαλούμε επικοινωνήστε με το MDB Light πριν επιστρέψετε προϊόντα. Τα αχρησιμοποίητα τυπικά προϊόντα μπορεί να είναι επιλέξιμα για επιστροφή ανάλογα με τη νομοθεσία και την κατάσταση του προϊόντος.",
-            "Εξατομικευμένα, έργου, εγκατεστημένα ή κατεστραμμένα προϊόντα μπορεί να εξαιρούνται, εκτός αν η τοπική νομοθεσία ορίζει διαφορετικά.",
+            "Για online εξ αποστάσεως αγορές, ο καταναλωτής μπορεί να υπαναχωρήσει από τη σύμβαση εντός 14 ημερών από την ημέρα παραλαβής των προϊόντων, χωρίς να αναφέρει λόγο.",
+            "Για να ξεκινήσετε επιστροφή, επικοινωνήστε με το MDB Light στο info@mdblight.com πριν αποστείλετε τα προϊόντα. Το προϊόν πρέπει να είναι πλήρες, ασφαλώς συσκευασμένο και χωρίς φθορές, γρατζουνιές, σημάδια εγκατάστασης ή χρήση πέρα από την απαραίτητη επιθεώρηση.",
+            "Εάν η αξία του προϊόντος μειωθεί λόγω χειρισμού πέρα από την απαραίτητη επιθεώρηση, μπορούμε να παρακρατήσουμε την αντίστοιχη μείωση αξίας όπου επιτρέπεται από τον νόμο.",
           ],
         },
         {
-          title: "Επιστροφή χρημάτων",
+          title: "Κόστος επιστροφής και επιστροφή χρημάτων",
           body: [
-            "Οι εγκεκριμένες επιστροφές χρημάτων επιστρέφονται στην αρχική μέθοδο πληρωμής μετά από έλεγχο των επιστραφέντων προϊόντων.",
-            "Τα έξοδα αποστολής, διαχείρισης και εγκατάστασης μπορεί να μην επιστρέφονται όπου αυτό επιτρέπεται νομικά και έχει συμφωνηθεί σαφώς.",
+            "Για επιστροφές λόγω υπαναχώρησης, ο πελάτης πληρώνει το κόστος επιστροφής εκτός εάν το MDB Light έχει συμφωνήσει να το καλύψει. Τα αρχικά έξοδα τυπικής παράδοσης επιστρέφονται όπου απαιτείται από την ισχύουσα νομοθεσία προστασίας καταναλωτή.",
+            "Οι επιστροφές χρημάτων γίνονται στην αρχική μέθοδο πληρωμής εντός της νόμιμης προθεσμίας μετά τη λήψη της δήλωσης υπαναχώρησης, αλλά μπορούμε να περιμένουμε μέχρι την επιστροφή των προϊόντων ή την απόδειξη αποστολής.",
+            "Προϊόντα κατασκευασμένα σύμφωνα με προδιαγραφές πελάτη, σαφώς εξατομικευμένα προϊόντα, εγκατεστημένα προϊόντα και προμήθειες έργων μπορεί να εξαιρούνται από το δικαίωμα υπαναχώρησης 14 ημερών, εκτός εάν το προϊόν είναι ελαττωματικό.",
+          ],
+        },
+        {
+          title: "Ελαττωματικά ή κατεστραμμένα προϊόντα",
+          body: [
+            "Εάν τα προϊόντα παραδοθούν κατεστραμμένα, ελλιπή ή ελαττωματικά, επικοινωνήστε μαζί μας το συντομότερο δυνατό και κρατήστε φωτογραφίες, συσκευασία και επιβεβαίωση παραγγελίας.",
+            "Τα ελαττωματικά προϊόντα αντιμετωπίζονται σύμφωνα με τους κανόνες νόμιμης εγγύησης της ΕΕ και της Λετονίας. Ανάλογα με την περίπτωση, η λύση μπορεί να είναι επισκευή, αντικατάσταση, μείωση τιμής ή επιστροφή χρημάτων.",
+            "Το κόστος επιστροφής ελαττωματικών προϊόντων καλύπτεται από τον έμπορο όπου απαιτείται από τον νόμο.",
           ],
         },
       ],
@@ -605,6 +651,13 @@ const content: Record<Locale, Record<LegalPageKey, LegalPageContent>> = {
           body: [
             "Προσπαθούμε να διατηρούμε ενημερωμένες τις τιμές, το απόθεμα και τις προδιαγραφές, αλλά οι τιμές έργων και οι όροι εγκατάστασης μπορεί να απαιτούν ξεχωριστή επιβεβαίωση.",
             "Οι εικόνες, οι περιγραφές και οι μεταφράσεις παρέχονται για διευκόλυνση και μπορεί να αναθεωρηθούν χωρίς προειδοποίηση.",
+          ],
+        },
+        {
+          title: "Παράδοση, επιστροφές και νόμιμη εγγύηση",
+          body: [
+            "Με την υποβολή παραγγελίας αποδέχεστε τους όρους παράδοσης και επιστροφών που δημοσιεύονται στη σελίδα Παράδοση / Επιστροφές.",
+            "Οι όροι αυτοί δεν περιορίζουν τα υποχρεωτικά δικαιώματα καταναλωτή σύμφωνα με τη λετονική ή την ευρωπαϊκή νομοθεσία προστασίας καταναλωτή.",
           ],
         },
         {

@@ -60,6 +60,8 @@ create table if not exists public.products (
   brand text,
   currency char(3) not null default 'EUR',
   price_cents integer not null check (price_cents >= 0),
+  delivery_type text not null default 'parcel_locker'
+    check (delivery_type in ('parcel_locker', 'home_delivery')),
   compare_at_price_cents integer check (compare_at_price_cents is null or compare_at_price_cents >= 0),
   stock_quantity integer not null default 0 check (stock_quantity >= 0),
   track_inventory boolean not null default true,
@@ -110,6 +112,9 @@ create table if not exists public.cart_items (
   variant_key text not null default '',
   quantity integer not null check (quantity > 0),
   unit_price_cents integer not null check (unit_price_cents >= 0),
+  delivery_type text not null default 'parcel_locker'
+    check (delivery_type in ('parcel_locker', 'home_delivery')),
+  delivery_cents integer not null default 300 check (delivery_cents >= 0),
   currency char(3) not null default 'EUR',
   product_snapshot jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default timezone('utc', now()),
@@ -178,6 +183,10 @@ create table if not exists public.orders (
   subtotal_cents integer not null default 0 check (subtotal_cents >= 0),
   discount_cents integer not null default 0 check (discount_cents >= 0),
   shipping_cents integer not null default 0 check (shipping_cents >= 0),
+  delivery_type text check (delivery_type is null or delivery_type in ('parcel_locker', 'home_delivery')),
+  promo_code text,
+  promo_discount_percent numeric(5,2) not null default 0
+    check (promo_discount_percent >= 0 and promo_discount_percent <= 100),
   tax_cents integer not null default 0 check (tax_cents >= 0),
   total_cents integer not null default 0 check (total_cents >= 0),
   stripe_checkout_session_id text unique,
@@ -208,12 +217,25 @@ create table if not exists public.order_items (
   quantity integer not null check (quantity > 0),
   unit_price_cents integer not null check (unit_price_cents >= 0),
   total_price_cents integer not null check (total_price_cents >= 0),
+  delivery_type text check (delivery_type is null or delivery_type in ('parcel_locker', 'home_delivery')),
+  delivery_cents integer not null default 0 check (delivery_cents >= 0),
   product_snapshot jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default timezone('utc', now())
+);
+
+create table if not exists public.promo_codes (
+  code citext primary key,
+  discount_percent numeric(5,2) not null check (discount_percent > 0 and discount_percent <= 100),
+  created_by uuid references public.profiles(id) on delete set null,
   created_at timestamptz not null default timezone('utc', now())
 );
 
 alter table public.products
   add column if not exists image_urls text[] not null default '{}'::text[];
+
+alter table public.products
+  add column if not exists delivery_type text not null default 'parcel_locker'
+  check (delivery_type in ('parcel_locker', 'home_delivery'));
 
 alter table public.cart_items
   add column if not exists selected_color text;
@@ -230,6 +252,14 @@ alter table public.cart_items
 alter table public.cart_items
   add column if not exists variant_key text not null default '';
 
+alter table public.cart_items
+  add column if not exists delivery_type text not null default 'parcel_locker'
+  check (delivery_type in ('parcel_locker', 'home_delivery'));
+
+alter table public.cart_items
+  add column if not exists delivery_cents integer not null default 300
+  check (delivery_cents >= 0);
+
 alter table public.order_items
   add column if not exists selected_color text;
 
@@ -242,12 +272,31 @@ alter table public.order_items
 alter table public.order_items
   add column if not exists selected_options jsonb not null default '{}'::jsonb;
 
+alter table public.order_items
+  add column if not exists delivery_type text
+  check (delivery_type is null or delivery_type in ('parcel_locker', 'home_delivery'));
+
+alter table public.order_items
+  add column if not exists delivery_cents integer not null default 0
+  check (delivery_cents >= 0);
+
 alter table public.orders
   add column if not exists order_code text;
 
 alter table public.orders
   add column if not exists payment_method text not null default 'stripe'
     check (payment_method in ('stripe', 'bank_transfer'));
+
+alter table public.orders
+  add column if not exists delivery_type text
+  check (delivery_type is null or delivery_type in ('parcel_locker', 'home_delivery'));
+
+alter table public.orders
+  add column if not exists promo_code text;
+
+alter table public.orders
+  add column if not exists promo_discount_percent numeric(5,2) not null default 0
+  check (promo_discount_percent >= 0 and promo_discount_percent <= 100);
 
 alter table public.orders
   add column if not exists payment_id text;
@@ -291,6 +340,7 @@ create index if not exists orders_user_id_idx on public.orders(user_id);
 create index if not exists orders_status_idx on public.orders(status);
 create unique index if not exists orders_order_code_idx on public.orders(order_code);
 create index if not exists order_items_order_id_idx on public.order_items(order_id);
+create index if not exists promo_codes_created_at_idx on public.promo_codes(created_at desc);
 
 create or replace function public.is_admin()
 returns boolean
@@ -396,6 +446,7 @@ alter table public.invoices enable row level security;
 alter table public.invoice_items enable row level security;
 alter table public.orders enable row level security;
 alter table public.order_items enable row level security;
+alter table public.promo_codes enable row level security;
 
 drop policy if exists "profiles_select_own_or_admin" on public.profiles;
 create policy "profiles_select_own_or_admin"
@@ -478,6 +529,13 @@ create policy "product_translations_public_read"
 drop policy if exists "product_translations_admin_manage" on public.product_translations;
 create policy "product_translations_admin_manage"
   on public.product_translations
+  for all
+  using (public.is_admin())
+  with check (public.is_admin());
+
+drop policy if exists "promo_codes_admin_manage" on public.promo_codes;
+create policy "promo_codes_admin_manage"
+  on public.promo_codes
   for all
   using (public.is_admin())
   with check (public.is_admin());

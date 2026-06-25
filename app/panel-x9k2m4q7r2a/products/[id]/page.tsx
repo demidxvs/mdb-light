@@ -29,6 +29,7 @@ type FormState = {
   categoryId: string;
   currency: string;
   price: string;
+  deliveryType: "parcel_locker" | "home_delivery";
   stockQuantity: string;
   primaryImageUrl: string;
   imageUrls: string[];
@@ -101,6 +102,9 @@ const copy = {
     commercial: "Commercial settings",
     currency: "Currency",
     price: "Price",
+    deliveryType: "Delivery type",
+    parcelLocker: "Parcel locker · €3",
+    homeDelivery: "Home delivery · €15",
     stock: "Stock quantity",
     image: "Product image",
     gallery: "Gallery",
@@ -157,6 +161,9 @@ const copy = {
     commercial: "Коммерческие настройки",
     currency: "Валюта",
     price: "Цена",
+    deliveryType: "Тип доставки",
+    parcelLocker: "Пакомат · €3",
+    homeDelivery: "Доставка на дом · €15",
     stock: "Количество на складе",
     image: "Изображение товара",
     gallery: "Галерея",
@@ -213,6 +220,9 @@ const copy = {
     commercial: "Εμπορικές ρυθμίσεις",
     currency: "Νόμισμα",
     price: "Τιμή",
+    deliveryType: "Τύπος παράδοσης",
+    parcelLocker: "Parcel locker · €3",
+    homeDelivery: "Παράδοση στο σπίτι · €15",
     stock: "Ποσότητα αποθέματος",
     image: "Εικόνα προϊόντος",
     gallery: "Gallery",
@@ -269,6 +279,9 @@ const copy = {
     commercial: "Komerciālie iestatījumi",
     currency: "Valūta",
     price: "Cena",
+    deliveryType: "Piegādes tips",
+    parcelLocker: "Pakomāts · €3",
+    homeDelivery: "Piegāde uz mājām · €15",
     stock: "Atlikuma daudzums",
     image: "Produkta attēls",
     gallery: "Galerija",
@@ -309,6 +322,7 @@ function createInitialForm(): FormState {
     categoryId: "",
     currency: "EUR",
     price: "",
+    deliveryType: "parcel_locker",
     stockQuantity: "0",
     primaryImageUrl: "",
     imageUrls: [],
@@ -420,6 +434,7 @@ export default function AdminProductEditPage() {
           category_id: string | null;
           currency: string;
           price_cents: number;
+          delivery_type?: "parcel_locker" | "home_delivery" | null;
           stock_quantity: number;
           primary_image_url: string | null;
           image_urls?: string[] | null;
@@ -457,6 +472,7 @@ export default function AdminProductEditPage() {
       nextForm.categoryId = productData.category_id || "";
       nextForm.currency = productData.currency || "EUR";
       nextForm.price = String(productData.price_cents / 100);
+      nextForm.deliveryType = productData.delivery_type === "home_delivery" ? "home_delivery" : "parcel_locker";
       nextForm.stockQuantity = String(productData.stock_quantity ?? 0);
       nextForm.imageUrls =
         (productData.image_urls ?? []).filter(Boolean).length > 0
@@ -757,6 +773,7 @@ export default function AdminProductEditPage() {
           sortOrder: Math.max(0, Number.parseInt(form.sortOrder || "0", 10) || 0),
           currency: form.currency.trim().toUpperCase() || "EUR",
           priceCents: Math.round(price * 100),
+          deliveryType: form.deliveryType,
           stockQuantity: Math.max(0, Number.parseInt(form.stockQuantity || "0", 10) || 0),
           trackInventory: form.trackInventory,
           isActive: form.isActive,
@@ -896,6 +913,13 @@ export default function AdminProductEditPage() {
                 <label className="space-y-2 text-sm font-medium text-[color:var(--headline)]">
                   <span>{t.price}</span>
                   <input type="number" min="0" step="0.01" value={form.price} onChange={(event) => handleFieldChange("price", event.target.value)} className="h-11 w-full rounded-xl border border-[#ece3d9] bg-[#fffcf7] px-4 outline-none transition focus:border-[color:var(--accent)]" />
+                </label>
+                <label className="space-y-2 text-sm font-medium text-[color:var(--headline)]">
+                  <span>{t.deliveryType}</span>
+                  <select value={form.deliveryType} onChange={(event) => handleFieldChange("deliveryType", event.target.value === "home_delivery" ? "home_delivery" : "parcel_locker")} className="h-11 w-full rounded-xl border border-[#ece3d9] bg-[#fffcf7] px-4 outline-none transition focus:border-[color:var(--accent)]">
+                    <option value="parcel_locker">{t.parcelLocker}</option>
+                    <option value="home_delivery">{t.homeDelivery}</option>
+                  </select>
                 </label>
                 <label className="space-y-2 text-sm font-medium text-[color:var(--headline)]">
                   <span>{t.stock}</span>

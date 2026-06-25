@@ -13,6 +13,7 @@ import { createStorefrontServiceClient } from "@/lib/storefront-admin-server";
 type CheckoutRequestBody = {
   locale?: string;
   paymentMethod?: "stripe" | "bank_transfer";
+  promoCode?: string;
   createAccount?: boolean;
   password?: string;
   confirmPassword?: string;
@@ -49,6 +50,67 @@ function getLocaleFromBody(value: string | undefined): Locale {
 }
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+type StripeLineItem = {
+  quantity: number;
+  price_data: {
+    currency: string;
+    unit_amount: number;
+    product_data: {
+      name: string;
+      description?: string;
+    };
+  };
+};
+
+function buildStripeLineItems(order: Awaited<ReturnType<typeof createOrderFromActiveCart>>) {
+  const lineItems: StripeLineItem[] = [];
+  let remainingDiscount = order.discountCents;
+
+  order.items.forEach((item, index) => {
+    const rawTotalCents = Math.max(0, Math.round(item.totalCents));
+    const isLastItem = index === order.items.length - 1;
+    const allocatedDiscount = order.discountCents > 0 && order.subtotalCents > 0
+      ? isLastItem
+        ? remainingDiscount
+        : Math.min(
+            rawTotalCents,
+            Math.round(rawTotalCents * (order.discountCents / order.subtotalCents)),
+          )
+      : 0;
+    remainingDiscount = Math.max(0, remainingDiscount - allocatedDiscount);
+    const discountedTotalCents = Math.max(0, rawTotalCents - allocatedDiscount);
+    if (discountedTotalCents <= 0) return;
+
+    lineItems.push({
+      quantity: 1,
+      price_data: {
+        currency: (item.currency || order.currency || "EUR").toLowerCase(),
+        unit_amount: discountedTotalCents,
+        product_data: {
+          name: item.quantity > 1 ? `${item.name || "MDB Light product"} x ${item.quantity}` : item.name || "MDB Light product",
+          description: item.variantLines.join(" · ") || undefined,
+        },
+      },
+    });
+  });
+
+  if (order.shippingCents > 0) {
+    lineItems.push({
+      quantity: 1,
+      price_data: {
+        currency: (order.currency || "EUR").toLowerCase(),
+        unit_amount: order.shippingCents,
+        product_data: {
+          name: order.deliveryType === "home_delivery" ? "Home delivery" : "Parcel locker delivery",
+          description: undefined,
+        },
+      },
+    });
+  }
+
+  return lineItems;
+}
 
 export async function POST(request: Request) {
   let createdUserId: string | null = null;
@@ -125,11 +187,13 @@ export async function POST(request: Request) {
           locale,
           paymentMethod,
           customer,
+          promoCode: body.promoCode,
         })
       : await createOrderFromGuestCheckout({
           locale,
           paymentMethod,
           customer,
+          promoCode: body.promoCode,
           items: (body.items ?? [])
             .filter((item) => item.productId && item.quantity)
             .map((item) => ({
@@ -171,19 +235,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const lineItems = order.items.map((item) => {
-      return {
-        quantity: item.quantity,
-        price_data: {
-          currency: (item.currency || order.currency || "EUR").toLowerCase(),
-          unit_amount: Math.round(item.totalCents / Math.max(item.quantity, 1)),
-          product_data: {
-            name: item.name || "MDB Light product",
-            description: item.variantLines.join(" · ") || undefined,
-          },
-        },
-      };
-    });
+    const lineItems = buildStripeLineItems(order);
 
     const requestUrl = new URL(request.url);
     const successUrl = new URL(

@@ -5,6 +5,7 @@ import {
 } from "@/lib/storefront-admin-server";
 import { ensureUniqueBaseSlug, ensureUniqueLocalizedSlugs } from "@/lib/admin-localized-slugs";
 import { normalizeSlugInput } from "@/lib/localized-slugs";
+import { normalizeDeliveryType } from "@/lib/pricing.mjs";
 
 type LocaleKey = "en" | "ru" | "el" | "lv";
 
@@ -12,6 +13,7 @@ type ProductCreatePayload = {
   sku?: string;
   slug?: string;
   sortOrder?: number;
+  deliveryType?: string;
   translations?: Array<{
     locale: LocaleKey;
     name: string;
@@ -32,7 +34,7 @@ export async function GET() {
     const { data, error } = await storefront
       .from("products")
       .select(
-        "id, sku, slug, sort_order, category_id, price_cents, stock_quantity, is_active, is_featured, created_at, product_translations(locale, name, slug)",
+        "id, sku, slug, sort_order, category_id, price_cents, delivery_type, stock_quantity, is_active, is_featured, created_at, product_translations(locale, name, slug)",
       )
       .order("sort_order", { ascending: true })
       .order("created_at", { ascending: false });
@@ -107,6 +109,7 @@ export async function POST(request: Request) {
         sort_order: Number.isFinite(body.sortOrder) ? Math.max(0, Math.trunc(body.sortOrder ?? 0)) : 0,
         currency: "EUR",
         price_cents: 0,
+        delivery_type: normalizeDeliveryType(body.deliveryType),
         stock_quantity: 0,
         track_inventory: true,
         is_active: false,

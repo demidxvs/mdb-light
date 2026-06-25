@@ -5,6 +5,7 @@ import {
 } from "@/lib/storefront-admin-server";
 import { ensureUniqueBaseSlug, ensureUniqueLocalizedSlugs } from "@/lib/admin-localized-slugs";
 import { normalizeSlugInput } from "@/lib/localized-slugs";
+import { normalizeDeliveryType } from "@/lib/pricing.mjs";
 
 type LocaleKey = "en" | "ru" | "el" | "lv";
 
@@ -15,6 +16,7 @@ type ProductUpdatePayload = {
   sortOrder?: number;
   currency?: string;
   priceCents?: number;
+  deliveryType?: string;
   stockQuantity?: number;
   primaryImageUrl?: string | null;
   imageUrls?: string[];
@@ -65,7 +67,7 @@ export async function GET(
       storefront
         .from("products")
         .select(
-          "id, sku, slug, sort_order, category_id, currency, price_cents, stock_quantity, primary_image_url, image_urls, is_active, is_featured, track_inventory, product_translations(locale, name, slug)",
+          "id, sku, slug, sort_order, category_id, currency, price_cents, delivery_type, stock_quantity, primary_image_url, image_urls, is_active, is_featured, track_inventory, product_translations(locale, name, slug)",
         )
         .eq("id", id)
         .maybeSingle(),
@@ -176,6 +178,7 @@ export async function PATCH(
         sort_order: Number.isFinite(body.sortOrder) ? Math.max(0, Math.trunc(body.sortOrder ?? 0)) : 0,
         currency: normalizeText(body.currency).toUpperCase() || "EUR",
         price_cents: Math.max(0, Math.round(body.priceCents ?? 0)),
+        delivery_type: normalizeDeliveryType(body.deliveryType),
         stock_quantity: Math.max(0, Math.round(body.stockQuantity ?? 0)),
         track_inventory: body.trackInventory ?? true,
         is_active: body.isActive ?? false,

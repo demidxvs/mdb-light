@@ -15,6 +15,7 @@ type LocaleKey = "en" | "ru" | "el" | "lv";
 type TranslationFields = { name: string; slug: string };
 type FormState = {
   sortOrder: string;
+  deliveryType: "parcel_locker" | "home_delivery";
   translations: Record<LocaleKey, TranslationFields>;
 };
 type ProductRow = {
@@ -25,6 +26,7 @@ type ProductRow = {
   stock_quantity: number;
   is_active: boolean;
   is_featured: boolean;
+  delivery_type?: "parcel_locker" | "home_delivery";
   created_at: string;
   product_translations?: Array<{ locale: LocaleKey; name: string }>;
 };
@@ -65,6 +67,9 @@ const copy = {
     featuredBadge: "Featured",
     priceLabel: "Price",
     stockLabel: "Stock",
+    deliveryType: "Delivery type",
+    parcelLocker: "Parcel locker · €3",
+    homeDelivery: "Home delivery · €15",
     createdLabel: "Created",
   },
   ru: {
@@ -94,6 +99,9 @@ const copy = {
     featuredBadge: "Главная",
     priceLabel: "Цена",
     stockLabel: "Остаток",
+    deliveryType: "Тип доставки",
+    parcelLocker: "Пакомат · €3",
+    homeDelivery: "Доставка на дом · €15",
     createdLabel: "Создан",
   },
   el: {
@@ -123,6 +131,9 @@ const copy = {
     featuredBadge: "Αρχική",
     priceLabel: "Τιμή",
     stockLabel: "Απόθεμα",
+    deliveryType: "Τύπος παράδοσης",
+    parcelLocker: "Parcel locker · €3",
+    homeDelivery: "Παράδοση στο σπίτι · €15",
     createdLabel: "Δημιουργήθηκε",
   },
   lv: {
@@ -152,6 +163,9 @@ const copy = {
     featuredBadge: "Sākumlapa",
     priceLabel: "Cena",
     stockLabel: "Atlikums",
+    deliveryType: "Piegādes tips",
+    parcelLocker: "Pakomāts · €3",
+    homeDelivery: "Piegāde uz mājām · €15",
     createdLabel: "Izveidots",
   },
 } as const;
@@ -159,6 +173,7 @@ const copy = {
 function createInitialForm(): FormState {
   return {
     sortOrder: "0",
+    deliveryType: "parcel_locker",
     translations: {
       en: { name: "", slug: "" },
       ru: { name: "", slug: "" },
@@ -303,6 +318,7 @@ export default function AdminProductNewPage() {
           sku,
           slug: finalSlug,
           sortOrder: Number.parseInt(form.sortOrder || "0", 10) || 0,
+          deliveryType: form.deliveryType,
           translations: locales.map((localeKey) => ({
             locale: localeKey,
             name: form.translations[localeKey].name.trim(),
@@ -383,6 +399,22 @@ export default function AdminProductNewPage() {
                   onChange={(event) => setForm((current) => ({ ...current, sortOrder: event.target.value }))}
                   className="h-11 w-full rounded-xl border border-[#ece3d9] bg-[#fffcf7] px-4 outline-none transition focus:border-[color:var(--accent)]"
                 />
+              </label>
+              <label className="space-y-2 text-sm font-medium text-[color:var(--headline)]">
+                <span>{t.deliveryType}</span>
+                <select
+                  value={form.deliveryType}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      deliveryType: event.target.value === "home_delivery" ? "home_delivery" : "parcel_locker",
+                    }))
+                  }
+                  className="h-11 w-full rounded-xl border border-[#ece3d9] bg-[#fffcf7] px-4 outline-none transition focus:border-[color:var(--accent)]"
+                >
+                  <option value="parcel_locker">{t.parcelLocker}</option>
+                  <option value="home_delivery">{t.homeDelivery}</option>
+                </select>
               </label>
               <div className="text-sm font-semibold text-[color:var(--headline)]">{t.translations}</div>
               <div className="grid gap-4">

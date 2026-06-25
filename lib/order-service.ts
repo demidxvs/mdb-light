@@ -12,6 +12,11 @@ import {
   buildOrderCode,
   type OrderPaymentMethod,
 } from "@/lib/order-utils";
+import {
+  calculatePricing,
+  getDeliveryOption,
+  normalizePromoCode,
+} from "@/lib/pricing.mjs";
 import { createStorefrontServiceClient } from "@/lib/storefront-admin-server";
 
 type CartRow = {
@@ -31,6 +36,8 @@ type CartItemRow = {
   product_id: string;
   quantity: number;
   unit_price_cents: number;
+  delivery_type: string | null;
+  delivery_cents: number | null;
   currency: string;
   selected_color: string | null;
   selected_length: string | null;
@@ -39,6 +46,8 @@ type CartItemRow = {
   product_snapshot: {
     name?: string;
     sku?: string;
+    delivery_type?: string | null;
+    delivery_cents?: number | null;
     selected_color?: string | null;
     selected_length?: string | null;
     selected_material?: string | null;
@@ -52,6 +61,7 @@ type ProductPriceRow = {
   slug: string;
   currency: string;
   price_cents: number;
+  delivery_type?: string | null;
   primary_image_url: string | null;
 };
 
@@ -114,6 +124,10 @@ export type OrderSummary = {
   totalCents: number;
   subtotalCents: number;
   discountCents: number;
+  shippingCents: number;
+  deliveryType: string | null;
+  promoCode: string | null;
+  promoDiscountPercent: number;
   customerEmail: string | null;
   customerName: string | null;
   customerPhone: string | null;
@@ -175,7 +189,7 @@ async function loadCheckoutContext(userId: string) {
   const { data: cartItems, error: itemsError } = await storefront
     .from("cart_items")
     .select(
-      "id, product_id, quantity, unit_price_cents, currency, selected_color, selected_length, selected_material, selected_options, product_snapshot",
+      "id, product_id, quantity, unit_price_cents, delivery_type, delivery_cents, currency, selected_color, selected_length, selected_material, selected_options, product_snapshot",
     )
     .eq("cart_id", cart.id)
     .order("created_at", { ascending: true });
@@ -223,7 +237,7 @@ async function loadGuestCheckoutContext(items: GuestCheckoutItemInput[]) {
     await Promise.all([
       storefront
         .from("products")
-        .select("id, sku, slug, currency, price_cents, primary_image_url")
+        .select("id, sku, slug, currency, price_cents, delivery_type, primary_image_url")
         .in("id", productIds)
         .eq("is_active", true),
       storefront
@@ -268,12 +282,15 @@ async function loadGuestCheckoutContext(items: GuestCheckoutItemInput[]) {
         if (!selectedValue) return sum;
         return sum + (attribute.price_adjustments?.[selectedValue] ?? 0);
       }, 0);
+    const delivery = getDeliveryOption(product.delivery_type);
 
     return {
       id: `guest-${item.productId}-${Math.random().toString(36).slice(2, 10)}`,
       product_id: item.productId,
       quantity: item.quantity,
       unit_price_cents: unitPriceCents,
+      delivery_type: delivery.type,
+      delivery_cents: delivery.priceCents,
       currency: product.currency || "EUR",
       selected_color: item.selectedColor,
       selected_length: item.selectedLength,
@@ -282,6 +299,8 @@ async function loadGuestCheckoutContext(items: GuestCheckoutItemInput[]) {
       product_snapshot: {
         name: item.productSnapshot?.name || product.sku || product.slug,
         sku: item.productSnapshot?.sku || product.sku || undefined,
+        delivery_type: delivery.type,
+        delivery_cents: delivery.priceCents,
         selected_color: item.selectedColor,
         selected_length: item.selectedLength,
         selected_material: item.selectedMaterial,
@@ -308,24 +327,55 @@ function buildCustomerName(customer: CheckoutCustomerInput, fallbackProfile?: Pr
   return fallbackProfile?.full_name?.trim() || null;
 }
 
+async function resolvePromoCode(
+  storefront: ReturnType<typeof createStorefrontServiceClient>,
+  promoCode: string | undefined,
+) {
+  const code = normalizePromoCode(promoCode);
+  if (!code) {
+    return {
+      code: null,
+      discountPercent: 0,
+    };
+  }
+
+  const { data, error } = await storefront
+    .from("promo_codes")
+    .select("code, discount_percent")
+    .eq("code", code)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  if (!data) {
+    throw new Error("Promo code is not active.");
+  }
+
+  return {
+    code: String(data.code),
+    discountPercent: Number(data.discount_percent) || 0,
+  };
+}
+
 async function createOrderFromCheckout(input: {
   userId: string | null;
   locale: Locale;
   paymentMethod: OrderPaymentMethod;
   customer: CheckoutCustomerInput;
   guestItems?: GuestCheckoutItemInput[];
+  promoCode?: string;
 }) {
   const context = input.userId
     ? await loadCheckoutContext(input.userId)
     : await loadGuestCheckoutContext(input.guestItems ?? []);
   const { storefront, cart, profile, items } = context;
-
-  const subtotalCents = items.reduce(
-    (sum, item) => sum + item.unit_price_cents * item.quantity,
-    0,
-  );
-  const discountCents = Math.min(cart.discount_cents ?? 0, subtotalCents);
-  const totalCents = Math.max(subtotalCents - discountCents, 0);
+  const promo = await resolvePromoCode(storefront, input.promoCode);
+  const pricing = calculatePricing({
+    items,
+    discountPercent: promo.discountPercent,
+  });
 
   const { data: insertedOrder, error: orderError } = await storefront
     .from("orders")
@@ -337,11 +387,14 @@ async function createOrderFromCheckout(input: {
       payment_status: "unpaid",
       fulfillment_status: "unfulfilled",
       currency: cart.currency || items[0]?.currency || "EUR",
-      subtotal_cents: subtotalCents,
-      discount_cents: discountCents,
-      shipping_cents: 0,
+      subtotal_cents: pricing.subtotalCents,
+      discount_cents: pricing.discountCents,
+      shipping_cents: pricing.shippingCents,
+      delivery_type: pricing.deliveryType,
+      promo_code: promo.code,
+      promo_discount_percent: promo.discountPercent,
       tax_cents: 0,
-      total_cents: totalCents,
+      total_cents: pricing.totalCents,
       customer_email: input.customer.email.trim() || profile?.email || null,
       customer_name: buildCustomerName(input.customer, profile),
       customer_phone: input.customer.phone.trim() || profile?.phone || null,
@@ -350,7 +403,7 @@ async function createOrderFromCheckout(input: {
       notes: input.customer.note?.trim() || null,
       placed_at: new Date().toISOString(),
     })
-    .select("id, order_number, created_at, currency, total_cents, subtotal_cents, discount_cents, customer_email, customer_name, customer_phone")
+    .select("id, order_number, created_at, currency, total_cents, subtotal_cents, discount_cents, shipping_cents, delivery_type, promo_code, promo_discount_percent, customer_email, customer_name, customer_phone")
     .single();
 
   if (orderError || !insertedOrder) {
@@ -385,6 +438,8 @@ async function createOrderFromCheckout(input: {
         quantity: item.quantity,
         unit_price_cents: item.unit_price_cents,
         total_price_cents: item.unit_price_cents * item.quantity,
+        delivery_type: item.delivery_type,
+        delivery_cents: item.delivery_cents ?? 0,
         product_snapshot: item.product_snapshot ?? {},
       })),
     );
@@ -414,6 +469,10 @@ async function createOrderFromCheckout(input: {
     totalCents: insertedOrder.total_cents,
     subtotalCents: insertedOrder.subtotal_cents,
     discountCents: insertedOrder.discount_cents,
+    shippingCents: insertedOrder.shipping_cents,
+    deliveryType: insertedOrder.delivery_type,
+    promoCode: insertedOrder.promo_code,
+    promoDiscountPercent: Number(insertedOrder.promo_discount_percent) || 0,
     customerEmail: insertedOrder.customer_email,
     customerName: insertedOrder.customer_name,
     customerPhone: insertedOrder.customer_phone,
@@ -439,18 +498,29 @@ async function createOrderFromCheckout(input: {
     customerPhone: summary.customerPhone,
     subtotalCents: summary.subtotalCents,
     totalCents: summary.totalCents,
-    items: items.map((item) => ({
-      productId: item.product_id,
-      name:
-        item.product_snapshot?.name ||
-        item.product_snapshot?.sku ||
-        item.product_id,
-      sku: item.product_snapshot?.sku || null,
-      quantity: item.quantity,
-      unitPriceCents: item.unit_price_cents,
-      totalPriceCents: item.unit_price_cents * item.quantity,
-      note: getVariantLines(item).join(" • "),
-    })),
+    items: [
+      ...items.map((item) => ({
+        productId: item.product_id,
+        name:
+          item.product_snapshot?.name ||
+          item.product_snapshot?.sku ||
+          item.product_id,
+        sku: item.product_snapshot?.sku || null,
+        quantity: item.quantity,
+        unitPriceCents: item.unit_price_cents,
+        totalPriceCents: item.unit_price_cents * item.quantity,
+        note: getVariantLines(item).join(" • "),
+      })),
+      {
+        productId: null,
+        name: summary.deliveryType === "home_delivery" ? "Home delivery" : "Parcel locker delivery",
+        sku: null,
+        quantity: 1,
+        unitPriceCents: summary.shippingCents,
+        totalPriceCents: summary.shippingCents,
+        note: summary.promoCode ? `Promo ${summary.promoCode}: ${summary.promoDiscountPercent}%` : "",
+      },
+    ],
   });
 
   if (input.paymentMethod === "bank_transfer") {
@@ -461,7 +531,7 @@ async function createOrderFromCheckout(input: {
         customerEmail: summary.customerEmail,
         customerName: summary.customerName,
         customerPhone: summary.customerPhone,
-        totalCents,
+        totalCents: summary.totalCents,
         currency: summary.currency,
         paymentMethod: input.paymentMethod,
         items: summary.items,
@@ -480,6 +550,7 @@ export async function createOrderFromActiveCart(input: {
   locale: Locale;
   paymentMethod: OrderPaymentMethod;
   customer: CheckoutCustomerInput;
+  promoCode?: string;
 }) {
   return createOrderFromCheckout(input);
 }
@@ -490,6 +561,7 @@ export async function createOrderFromGuestCheckout(input: {
   customer: CheckoutCustomerInput;
   userId?: string | null;
   items: GuestCheckoutItemInput[];
+  promoCode?: string;
 }) {
   return createOrderFromCheckout({
     userId: input.userId ?? null,
@@ -497,6 +569,7 @@ export async function createOrderFromGuestCheckout(input: {
     paymentMethod: input.paymentMethod,
     customer: input.customer,
     guestItems: input.items,
+    promoCode: input.promoCode,
   });
 }
 
@@ -504,7 +577,7 @@ export async function getOrderByCodeForUser(orderCode: string, userId: string) {
   const storefront = createStorefrontServiceClient();
   const { data: order, error } = await storefront
     .from("orders")
-    .select("id, order_number, order_code, payment_method, status, payment_status, fulfillment_status, currency, total_cents, subtotal_cents, discount_cents, customer_email, customer_name, customer_phone, created_at, paid_at")
+    .select("id, order_number, order_code, payment_method, status, payment_status, fulfillment_status, currency, total_cents, subtotal_cents, discount_cents, shipping_cents, delivery_type, promo_code, promo_discount_percent, customer_email, customer_name, customer_phone, created_at, paid_at")
     .eq("order_code", orderCode)
     .eq("user_id", userId)
     .maybeSingle();

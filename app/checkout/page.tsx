@@ -1,17 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { ArrowRight, CheckCircle2, LoaderCircle } from "lucide-react";
 import { useLocale } from "@/components/ui/locale-provider";
 import { localizePathname } from "@/i18n/config";
 import {
   clearGuestCart,
+  clearStoredPromoCode,
   getCurrentUserId,
   getOrCreateActiveCart,
   readGuestCartItems,
+  readStoredPromoCode,
+  writeStoredPromoCode,
 } from "@/lib/cart";
 import { getDeliveryCopy, type OrderPaymentMethod } from "@/lib/order-utils";
+import { calculatePricing } from "@/lib/pricing.mjs";
 import { createSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase-client";
 
 type CartItemRow = {
@@ -19,6 +23,8 @@ type CartItemRow = {
   product_id: string;
   quantity: number;
   unit_price_cents: number;
+  delivery_type?: string | null;
+  delivery_cents?: number | null;
   currency: string;
   selected_color?: string | null;
   selected_length?: string | null;
@@ -27,6 +33,8 @@ type CartItemRow = {
   product_snapshot: {
     name?: string;
     sku?: string;
+    delivery_type?: string | null;
+    delivery_cents?: number | null;
     selected_options?: Record<string, string> | null;
   } | null;
 };
@@ -34,6 +42,11 @@ type CartItemRow = {
 type CartRow = {
   currency: string;
   discount_cents: number;
+};
+
+type AppliedPromo = {
+  code: string;
+  discountPercent: number;
 };
 
 type CheckoutFormState = {
@@ -73,6 +86,15 @@ const copy = {
     summary: "Order summary",
     subtotal: "Subtotal",
     discount: "Discount",
+    delivery: "Delivery",
+    parcelLocker: "Parcel locker",
+    homeDelivery: "Home delivery",
+    promoCode: "Promo code",
+    promoPlaceholder: "Enter promo code",
+    applyPromo: "Apply",
+    applyingPromo: "Applying...",
+    removePromo: "Remove promo",
+    promoInvalid: "Promo code is not active.",
     total: "Total",
     error: "Could not create the order.",
     empty: "Your cart is empty.",
@@ -107,6 +129,15 @@ const copy = {
     summary: "Состав заказа",
     subtotal: "Сумма",
     discount: "Скидка",
+    delivery: "Доставка",
+    parcelLocker: "Пакомат",
+    homeDelivery: "Доставка на дом",
+    promoCode: "Промокод",
+    promoPlaceholder: "Введите промокод",
+    applyPromo: "Применить",
+    applyingPromo: "Применяю...",
+    removePromo: "Убрать промокод",
+    promoInvalid: "Промокод не активен.",
     total: "Итого",
     error: "Не удалось создать заказ.",
     empty: "Корзина пуста.",
@@ -141,6 +172,15 @@ const copy = {
     summary: "Σύνοψη παραγγελίας",
     subtotal: "Υποσύνολο",
     discount: "Έκπτωση",
+    delivery: "Παράδοση",
+    parcelLocker: "Parcel locker",
+    homeDelivery: "Παράδοση στο σπίτι",
+    promoCode: "Promo code",
+    promoPlaceholder: "Συμπληρώστε promo code",
+    applyPromo: "Εφαρμογή",
+    applyingPromo: "Εφαρμογή...",
+    removePromo: "Αφαίρεση promo",
+    promoInvalid: "Το promo code δεν είναι ενεργό.",
     total: "Σύνολο",
     error: "Δεν ήταν δυνατή η δημιουργία της παραγγελίας.",
     empty: "Το καλάθι είναι άδειο.",
@@ -175,6 +215,15 @@ const copy = {
     summary: "Pasūtījuma kopsavilkums",
     subtotal: "Starpsumma",
     discount: "Atlaide",
+    delivery: "Piegāde",
+    parcelLocker: "Pakomāts",
+    homeDelivery: "Piegāde uz mājām",
+    promoCode: "Promo kods",
+    promoPlaceholder: "Ievadiet promo kodu",
+    applyPromo: "Pielietot",
+    applyingPromo: "Pielieto...",
+    removePromo: "Noņemt promo kodu",
+    promoInvalid: "Promo kods nav aktīvs.",
     total: "Kopā",
     error: "Neizdevās izveidot pasūtījumu.",
     empty: "Grozs ir tukšs.",
@@ -220,6 +269,60 @@ export default function CheckoutPage() {
   const [form, setForm] = useState<CheckoutFormState>(buildInitialFormState);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [promoInput, setPromoInput] = useState("");
+  const [appliedPromo, setAppliedPromo] = useState<AppliedPromo | null>(null);
+  const [promoError, setPromoError] = useState("");
+  const [promoLoading, setPromoLoading] = useState(false);
+
+  const applyPromoCode = useCallback(
+    async (nextCode: string, silent = false) => {
+      const code = nextCode.trim();
+      setPromoError("");
+
+      if (!code) {
+        setAppliedPromo(null);
+        clearStoredPromoCode();
+        return;
+      }
+
+      if (!silent) setPromoLoading(true);
+      try {
+        const response = await fetch("/api/promo-codes/validate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code }),
+        });
+        const payload = (await response.json().catch(() => ({}))) as {
+          promoCode?: AppliedPromo;
+        };
+
+        if (!response.ok || !payload.promoCode) {
+          setAppliedPromo(null);
+          clearStoredPromoCode();
+          setPromoError(t.promoInvalid);
+          return;
+        }
+
+        setAppliedPromo(payload.promoCode);
+        setPromoInput(payload.promoCode.code);
+        writeStoredPromoCode(payload.promoCode.code);
+      } catch {
+        setAppliedPromo(null);
+        clearStoredPromoCode();
+        setPromoError(t.promoInvalid);
+      } finally {
+        if (!silent) setPromoLoading(false);
+      }
+    },
+    [t.promoInvalid],
+  );
+
+  useEffect(() => {
+    const storedCode = readStoredPromoCode();
+    if (!storedCode) return;
+    setPromoInput(storedCode);
+    void applyPromoCode(storedCode, true);
+  }, [applyPromoCode]);
 
   useEffect(() => {
     let mounted = true;
@@ -254,7 +357,7 @@ export default function CheckoutPage() {
           await Promise.all([
             supabase
               .from("cart_items")
-              .select("id, product_id, quantity, unit_price_cents, currency, selected_color, selected_length, selected_material, selected_options, product_snapshot")
+              .select("id, product_id, quantity, unit_price_cents, delivery_type, delivery_cents, currency, selected_color, selected_length, selected_material, selected_options, product_snapshot")
               .eq("cart_id", activeCart.id)
               .order("created_at", { ascending: true }),
             supabase
@@ -299,10 +402,15 @@ export default function CheckoutPage() {
     };
   }, [supabaseReady, t.error]);
 
-  const subtotal = items.reduce((sum, item) => sum + item.unit_price_cents * item.quantity, 0);
-  const discount = Math.min(cart?.discount_cents ?? 0, subtotal);
-  const total = Math.max(subtotal - discount, 0);
+  const pricing = calculatePricing({
+    items,
+    discountPercent: appliedPromo?.discountPercent ?? 0,
+  });
+  const subtotal = pricing.subtotalCents;
+  const discount = pricing.discountCents;
+  const total = pricing.totalCents;
   const currency = cart?.currency || items[0]?.currency || "EUR";
+  const deliveryLabel = pricing.deliveryType === "home_delivery" ? t.homeDelivery : t.parcelLocker;
 
   const updateField = <K extends keyof CheckoutFormState>(key: K, value: CheckoutFormState[K]) => {
     setForm((current) => ({ ...current, [key]: value }));
@@ -356,6 +464,7 @@ export default function CheckoutPage() {
           locale,
           paymentMethod,
           createAccount: !userId && createAccount,
+          promoCode: appliedPromo?.code || "",
           password: form.password,
           confirmPassword: form.confirmPassword,
           customer: {
@@ -530,8 +639,46 @@ export default function CheckoutPage() {
             ))}
           </div>
           <div className="mt-6 space-y-3 border-t border-[#ece3d9] pt-6 text-sm">
+            <div className="rounded-2xl border border-[#ece3d9] bg-[#fffaf4] p-4">
+              <label htmlFor="checkout-promo-code" className="text-sm font-semibold text-[color:var(--headline)]">
+                {t.promoCode}
+              </label>
+              <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_auto]">
+                <input
+                  id="checkout-promo-code"
+                  value={promoInput}
+                  onChange={(event) => setPromoInput(event.target.value.toUpperCase())}
+                  placeholder={t.promoPlaceholder}
+                  className="h-11 rounded-xl border border-[#ece3d9] bg-white px-4 text-sm text-[color:var(--headline)] outline-none transition focus:border-[color:var(--accent)]"
+                />
+                <button
+                  type="button"
+                  onClick={() => void applyPromoCode(promoInput)}
+                  disabled={promoLoading}
+                  className="inline-flex h-11 items-center justify-center rounded-xl bg-[color:var(--accent)] px-5 text-sm font-medium text-[#203153] disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  {promoLoading ? t.applyingPromo : t.applyPromo}
+                </button>
+              </div>
+              {appliedPromo ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAppliedPromo(null);
+                    setPromoInput("");
+                    setPromoError("");
+                    clearStoredPromoCode();
+                  }}
+                  className="mt-3 text-sm font-medium text-[color:var(--headline)] underline decoration-[#d7c8b5] underline-offset-4"
+                >
+                  {t.removePromo} ({appliedPromo.code})
+                </button>
+              ) : null}
+              {promoError ? <p className="mt-3 text-sm font-medium text-red-600">{promoError}</p> : null}
+            </div>
             <div className="flex items-center justify-between text-[color:var(--muted)]"><span>{t.subtotal}</span><span>{formatMoney(subtotal, currency)}</span></div>
-            <div className="flex items-center justify-between text-[color:var(--muted)]"><span>{t.discount}</span><span>{discount > 0 ? `-${formatMoney(discount, currency)}` : "—"}</span></div>
+            <div className="flex items-center justify-between text-[color:var(--muted)]"><span>{t.discount}{appliedPromo ? ` (${appliedPromo.discountPercent}%)` : ""}</span><span>{discount > 0 ? `-${formatMoney(discount, currency)}` : "—"}</span></div>
+            <div className="flex items-center justify-between text-[color:var(--muted)]"><span>{t.delivery} · {deliveryLabel}</span><span>{formatMoney(pricing.shippingCents, currency)}</span></div>
             <div className="flex items-center justify-between text-base font-semibold text-[color:var(--headline)]"><span>{t.total}</span><span>{formatMoney(total, currency)}</span></div>
           </div>
         </aside>

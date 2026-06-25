@@ -22,6 +22,7 @@ import {
   isSupabaseConfigured,
 } from "@/lib/supabase-client";
 import { addProductToCart, getCurrentUserId } from "@/lib/cart";
+import { normalizeDeliveryType } from "@/lib/pricing.mjs";
 
 type LocaleKey = "en" | "ru" | "el" | "lv";
 type ProductRow = {
@@ -30,6 +31,7 @@ type ProductRow = {
   slug: string;
   currency: string;
   price_cents: number;
+  delivery_type?: string | null;
   stock_quantity: number;
   primary_image_url: string | null;
   image_urls?: string[] | null;
@@ -300,7 +302,7 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
       setLoading(true);
       const productQuery = await supabase
         .from("products")
-        .select("id, sku, slug, currency, price_cents, stock_quantity, primary_image_url, image_urls, category_id, product_translations(locale, name, slug)")
+        .select("id, sku, slug, currency, price_cents, delivery_type, stock_quantity, primary_image_url, image_urls, category_id, product_translations(locale, name, slug)")
         .eq("slug", slug)
         .eq("is_active", true)
         .maybeSingle();
@@ -604,6 +606,7 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
         selectedOptions,
         selectedOptionLabels,
         unitPriceCents: adjustedPriceCents,
+        deliveryType: normalizeDeliveryType(product.delivery_type),
         currency: product.currency || "EUR",
         quantity: selectedQuantity,
       });

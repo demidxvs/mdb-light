@@ -3,7 +3,7 @@ import { generateInvoicePdf } from "@/lib/invoice-pdf";
 import { createStorefrontServiceClient } from "@/lib/storefront-admin-server";
 
 type OrderInvoiceItem = {
-  productId: string;
+  productId: string | null;
   name: string;
   sku: string | null;
   quantity: number;

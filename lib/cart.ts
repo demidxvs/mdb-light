@@ -6,9 +6,11 @@ import {
   normalizeSelectedOptionsMap,
   type SelectedOptionMap,
 } from "@/lib/attribute-options";
+import { getDeliveryOption, normalizeDeliveryType } from "@/lib/pricing.mjs";
 
 export const CART_UPDATED_EVENT = "mdb-cart-updated";
 const GUEST_CART_STORAGE_KEY = "mdb-light-guest-cart";
+export const PROMO_CODE_STORAGE_KEY = "mdb-light-promo-code";
 
 type CartRow = {
   id: string;
@@ -22,6 +24,8 @@ export type GuestCartItem = {
   product_id: string;
   quantity: number;
   unit_price_cents: number;
+  delivery_type?: string | null;
+  delivery_cents?: number | null;
   currency: string;
   selected_color?: string | null;
   selected_length?: string | null;
@@ -33,6 +37,8 @@ export type GuestCartItem = {
     slug?: string;
     name?: string;
     image_url?: string | null;
+    delivery_type?: string | null;
+    delivery_cents?: number | null;
     selected_color?: string | null;
     selected_length?: string | null;
     selected_material?: string | null;
@@ -52,6 +58,7 @@ type AddToCartInput = {
   selectedOptions?: SelectedOptionMap | null;
   selectedOptionLabels?: SelectedOptionMap | null;
   unitPriceCents: number;
+  deliveryType?: string | null;
   currency: string;
   quantity?: number;
 };
@@ -107,6 +114,26 @@ export function clearGuestCart() {
   emitCartUpdated();
 }
 
+export function readStoredPromoCode() {
+  if (typeof window === "undefined") return "";
+  return window.localStorage.getItem(PROMO_CODE_STORAGE_KEY) || "";
+}
+
+export function writeStoredPromoCode(code: string) {
+  if (typeof window === "undefined") return;
+  const normalizedCode = code.trim();
+  if (normalizedCode) {
+    window.localStorage.setItem(PROMO_CODE_STORAGE_KEY, normalizedCode);
+  } else {
+    window.localStorage.removeItem(PROMO_CODE_STORAGE_KEY);
+  }
+}
+
+export function clearStoredPromoCode() {
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem(PROMO_CODE_STORAGE_KEY);
+}
+
 export function getGuestCartCount() {
   return readGuestCartItems().reduce((total, item) => total + item.quantity, 0);
 }
@@ -132,6 +159,7 @@ function addProductToGuestCart(input: AddToCartInput) {
   const selectedOptions = normalizeSelectedOptionsMap(input.selectedOptions);
   const selectedOptionLabels = normalizeSelectedOptionsMap(input.selectedOptionLabels);
   const variantKey = createVariantKey(selectedOptions);
+  const delivery = getDeliveryOption(input.deliveryType);
   const itemId = getGuestCartItemId(
     input.productId,
     variantKey,
@@ -151,6 +179,8 @@ function addProductToGuestCart(input: AddToCartInput) {
               ...item,
               quantity: item.quantity + quantityToAdd,
               unit_price_cents: input.unitPriceCents,
+              delivery_type: delivery.type,
+              delivery_cents: delivery.priceCents,
               currency: input.currency,
               selected_color: selectedColor,
               selected_length: selectedLength,
@@ -161,6 +191,8 @@ function addProductToGuestCart(input: AddToCartInput) {
                 slug: input.slug,
                 name: input.name,
                 image_url: input.imageUrl,
+                delivery_type: delivery.type,
+                delivery_cents: delivery.priceCents,
                 selected_color: selectedColor,
                 selected_length: selectedLength,
                 selected_material: selectedMaterial,
@@ -178,6 +210,8 @@ function addProductToGuestCart(input: AddToCartInput) {
         product_id: input.productId,
         quantity: quantityToAdd,
         unit_price_cents: input.unitPriceCents,
+        delivery_type: delivery.type,
+        delivery_cents: delivery.priceCents,
         currency: input.currency,
         selected_color: selectedColor,
         selected_length: selectedLength,
@@ -189,6 +223,8 @@ function addProductToGuestCart(input: AddToCartInput) {
           slug: input.slug,
           name: input.name,
           image_url: input.imageUrl,
+          delivery_type: delivery.type,
+          delivery_cents: delivery.priceCents,
           selected_color: selectedColor,
           selected_length: selectedLength,
           selected_material: selectedMaterial,
@@ -318,6 +354,7 @@ export async function addProductToCart(
   const selectedOptions = normalizeSelectedOptionsMap(input.selectedOptions);
   const selectedOptionLabels = normalizeSelectedOptionsMap(input.selectedOptionLabels);
   const variantKey = createVariantKey(selectedOptions);
+  const delivery = getDeliveryOption(normalizeDeliveryType(input.deliveryType));
 
   const existingQuery = supabase
     .from("cart_items")
@@ -336,6 +373,8 @@ export async function addProductToCart(
       .update({
         quantity: existingItem.quantity + quantityToAdd,
         unit_price_cents: input.unitPriceCents,
+        delivery_type: delivery.type,
+        delivery_cents: delivery.priceCents,
         currency: input.currency,
         selected_color: selectedColor,
         selected_length: selectedLength,
@@ -347,6 +386,8 @@ export async function addProductToCart(
           slug: input.slug,
           name: input.name,
           image_url: input.imageUrl,
+          delivery_type: delivery.type,
+          delivery_cents: delivery.priceCents,
           selected_color: selectedColor,
           selected_length: selectedLength,
           selected_material: selectedMaterial,
@@ -362,6 +403,8 @@ export async function addProductToCart(
       product_id: input.productId,
       quantity: quantityToAdd,
       unit_price_cents: input.unitPriceCents,
+      delivery_type: delivery.type,
+      delivery_cents: delivery.priceCents,
       currency: input.currency,
       selected_color: selectedColor,
       selected_length: selectedLength,
@@ -373,6 +416,8 @@ export async function addProductToCart(
         slug: input.slug,
         name: input.name,
         image_url: input.imageUrl,
+        delivery_type: delivery.type,
+        delivery_cents: delivery.priceCents,
         selected_color: selectedColor,
         selected_length: selectedLength,
         selected_material: selectedMaterial,

@@ -11,9 +11,8 @@ type PromoCodePayload = {
 };
 
 export async function GET() {
-  const { user, response } = await requireAdminUser();
+  const { response } = await requireAdminUser();
   if (response) return response;
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
     const storefront = createStorefrontServiceClient();
@@ -28,7 +27,6 @@ export async function GET() {
 
     return NextResponse.json({
       promoCodes: data ?? [],
-      adminId: user.id,
     });
   } catch (error) {
     return NextResponse.json(
@@ -39,9 +37,8 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const { user, response } = await requireAdminUser();
+  const { response } = await requireAdminUser();
   if (response) return response;
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
     const body = (await request.json().catch(() => ({}))) as PromoCodePayload;
@@ -63,7 +60,7 @@ export async function POST(request: Request) {
         {
           code,
           discount_percent: discountPercent,
-          created_by: user.id,
+          created_by: null,
         },
         { onConflict: "code" },
       )

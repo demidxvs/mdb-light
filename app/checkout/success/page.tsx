@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { CheckCircle2 } from "lucide-react";
 import { useLocale } from "@/components/ui/locale-provider";
 import { localizePathname } from "@/i18n/config";
+import { clearStoredPromoCode } from "@/lib/cart";
 import { getDeliveryCopy } from "@/lib/order-utils";
 
 const copy = {
@@ -62,6 +63,10 @@ export default function CheckoutSuccessPage() {
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [orderCode, setOrderCode] = useState<string | null>(null);
+
+  useEffect(() => {
+    clearStoredPromoCode();
+  }, []);
 
   useEffect(() => {
     if (!sessionId) return;

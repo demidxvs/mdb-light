@@ -520,6 +520,7 @@ export default function CheckoutPage() {
         clearGuestCart();
       }
 
+      clearStoredPromoCode();
       window.location.href = payload.url;
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : t.error);

@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 import { SiteFooter } from "@/components/ui/site-footer";
 import { SiteHeader } from "@/components/ui/site-header";
+import { cn } from "@/lib/utils";
 import {
   createSupabaseBrowserClient,
   isSupabaseConfigured,
@@ -18,6 +19,8 @@ type AuthShellProps = {
   activeTab: "login" | "register";
   loginLabel: string;
   registerLabel: string;
+  containerClassName?: string;
+  panelClassName?: string;
   children: React.ReactNode;
 };
 
@@ -29,6 +32,8 @@ export function AuthShell({
   activeTab,
   loginLabel,
   registerLabel,
+  containerClassName,
+  panelClassName,
   children,
 }: AuthShellProps) {
   const supabaseReady = isSupabaseConfigured();
@@ -67,7 +72,7 @@ export function AuthShell({
       <SiteHeader topLabel={topLabel} />
 
       <section className="px-4 py-5 sm:px-8 sm:py-6 lg:px-10">
-        <div className="mx-auto max-w-xl">
+        <div className={cn("mx-auto max-w-xl", containerClassName)}>
           <div className="mb-3 flex flex-col items-stretch justify-between gap-3 sm:flex-row sm:items-center">
             <Link
               href={isAuthenticated ? "/account" : "/"}
@@ -105,10 +110,13 @@ export function AuthShell({
 
           <section
             id={activeTab === "login" ? "login-form" : "register-form"}
-            className="overflow-hidden rounded-[1.5rem] border border-[#ece3d9] bg-white p-5 shadow-[0_16px_40px_rgba(27,42,74,0.05)] sm:p-6"
+            className={cn(
+              "overflow-hidden rounded-[1.5rem] border border-[#ece3d9] bg-white p-5 shadow-[0_16px_40px_rgba(27,42,74,0.05)] sm:p-6",
+              panelClassName,
+            )}
           >
             <div className="mb-5 border-b border-[#efe6dd] pb-4">
-              <h1 className="font-display text-[1.95rem] font-semibold tracking-[-0.05em] text-[color:var(--headline)] sm:text-[2.35rem]">
+              <h1 className="font-display text-[1.95rem] font-semibold tracking-normal text-[color:var(--headline)] sm:text-[2.35rem]">
                 {title}
               </h1>
               <p className="mt-2 text-sm leading-6 text-[color:var(--muted)]">{description}</p>
@@ -122,4 +130,3 @@ export function AuthShell({
     </main>
   );
 }
-

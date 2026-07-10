@@ -13,10 +13,13 @@ type OrderRow = {
   currency: string;
   subtotal_cents: number;
   discount_cents: number;
+  shipping_cents: number;
+  delivery_type: "parcel_locker" | "home_delivery" | null;
   total_cents: number;
   customer_email: string | null;
   customer_name: string | null;
   customer_phone: string | null;
+  shipping_address: Record<string, unknown>;
   created_at: string;
   paid_at: string | null;
 };
@@ -51,7 +54,7 @@ export async function GET() {
     const { data: orderRows, error: orderError } = await storefront
       .from("orders")
       .select(
-        "id, order_number, order_code, payment_method, status, payment_status, fulfillment_status, currency, subtotal_cents, discount_cents, total_cents, customer_email, customer_name, customer_phone, created_at, paid_at",
+        "id, order_number, order_code, payment_method, status, payment_status, fulfillment_status, currency, subtotal_cents, discount_cents, shipping_cents, delivery_type, total_cents, customer_email, customer_name, customer_phone, shipping_address, created_at, paid_at",
       )
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });

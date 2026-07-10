@@ -17,6 +17,10 @@ import {
   getDeliveryOption,
   normalizePromoCode,
 } from "@/lib/pricing.mjs";
+import {
+  formatShippingAddress,
+  type ShippingAddress,
+} from "@/lib/shipping-address";
 import { createStorefrontServiceClient } from "@/lib/storefront-admin-server";
 
 type CartRow = {
@@ -131,6 +135,7 @@ export type OrderSummary = {
   customerEmail: string | null;
   customerName: string | null;
   customerPhone: string | null;
+  shippingAddress: ShippingAddress;
   paymentMethod: OrderPaymentMethod;
   items: OrderItemEmailPayload[];
 };
@@ -364,6 +369,7 @@ async function createOrderFromCheckout(input: {
   locale: Locale;
   paymentMethod: OrderPaymentMethod;
   customer: CheckoutCustomerInput;
+  shippingAddress: ShippingAddress;
   guestItems?: GuestCheckoutItemInput[];
   promoCode?: string;
 }) {
@@ -398,12 +404,12 @@ async function createOrderFromCheckout(input: {
       customer_email: input.customer.email.trim() || profile?.email || null,
       customer_name: buildCustomerName(input.customer, profile),
       customer_phone: input.customer.phone.trim() || profile?.phone || null,
-      shipping_address: {},
+      shipping_address: input.shippingAddress,
       billing_address: {},
       notes: input.customer.note?.trim() || null,
       placed_at: new Date().toISOString(),
     })
-    .select("id, order_number, created_at, currency, total_cents, subtotal_cents, discount_cents, shipping_cents, delivery_type, promo_code, promo_discount_percent, customer_email, customer_name, customer_phone")
+    .select("id, order_number, created_at, currency, total_cents, subtotal_cents, discount_cents, shipping_cents, delivery_type, promo_code, promo_discount_percent, customer_email, customer_name, customer_phone, shipping_address")
     .single();
 
   if (orderError || !insertedOrder) {
@@ -476,6 +482,7 @@ async function createOrderFromCheckout(input: {
     customerEmail: insertedOrder.customer_email,
     customerName: insertedOrder.customer_name,
     customerPhone: insertedOrder.customer_phone,
+    shippingAddress: insertedOrder.shipping_address as ShippingAddress,
     paymentMethod: input.paymentMethod,
     items: items.map((item) => ({
       name:
@@ -496,6 +503,7 @@ async function createOrderFromCheckout(input: {
     customerName: summary.customerName,
     customerEmail: summary.customerEmail,
     customerPhone: summary.customerPhone,
+    customerAddress: formatShippingAddress(summary.shippingAddress),
     subtotalCents: summary.subtotalCents,
     totalCents: summary.totalCents,
     items: [
@@ -550,6 +558,7 @@ export async function createOrderFromActiveCart(input: {
   locale: Locale;
   paymentMethod: OrderPaymentMethod;
   customer: CheckoutCustomerInput;
+  shippingAddress: ShippingAddress;
   promoCode?: string;
 }) {
   return createOrderFromCheckout(input);
@@ -559,6 +568,7 @@ export async function createOrderFromGuestCheckout(input: {
   locale: Locale;
   paymentMethod: OrderPaymentMethod;
   customer: CheckoutCustomerInput;
+  shippingAddress: ShippingAddress;
   userId?: string | null;
   items: GuestCheckoutItemInput[];
   promoCode?: string;
@@ -568,6 +578,7 @@ export async function createOrderFromGuestCheckout(input: {
     locale: input.locale,
     paymentMethod: input.paymentMethod,
     customer: input.customer,
+    shippingAddress: input.shippingAddress,
     guestItems: input.items,
     promoCode: input.promoCode,
   });

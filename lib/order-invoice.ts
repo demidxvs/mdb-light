@@ -19,6 +19,7 @@ type CreateOrderInvoiceInput = {
   customerName: string | null;
   customerEmail: string | null;
   customerPhone: string | null;
+  customerAddress: string;
   subtotalCents: number;
   totalCents: number;
   items: OrderInvoiceItem[];
@@ -29,10 +30,6 @@ type InvoiceRow = {
   invoice_number: string;
   pdf_path: string | null;
 };
-
-function buildClientAddress() {
-  return "Delivery details to be confirmed separately";
-}
 
 export async function createOrderInvoice(input: CreateOrderInvoiceInput) {
   const storefront = createStorefrontServiceClient();
@@ -55,7 +52,7 @@ export async function createOrderInvoice(input: CreateOrderInvoiceInput) {
         status: "sent",
         client_name: input.customerName || input.customerEmail || "MDB Light customer",
         client_registration_number: null,
-        client_address: buildClientAddress(),
+        client_address: input.customerAddress,
         client_email: input.customerEmail,
         client_phone: input.customerPhone,
         amount_in_words: null,
@@ -107,7 +104,7 @@ export async function createOrderInvoice(input: CreateOrderInvoiceInput) {
     issueDate: input.createdAt.slice(0, 10),
     clientName: input.customerName || input.customerEmail || "MDB Light customer",
     clientRegistrationNumber: "",
-    clientAddress: buildClientAddress(),
+    clientAddress: input.customerAddress,
     clientEmail: input.customerEmail || "",
     clientPhone: input.customerPhone || "",
     amountInWords: "",

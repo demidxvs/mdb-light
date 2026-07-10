@@ -9,6 +9,7 @@ import {
 } from "@/lib/order-service";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { createStorefrontServiceClient } from "@/lib/storefront-admin-server";
+import { validateShippingAddress } from "@/lib/shipping-address";
 
 type CheckoutRequestBody = {
   locale?: string;
@@ -23,6 +24,13 @@ type CheckoutRequestBody = {
     email?: string;
     phone?: string;
     note?: string;
+  };
+  shippingAddress?: {
+    line1?: string;
+    line2?: string;
+    city?: string;
+    postal_code?: string;
+    country?: string;
   };
   items?: Array<{
     productId?: string;
@@ -135,6 +143,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid email address." }, { status: 400 });
     }
 
+    const shippingAddressResult = validateShippingAddress(body.shippingAddress);
+    if (!shippingAddressResult.valid) {
+      return NextResponse.json(
+        {
+          error:
+            shippingAddressResult.error === "too_long"
+              ? "Delivery address is too long."
+              : "Missing delivery address fields.",
+        },
+        { status: 400 },
+      );
+    }
+
+    const shippingAddress = shippingAddressResult.address;
+
     const supabase = await createSupabaseServerClient();
     const {
       data: { user },
@@ -187,12 +210,14 @@ export async function POST(request: Request) {
           locale,
           paymentMethod,
           customer,
+          shippingAddress,
           promoCode: body.promoCode,
         })
       : await createOrderFromGuestCheckout({
           locale,
           paymentMethod,
           customer,
+          shippingAddress,
           promoCode: body.promoCode,
           items: (body.items ?? [])
             .filter((item) => item.productId && item.quantity)

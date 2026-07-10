@@ -54,6 +54,11 @@ type CheckoutFormState = {
   lastName: string;
   email: string;
   phone: string;
+  country: string;
+  city: string;
+  postalCode: string;
+  addressLine1: string;
+  addressLine2: string;
   note: string;
   password: string;
   confirmPassword: string;
@@ -74,6 +79,12 @@ const copy = {
     lastName: "Last name",
     email: "Email",
     phone: "Phone",
+    deliveryAddressTitle: "Delivery address",
+    country: "Country",
+    city: "City",
+    postalCode: "Postal code",
+    addressLine1: "Street and house number",
+    addressLine2: "Apartment, unit or parcel locker details (optional)",
     note: "Order note",
     password: "Password",
     confirmPassword: "Confirm password",
@@ -120,6 +131,12 @@ const copy = {
     lastName: "Фамилия",
     email: "Email",
     phone: "Телефон",
+    deliveryAddressTitle: "Адрес доставки",
+    country: "Страна",
+    city: "Город",
+    postalCode: "Почтовый индекс",
+    addressLine1: "Улица и номер дома",
+    addressLine2: "Квартира, помещение или данные пакомата (необязательно)",
     note: "Комментарий к заказу",
     password: "Пароль",
     confirmPassword: "Подтверждение пароля",
@@ -166,6 +183,12 @@ const copy = {
     lastName: "Επώνυμο",
     email: "Email",
     phone: "Τηλέφωνο",
+    deliveryAddressTitle: "Διεύθυνση παράδοσης",
+    country: "Χώρα",
+    city: "Πόλη",
+    postalCode: "Ταχυδρομικός κώδικας",
+    addressLine1: "Οδός και αριθμός",
+    addressLine2: "Διαμέρισμα, μονάδα ή στοιχεία parcel locker (προαιρετικό)",
     note: "Σχόλιο παραγγελίας",
     password: "Κωδικός πρόσβασης",
     confirmPassword: "Επιβεβαίωση κωδικού",
@@ -212,6 +235,12 @@ const copy = {
     lastName: "Uzvārds",
     email: "Email",
     phone: "Tālrunis",
+    deliveryAddressTitle: "Piegādes adrese",
+    country: "Valsts",
+    city: "Pilsēta",
+    postalCode: "Pasta indekss",
+    addressLine1: "Iela un mājas numurs",
+    addressLine2: "Dzīvoklis, telpa vai pakomāta informācija (nav obligāti)",
     note: "Komentārs pasūtījumam",
     password: "Parole",
     confirmPassword: "Apstipriniet paroli",
@@ -261,6 +290,11 @@ function buildInitialFormState(): CheckoutFormState {
     lastName: "",
     email: "",
     phone: "",
+    country: "",
+    city: "",
+    postalCode: "",
+    addressLine1: "",
+    addressLine2: "",
     note: "",
     password: "",
     confirmPassword: "",
@@ -434,7 +468,11 @@ export default function CheckoutPage() {
       !form.firstName.trim() ||
       !form.lastName.trim() ||
       !form.email.trim() ||
-      !form.phone.trim()
+      !form.phone.trim() ||
+      !form.country.trim() ||
+      !form.city.trim() ||
+      !form.postalCode.trim() ||
+      !form.addressLine1.trim()
     ) {
       return t.required;
     }
@@ -490,6 +528,13 @@ export default function CheckoutPage() {
             email: form.email,
             phone: form.phone,
             note: form.note,
+          },
+          shippingAddress: {
+            line1: form.addressLine1,
+            line2: form.addressLine2,
+            city: form.city,
+            postal_code: form.postalCode,
+            country: form.country,
           },
           items: !userId
             ? items.map((item) => ({
@@ -574,6 +619,63 @@ export default function CheckoutPage() {
               <input value={form.email} onChange={(event) => updateField("email", event.target.value)} placeholder={t.email} className="h-12 rounded-xl border border-[#ece3d9] bg-white px-4 text-sm text-[color:var(--headline)] outline-none transition focus:border-[color:var(--accent)]" />
               <input value={form.phone} onChange={(event) => updateField("phone", event.target.value)} placeholder={t.phone} className="h-12 rounded-xl border border-[#ece3d9] bg-white px-4 text-sm text-[color:var(--headline)] outline-none transition focus:border-[color:var(--accent)]" />
               <textarea value={form.note} onChange={(event) => updateField("note", event.target.value)} placeholder={t.note} className="min-h-[100px] rounded-xl border border-[#ece3d9] bg-white px-4 py-3 text-sm text-[color:var(--headline)] outline-none transition focus:border-[color:var(--accent)] md:col-span-2" />
+            </div>
+          </div>
+
+          <div className="mt-8">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[color:var(--accent)]">
+              {t.deliveryAddressTitle}
+            </p>
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
+              <input
+                value={form.country}
+                onChange={(event) => updateField("country", event.target.value)}
+                placeholder={t.country}
+                aria-label={t.country}
+                autoComplete="country-name"
+                required
+                maxLength={100}
+                className="h-12 rounded-xl border border-[#ece3d9] bg-white px-4 text-sm text-[color:var(--headline)] outline-none transition focus:border-[color:var(--accent)]"
+              />
+              <input
+                value={form.city}
+                onChange={(event) => updateField("city", event.target.value)}
+                placeholder={t.city}
+                aria-label={t.city}
+                autoComplete="address-level2"
+                required
+                maxLength={100}
+                className="h-12 rounded-xl border border-[#ece3d9] bg-white px-4 text-sm text-[color:var(--headline)] outline-none transition focus:border-[color:var(--accent)]"
+              />
+              <input
+                value={form.postalCode}
+                onChange={(event) => updateField("postalCode", event.target.value)}
+                placeholder={t.postalCode}
+                aria-label={t.postalCode}
+                autoComplete="postal-code"
+                required
+                maxLength={20}
+                className="h-12 rounded-xl border border-[#ece3d9] bg-white px-4 text-sm text-[color:var(--headline)] outline-none transition focus:border-[color:var(--accent)]"
+              />
+              <input
+                value={form.addressLine1}
+                onChange={(event) => updateField("addressLine1", event.target.value)}
+                placeholder={t.addressLine1}
+                aria-label={t.addressLine1}
+                autoComplete="address-line1"
+                required
+                maxLength={160}
+                className="h-12 rounded-xl border border-[#ece3d9] bg-white px-4 text-sm text-[color:var(--headline)] outline-none transition focus:border-[color:var(--accent)]"
+              />
+              <input
+                value={form.addressLine2}
+                onChange={(event) => updateField("addressLine2", event.target.value)}
+                placeholder={t.addressLine2}
+                aria-label={t.addressLine2}
+                autoComplete="address-line2"
+                maxLength={160}
+                className="h-12 rounded-xl border border-[#ece3d9] bg-white px-4 text-sm text-[color:var(--headline)] outline-none transition focus:border-[color:var(--accent)] md:col-span-2"
+              />
             </div>
           </div>
 

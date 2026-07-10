@@ -7,6 +7,7 @@ import {
   ArrowLeft,
   Download,
   LoaderCircle,
+  MapPin,
   ReceiptText,
   Search,
   ShieldAlert,
@@ -22,6 +23,7 @@ import {
   getPaymentMethodLabel,
   type OrderPaymentMethod,
 } from "@/lib/order-utils";
+import { formatShippingAddress, type ShippingAddress } from "@/lib/shipping-address";
 
 type OrderItemRow = {
   id: string;
@@ -48,10 +50,13 @@ type OrderRow = {
   currency: string;
   subtotal_cents: number;
   discount_cents: number;
+  shipping_cents: number;
+  delivery_type: "parcel_locker" | "home_delivery" | null;
   total_cents: number;
   customer_email: string | null;
   customer_name: string | null;
   customer_phone: string | null;
+  shipping_address: ShippingAddress | Record<string, never>;
   created_at: string;
   paid_at: string | null;
   order_items: OrderItemRow[];
@@ -88,6 +93,12 @@ const copy = {
     paid: "Paid",
     orderNumber: "Order number",
     phone: "Phone",
+    delivery: "Delivery",
+    deliveryAddress: "Delivery address",
+    parcelLocker: "Parcel locker",
+    homeDelivery: "Home delivery",
+    deliveryNotSpecified: "Delivery method not specified",
+    addressNotProvided: "Address was not provided for this order",
     paymentId: "Payment ID",
     items: "Items",
     unnamed: "Customer without name",
@@ -120,6 +131,12 @@ const copy = {
     paid: "Оплачен",
     orderNumber: "Номер заказа",
     phone: "Телефон",
+    delivery: "Доставка",
+    deliveryAddress: "Адрес доставки",
+    parcelLocker: "Пакомат",
+    homeDelivery: "Доставка на дом",
+    deliveryNotSpecified: "Способ доставки не указан",
+    addressNotProvided: "Для этого заказа адрес не был указан",
     paymentId: "ID платежа",
     items: "Товары",
     unnamed: "Клиент без имени",
@@ -152,6 +169,12 @@ const copy = {
     paid: "Πληρώθηκε",
     orderNumber: "Αριθμός παραγγελίας",
     phone: "Τηλέφωνο",
+    delivery: "Παράδοση",
+    deliveryAddress: "Διεύθυνση παράδοσης",
+    parcelLocker: "Parcel locker",
+    homeDelivery: "Παράδοση στο σπίτι",
+    deliveryNotSpecified: "Δεν έχει οριστεί τρόπος παράδοσης",
+    addressNotProvided: "Δεν καταχωρήθηκε διεύθυνση για αυτή την παραγγελία",
     paymentId: "ID πληρωμής",
     items: "Προϊόντα",
     unnamed: "Πελάτης χωρίς όνομα",
@@ -184,6 +207,12 @@ const copy = {
     paid: "Apmaksāts",
     orderNumber: "Pasūtījuma numurs",
     phone: "Tālrunis",
+    delivery: "Piegāde",
+    deliveryAddress: "Piegādes adrese",
+    parcelLocker: "Pakomāts",
+    homeDelivery: "Piegāde uz mājām",
+    deliveryNotSpecified: "Piegādes veids nav norādīts",
+    addressNotProvided: "Šim pasūtījumam adrese netika norādīta",
     paymentId: "Maksājuma ID",
     items: "Preces",
     unnamed: "Klients bez vārda",
@@ -332,6 +361,7 @@ export default function AdminOrdersPage() {
         order.customer_email || "",
         order.customer_name || "",
         order.customer_phone || "",
+        formatShippingAddress(order.shipping_address),
         order.payment_method,
         order.status,
         order.payment_status,
@@ -540,6 +570,28 @@ export default function AdminOrdersPage() {
                             {t.phone}: {order.customer_phone}
                           </p>
                         ) : null}
+                        <div className="mt-4 flex items-start gap-3 rounded-xl border border-[#ece3d9] bg-white p-4">
+                          <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-[color:var(--accent)]" />
+                          <div className="min-w-0 space-y-1 text-sm">
+                            <p className="font-semibold text-[color:var(--headline)]">{t.delivery}</p>
+                            <p className="text-[color:var(--muted)]">
+                              {order.delivery_type === "home_delivery"
+                                ? t.homeDelivery
+                                : order.delivery_type === "parcel_locker"
+                                  ? t.parcelLocker
+                                  : t.deliveryNotSpecified}
+                              {order.delivery_type
+                                ? ` · ${formatMoney(order.shipping_cents, order.currency)}`
+                                : ""}
+                            </p>
+                            <p className="pt-1 font-medium text-[color:var(--headline)]">
+                              {t.deliveryAddress}
+                            </p>
+                            <address className="break-words not-italic leading-6 text-[color:var(--muted)]">
+                              {formatShippingAddress(order.shipping_address) || t.addressNotProvided}
+                            </address>
+                          </div>
+                        </div>
                         <div className="grid gap-2 text-sm text-[color:var(--muted)] sm:grid-cols-3">
                           <p>{t.total}: <span className="font-medium text-[color:var(--headline)]">{formatMoney(order.total_cents, order.currency)}</span></p>
                           <p>{t.created}: <span className="font-medium text-[color:var(--headline)]">{formatDate(order.created_at)}</span></p>

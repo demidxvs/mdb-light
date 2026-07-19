@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
+import { ImageIcon } from "lucide-react";
 import {
   createSupabaseBrowserClient,
   isSupabaseConfigured,
@@ -193,7 +194,7 @@ export function HomeCategories({
 
   return (
     <section id="catalog" className="mx-auto max-w-7xl px-4 py-2 sm:px-10 lg:px-12">
-      <div className="rounded-[2rem] border border-[#e5e8ee] bg-white p-6 sm:p-8">
+      <div className="rounded-[1.5rem] border border-[#e5e8ee] bg-white p-4 sm:rounded-[2rem] sm:p-8">
         {eyebrow ? (
           <p className="text-sm font-medium uppercase tracking-[0.2em] text-[color:var(--accent)]">
             {eyebrow}
@@ -206,12 +207,12 @@ export function HomeCategories({
           </h2>
         ) : null}
 
-        <div className={`${eyebrow || title ? "mt-8" : ""} grid gap-4 md:grid-cols-2 xl:grid-cols-4`}>
+        <div className={`${eyebrow || title ? "mt-8" : ""} grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4`}>
           {loading && supabaseReady
             ? Array.from({ length: Math.min(limit, 8) }).map((_, index) => (
                 <div
                   key={`category-skeleton-${index}`}
-                  className="overflow-hidden rounded-[1.45rem] border border-[#e9e0d3] bg-white shadow-[0_18px_40px_rgba(27,42,74,0.08)]"
+                  className="overflow-hidden rounded-xl border border-[#e9e0d3] bg-white shadow-[0_10px_24px_rgba(27,42,74,0.08)] sm:rounded-[1.45rem] sm:shadow-[0_18px_40px_rgba(27,42,74,0.08)]"
                 >
                   <div className="aspect-[1.18/1] animate-pulse bg-[linear-gradient(180deg,#f7f1e7_0%,#efe6d9_100%)]" />
                   <div className="space-y-2 bg-[#111111] px-4 py-3">
@@ -224,32 +225,33 @@ export function HomeCategories({
                 <Link
                   key={card.id}
                   href={categories.length > 0 ? buildCategoryPath(locale, categories[index]) : "/catalog"}
-                  className="block"
+                  className="block h-full min-w-0"
                 >
-                  <article className="group overflow-hidden rounded-[1.45rem] border border-[#e9e0d3] bg-[#111111] shadow-[0_18px_40px_rgba(27,42,74,0.12)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_48px_rgba(27,42,74,0.18)]">
+                  <article className="group h-full overflow-hidden rounded-xl border border-[#e9e0d3] bg-[#111111] shadow-[0_10px_24px_rgba(27,42,74,0.1)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_48px_rgba(27,42,74,0.18)] sm:rounded-[1.45rem] sm:shadow-[0_18px_40px_rgba(27,42,74,0.12)]">
                     <div className="relative aspect-[1.18/1] overflow-hidden bg-[linear-gradient(180deg,#d8d1c7_0%,#f4efe7_100%)]">
                       {card.imageUrl ? (
                         <Image
                           src={card.imageUrl}
                           alt={card.title}
                           fill
-                          sizes="(max-width: 767px) 100vw, (max-width: 1279px) 50vw, 25vw"
+                          sizes="(max-width: 767px) 50vw, (max-width: 1279px) 50vw, 25vw"
                           priority={index < 4}
                           className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
                         />
                       ) : (
-                        <div className="flex h-full w-full items-center justify-center bg-[radial-gradient(circle_at_top,rgba(244,198,79,0.18),transparent_38%),linear-gradient(180deg,#dcd6cb_0%,#f4efe7_100%)] px-6 text-center text-sm uppercase tracking-[0.22em] text-[#7f7159]">
-                          Add category photo in admin
+                        <div className="flex h-full w-full items-center justify-center bg-[radial-gradient(circle_at_top,rgba(244,198,79,0.18),transparent_38%),linear-gradient(180deg,#dcd6cb_0%,#f4efe7_100%)] px-3 text-center text-sm uppercase text-[#7f7159] sm:px-6">
+                          <ImageIcon className="h-5 w-5 sm:hidden" />
+                          <span className="hidden sm:inline">Add category photo in admin</span>
                         </div>
                       )}
                     </div>
 
-                    <div className="bg-[#111111] px-4 py-3 text-center">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white sm:text-[11px]">
+                    <div className="bg-[#111111] px-2 py-2.5 text-center sm:px-4 sm:py-3">
+                      <p className="line-clamp-2 min-h-8 break-words text-[10px] font-semibold uppercase leading-4 text-white sm:text-[11px]">
                         {card.title}
                       </p>
                       {countsLoaded ? (
-                        <p className="mt-1 text-[11px] uppercase tracking-[0.16em] text-white/52">
+                        <p className="mt-1 text-[9px] uppercase leading-4 text-white/52 sm:text-[11px]">
                           {card.count} {itemWord[locale]}
                         </p>
                       ) : null}

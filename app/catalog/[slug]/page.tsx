@@ -175,7 +175,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
         ) : products.length === 0 ? (
           <div className="rounded-[2rem] border border-[#e5e8ee] bg-white px-6 py-12 text-sm text-[color:var(--muted)] shadow-[0_20px_60px_rgba(27,42,74,0.06)]">{t.empty}</div>
         ) : (
-          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3 sm:gap-5 xl:grid-cols-3">
             {products.map((product) => {
               const translation =
                 product.product_translations?.find((item) => item.locale === locale) ||

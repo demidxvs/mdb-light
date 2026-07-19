@@ -880,12 +880,12 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
         )}
       </section>
       {!loading && relatedProducts.length > 0 ? (
-        <section className="mx-auto max-w-7xl px-6 pb-16 sm:px-10 lg:px-12">
-          <div className="rounded-[2rem] border border-[#e5e8ee] bg-white p-6 shadow-[0_20px_60px_rgba(27,42,74,0.06)]">
+        <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-10 lg:px-12">
+          <div className="rounded-[1.5rem] border border-[#e5e8ee] bg-white p-4 shadow-[0_20px_60px_rgba(27,42,74,0.06)] sm:rounded-[2rem] sm:p-6">
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[color:var(--accent)]">
               {t.relatedTitle}
             </p>
-            <div className="mt-3 flex items-end justify-between gap-4">
+            <div className="mt-3 flex flex-col items-start gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
               <h2 className="font-display text-3xl font-semibold tracking-[-0.05em] text-[color:var(--headline)]">
                 {categoryName || t.relatedTitle}
               </h2>
@@ -893,7 +893,7 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
                 {t.relatedText}
               </p>
             </div>
-            <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-5 xl:grid-cols-3">
               {relatedProducts.map((relatedProduct) => {
                 const relatedTranslation =
                   relatedProduct.product_translations?.find((item) => item.locale === locale) ||

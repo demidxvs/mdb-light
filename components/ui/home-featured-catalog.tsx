@@ -199,8 +199,8 @@ export function HomeFeaturedCatalog({ initialProducts = [] }: HomeFeaturedCatalo
         }));
 
   return (
-    <section className="mx-auto max-w-7xl px-6 py-8 sm:px-10 lg:px-12">
-      <div className="rounded-[2rem] border border-[#e5e8ee] bg-white p-6 shadow-[0_20px_60px_rgba(27,42,74,0.06)] sm:p-8">
+    <section className="mx-auto max-w-7xl px-4 py-8 sm:px-10 lg:px-12">
+      <div className="rounded-[1.5rem] border border-[#e5e8ee] bg-white p-4 shadow-[0_20px_60px_rgba(27,42,74,0.06)] sm:rounded-[2rem] sm:p-8">
         <div className="flex flex-col gap-4 border-b border-[#efe6dd] pb-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#f4c64f]">{t.eyebrow}</p>
@@ -218,15 +218,15 @@ export function HomeFeaturedCatalog({ initialProducts = [] }: HomeFeaturedCatalo
           </Link>
         </div>
 
-        <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-5 xl:grid-cols-4">
           {loading && supabaseReady
             ? Array.from({ length: 4 }).map((_, index) => (
                 <div
                   key={`featured-skeleton-${index}`}
-                  className="overflow-hidden rounded-[1.5rem] border border-[#ece3d9] bg-white shadow-[0_16px_36px_rgba(27,42,74,0.06)]"
+                  className="overflow-hidden rounded-xl border border-[#ece3d9] bg-white shadow-[0_10px_24px_rgba(27,42,74,0.06)] sm:rounded-[1.5rem] sm:shadow-[0_16px_36px_rgba(27,42,74,0.06)]"
                 >
-                  <div className="aspect-[4/3] animate-pulse bg-[linear-gradient(180deg,#fffdfa_0%,#f7f1e7_100%)]" />
-                  <div className="space-y-3 px-5 py-5">
+                  <div className="aspect-square animate-pulse bg-[linear-gradient(180deg,#fffdfa_0%,#f7f1e7_100%)] sm:aspect-[4/3]" />
+                  <div className="space-y-2 p-3 sm:space-y-3 sm:px-5 sm:py-5">
                     <div className="flex items-center justify-between gap-3">
                       <div className="h-3 w-24 rounded bg-[#efe4d5]" />
                       <div className="h-4 w-4 rounded-full bg-[#efe4d5]" />

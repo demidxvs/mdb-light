@@ -459,7 +459,25 @@ export default function CartPage() {
           </div>
 
           <section className="rounded-2xl border border-[#ece3d9] bg-[#fffaf4] p-5">
-            <div className="mb-5 rounded-2xl border border-[#ece3d9] bg-white p-4">
+            <div className="space-y-3 text-sm">
+              <div className="flex items-center justify-between text-[color:var(--muted)]">
+                <span>{t.subtotal}</span>
+                <span>{formatMoney(subtotal, currency)}</span>
+              </div>
+              <div className="flex items-center justify-between text-[color:var(--muted)]">
+                <span>{t.discount}{appliedPromo ? ` (${appliedPromo.discountPercent}%)` : ""}</span>
+                <span>{discount > 0 ? `-${formatMoney(discount, currency)}` : "—"}</span>
+              </div>
+              <div className="flex items-center justify-between text-[color:var(--muted)]">
+                <span>{t.delivery} · {deliveryLabel}</span>
+                <span>{formatMoney(pricing.shippingCents, currency)}</span>
+              </div>
+              <div className="flex items-center justify-between border-t border-[#ece3d9] pt-3 text-base font-semibold text-[color:var(--headline)]">
+                <span>{t.total}</span>
+                <span>{formatMoney(total, currency)}</span>
+              </div>
+            </div>
+            <div className="mt-5 rounded-2xl border border-[#ece3d9] bg-white p-4">
               <label className="text-sm font-semibold text-[color:var(--headline)]" htmlFor="cart-promo-code">
                 {t.promoCode}
               </label>
@@ -495,24 +513,6 @@ export default function CartPage() {
                 </button>
               ) : null}
               {promoError ? <p className="mt-3 text-sm font-medium text-red-600">{promoError}</p> : null}
-            </div>
-            <div className="space-y-3 text-sm">
-              <div className="flex items-center justify-between text-[color:var(--muted)]">
-                <span>{t.subtotal}</span>
-                <span>{formatMoney(subtotal, currency)}</span>
-              </div>
-              <div className="flex items-center justify-between text-[color:var(--muted)]">
-                <span>{t.discount}{appliedPromo ? ` (${appliedPromo.discountPercent}%)` : ""}</span>
-                <span>{discount > 0 ? `-${formatMoney(discount, currency)}` : "—"}</span>
-              </div>
-              <div className="flex items-center justify-between text-[color:var(--muted)]">
-                <span>{t.delivery} · {deliveryLabel}</span>
-                <span>{formatMoney(pricing.shippingCents, currency)}</span>
-              </div>
-              <div className="flex items-center justify-between border-t border-[#ece3d9] pt-3 text-base font-semibold text-[color:var(--headline)]">
-                <span>{t.total}</span>
-                <span>{formatMoney(total, currency)}</span>
-              </div>
             </div>
             <p className="mt-4 text-sm leading-6 text-[color:var(--muted)]">{deliveryCopy.cartCheckout}</p>
             <button

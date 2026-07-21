@@ -785,6 +785,10 @@ export default function CheckoutPage() {
             ))}
           </div>
           <div className="mt-6 space-y-3 border-t border-[#ece3d9] pt-6 text-sm">
+            <div className="flex items-center justify-between text-[color:var(--muted)]"><span>{t.subtotal}</span><span>{formatMoney(subtotal, currency)}</span></div>
+            <div className="flex items-center justify-between text-[color:var(--muted)]"><span>{t.discount}{appliedPromo ? ` (${appliedPromo.discountPercent}%)` : ""}</span><span>{discount > 0 ? `-${formatMoney(discount, currency)}` : "—"}</span></div>
+            <div className="flex items-center justify-between text-[color:var(--muted)]"><span>{t.delivery} · {deliveryLabel}</span><span>{formatMoney(pricing.shippingCents, currency)}</span></div>
+            <div className="flex items-center justify-between text-base font-semibold text-[color:var(--headline)]"><span>{t.total}</span><span>{formatMoney(total, currency)}</span></div>
             <div className="rounded-2xl border border-[#ece3d9] bg-[#fffaf4] p-4">
               <label htmlFor="checkout-promo-code" className="text-sm font-semibold text-[color:var(--headline)]">
                 {t.promoCode}
@@ -822,10 +826,6 @@ export default function CheckoutPage() {
               ) : null}
               {promoError ? <p className="mt-3 text-sm font-medium text-red-600">{promoError}</p> : null}
             </div>
-            <div className="flex items-center justify-between text-[color:var(--muted)]"><span>{t.subtotal}</span><span>{formatMoney(subtotal, currency)}</span></div>
-            <div className="flex items-center justify-between text-[color:var(--muted)]"><span>{t.discount}{appliedPromo ? ` (${appliedPromo.discountPercent}%)` : ""}</span><span>{discount > 0 ? `-${formatMoney(discount, currency)}` : "—"}</span></div>
-            <div className="flex items-center justify-between text-[color:var(--muted)]"><span>{t.delivery} · {deliveryLabel}</span><span>{formatMoney(pricing.shippingCents, currency)}</span></div>
-            <div className="flex items-center justify-between text-base font-semibold text-[color:var(--headline)]"><span>{t.total}</span><span>{formatMoney(total, currency)}</span></div>
           </div>
         </aside>
       </div>
